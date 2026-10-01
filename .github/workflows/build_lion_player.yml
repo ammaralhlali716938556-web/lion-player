@@ -758,7 +758,7 @@ jobs:
                   </LinearLayout>
               </RelativeLayout>
 
-              <!-- الشريط السفلي مع التبديل بين التالي والسابق -->
+              <!-- الشريط السفلي -->
               <LinearLayout
                   android:id="@+id/bottomControlsOverlay"
                   android:layout_width="match_parent"
@@ -1468,8 +1468,10 @@ jobs:
           import android.view.WindowManager
           import android.widget.SeekBar
           import android.widget.Toast
+          import androidx.activity.OnBackPressedCallback
           import androidx.appcompat.app.AlertDialog
           import androidx.appcompat.app.AppCompatActivity
+          import androidx.media3.common.AudioAttributes
           import androidx.media3.common.C
           import androidx.media3.common.MediaItem
           import androidx.media3.common.Player
@@ -1497,7 +1499,7 @@ jobs:
               private var playlistTitles = ArrayList<String>()
               private var currentTrackIndex = 0
 
-              // إيماءات السحب
+              // إيماءات اللمس
               private var isSeekingGesture = false
               private var isVolumeOrBrightnessGesture = false
               private var gestureInitialX = 0f
@@ -1524,7 +1526,7 @@ jobs:
                   playlistTitles = intent.getStringArrayListExtra("PLAYLIST_TITLES") ?: arrayListOf()
                   currentTrackIndex = intent.getIntExtra("CURRENT_INDEX", 0)
 
-                  // تهيئة نسبة الصوت الحالية
+                  // جلب مستوى صوت الجهاز الحالي
                   val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
                   val maxV = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                   val curV = am.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -1534,6 +1536,7 @@ jobs:
                   setupControls()
                   setupGestures()
                   setupSubtitleDrag()
+                  setupBackNavigation()
               }
 
               private fun setupPlayer() {
@@ -1548,6 +1551,14 @@ jobs:
                   val exo = ExoPlayer.Builder(this, renderersFactory).build()
                   player = exo
                   binding.playerView.player = exo
+
+                  // إعداد استمرار الصوت مع قفل الشاشة بالزر الجانبي
+                  val audioAttributes = AudioAttributes.Builder()
+                      .setUsage(C.USAGE_MEDIA)
+                      .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                      .build()
+                  exo.setAudioAttributes(audioAttributes, true)
+                  exo.setWakeMode(C.WAKE_MODE_LOCAL)
 
                   val initialUri = intent.getStringExtra("VIDEO_URI") ?: (playlistUris.getOrNull(currentTrackIndex) ?: "")
                   val initialTitle = intent.getStringExtra("VIDEO_TITLE") ?: (playlistTitles.getOrNull(currentTrackIndex) ?: "Lion Player")
@@ -1578,6 +1589,38 @@ jobs:
                   })
 
                   startProgressUpdater()
+              }
+
+              private fun setupBackNavigation() {
+                  onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+                      override fun handleOnBackPressed() {
+                          handleExitRequest()
+                      }
+                  })
+
+                  binding.btnBack.setOnClickListener {
+                      handleExitRequest()
+                  }
+              }
+
+              private fun handleExitRequest() {
+                  if (player?.isPlaying == true) {
+                      AlertDialog.Builder(this)
+                          .setTitle("التشغيل في الخلفية")
+                          .setMessage("هل ترغب في استمرار تشغيل الصوت في الخلفية بعد الخروج؟")
+                          .setPositiveButton("نعم (تشغيل في الخلفية)") { _, _ ->
+                              Toast.makeText(this, "يستمر تشغيل الصوت في الخلفية", Toast.LENGTH_SHORT).show()
+                              moveTaskToBack(true)
+                          }
+                          .setNegativeButton("لا (إيقاف وخروج)") { _, _ ->
+                              player?.stop()
+                              finish()
+                          }
+                          .setNeutralButton("إلغاء", null)
+                          .show()
+                  } else {
+                      finish()
+                  }
               }
 
               private fun playTrackAtIndex(index: Int) {
@@ -1613,8 +1656,6 @@ jobs:
               }
 
               private fun setupControls() {
-                  binding.btnBack.setOnClickListener { finish() }
-
                   binding.btnDecoderSwitch.setOnClickListener {
                       cycleDecoder()
                   }
@@ -1629,7 +1670,7 @@ jobs:
                       }
                   }
 
-                  // ربط الأزرار المتبادلة
+                  // التالي على اليسار والسابق على اليمين
                   binding.btnNext.setOnClickListener { playNextTrack() }
                   binding.btnPrevious.setOnClickListener { playPreviousTrack() }
 
@@ -1775,7 +1816,7 @@ jobs:
                           }
                           MotionEvent.ACTION_MOVE -> {
                               val dx = event.x - gestureInitialX
-                              // السحب للأعلى (event.y أقل من البداية) يعطي dy موجباً لزيادة القيمة
+                              // السحب للأعلى (event.y أقل من البداية) يعطي قيمة موجبة لرفع الصوت/السطوع
                               val dy = gestureInitialY - event.y
                               val absDx = Math.abs(dx)
                               val absDy = Math.abs(dy)
@@ -1789,7 +1830,6 @@ jobs:
                               }
 
                               if (isSeekingGesture) {
-                                  // السحب لليسار يقدم والسحب لليمين يؤخر
                                   val screenWidth = window.decorView.width.toFloat()
                                   val seekDeltaMs = ((-dx / screenWidth) * 90000L).toLong()
                                   val totalDur = player?.duration ?: 0L
@@ -1804,12 +1844,12 @@ jobs:
                                   val deltaPercent = ((dy / screenHeight) * 100).toInt()
 
                                   if (gestureInitialX > window.decorView.width * 0.55f) {
-                                      // يمين الشاشة: الصوت (فوق يزداد / تحت ينقص حتى 100%)
+                                      // يمين: الصوت (فوق يزداد / تحت ينقص)
                                       currentVolumePercent = (gestureInitialVolume + deltaPercent).coerceIn(0, 100)
                                       audioBoostManager.setBoostLevel(currentVolumePercent)
                                       showVolumeHud(currentVolumePercent)
                                   } else if (gestureInitialX < window.decorView.width * 0.45f) {
-                                      // يسار الشاشة: السطوع (فوق يزداد / تحت ينقص حتى 100%)
+                                      // يسار: السطوع (فوق يزداد / تحت ينقص)
                                       currentBrightnessPercent = (gestureInitialBrightness + deltaPercent).coerceIn(1, 100)
                                       val lp = window.attributes
                                       lp.screenBrightness = currentBrightnessPercent / 100f
@@ -1978,7 +2018,10 @@ jobs:
 
               override fun onStop() {
                   super.onStop()
-                  player?.pause()
+                  // لا نوقف المشغل إذا كان قفل شاشة الهاتف بالزر الجانبي أو تصغير التطبيق
+                  if (isFinishing) {
+                      player?.stop()
+                  }
               }
 
               override fun onDestroy() {
