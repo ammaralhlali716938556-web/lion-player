@@ -45,7 +45,7 @@ jobs:
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/menu
 
-          # 3. ملفات Gradle
+          # 3. إعدادات Gradle
           cat << 'EOF' > settings.gradle
           pluginManagement {
               repositories {
@@ -138,7 +138,7 @@ jobs:
           -keep class androidx.media3.** { *; }
           EOF
 
-          # 4. AndroidManifest.xml
+          # 4. المانيفست AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -179,13 +179,13 @@ jobs:
           </manifest>
           EOF
 
-          # 5. Values (Strings بدون علامات % معطوبة، Colors، Styles)
+          # 5. الموارد (Values)
           cat << 'EOF' > app/src/main/res/values/strings.xml
           <resources>
               <string name="app_name">Lion Player</string>
               <string name="tab_local">محلي</string>
               <string name="tab_stream">بث مباشر</string>
-              <string name="tab_music">صوتيات</string>
+              <string name="tab_music">موسيقى</string>
               <string name="decoder_hw">HW</string>
               <string name="decoder_sw">SW</string>
               <string name="decoder_hw_plus">HW+</string>
@@ -231,7 +231,7 @@ jobs:
           </resources>
           EOF
 
-          # 6. Icons Drawables
+          # 6. الأيقونات والمتجهات (Vector Drawables)
           cat << 'EOF' > app/src/main/res/drawable/ic_lion_logo.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="48dp" android:height="48dp" android:viewportWidth="24" android:viewportHeight="24">
@@ -323,7 +323,52 @@ jobs:
           </vector>
           EOF
 
-          # 7. Layouts
+          cat << 'EOF' > app/src/main/res/drawable/ic_screen_rotation.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M16.48,2.52c3.27,1.55 5.61,4.72 5.97,8.48h1.5C23.44,4.84 18.29,0 12,0l-0.66,0.03 3.81,3.81 1.33,-1.32zM10.23,1.75c-0.59,-0.59 -1.54,-0.59 -2.12,0L1.75,8.11c-0.59,0.59 -0.59,1.54 0,2.12l12.02,12.02c0.59,0.59 1.54,0.59 2.12,0l6.36,-6.36c0.59,-0.59 0.59,-1.54 0,-2.12L10.23,1.75zM14.83,21.19L2.81,9.17l6.36,-6.36 12.02,12.02 -6.36,6.36z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_sort.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M3,18h6v-2H3v2zM3,6v2h18V6H3zm0,7h12v-2H3v2z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_view_mode.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M4,11h5V5H4v6zm0,7h5v-6H4v6zm6,0h5v-6h-5v6zm6,0h5v-6h-5v6zm-6,-7h5V5h-5v6zm6,-6v6h5V5h-5z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_music_note.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFB300" android:pathData="M12,3v10.55c-0.59,-0.34 -1.27,-0.55 -2,-0.55 -2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4V7h4V3h-6z"/>
+          </vector>
+          EOF
+
+          # 7. القوائم (Menus)
+          cat << 'EOF' > app/src/main/res/menu/top_main_menu.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <menu xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto">
+              <item
+                  android:id="@+id/action_view_mode"
+                  android:icon="@drawable/ic_view_mode"
+                  android:title="طريقة العرض"
+                  app:showAsAction="always" />
+              <item
+                  android:id="@+id/action_sort"
+                  android:icon="@drawable/ic_sort"
+                  android:title="فرز وترتيب"
+                  app:showAsAction="always" />
+          </menu>
+          EOF
+
           cat << 'EOF' > app/src/main/res/menu/bottom_nav_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
           <menu xmlns:android="http://schemas.android.com/apk/res/android">
@@ -332,16 +377,17 @@ jobs:
                   android:icon="@drawable/ic_folder"
                   android:title="@string/tab_local" />
               <item
-                  android:id="@+id/nav_stream"
-                  android:icon="@drawable/ic_video"
-                  android:title="@string/tab_stream" />
-              <item
                   android:id="@+id/nav_music"
                   android:icon="@drawable/ic_audiotrack"
                   android:title="@string/tab_music" />
+              <item
+                  android:id="@+id/nav_stream"
+                  android:icon="@drawable/ic_video"
+                  android:title="@string/tab_stream" />
           </menu>
           EOF
 
+          # 8. التخطيطات (Layouts)
           cat << 'EOF' > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -467,6 +513,7 @@ jobs:
                   android:textStyle="bold"
                   android:visibility="gone" />
 
+              <!-- مؤشر التقديم والتأخير / الصوت / السطوع HUD -->
               <LinearLayout
                   android:id="@+id/hudGestureFeedback"
                   android:layout_width="wrap_content"
@@ -489,14 +536,14 @@ jobs:
                   <ProgressBar
                       android:id="@+id/progressHud"
                       style="?android:attr/progressBarStyleHorizontal"
-                      android:layout_width="120dp"
+                      android:layout_width="140dp"
                       android:layout_height="8dp"
                       android:layout_marginTop="8dp"
-                      android:max="200"
+                      android:max="100"
                       android:progressTint="@color/lion_gold" />
               </LinearLayout>
 
-              <!-- Top Bar -->
+              <!-- الشريط العلوي -->
               <RelativeLayout
                   android:id="@+id/topControlsOverlay"
                   android:layout_width="match_parent"
@@ -542,6 +589,14 @@ jobs:
                           android:textSize="12sp"
                           android:textStyle="bold" />
 
+                      <!-- زر تدوير الشاشة -->
+                      <ImageButton
+                          android:id="@+id/btnRotateScreen"
+                          android:layout_width="36dp"
+                          android:layout_height="36dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_screen_rotation" />
+
                       <ImageButton
                           android:id="@+id/btnAudioTrack"
                           android:layout_width="36dp"
@@ -558,7 +613,7 @@ jobs:
                   </LinearLayout>
               </RelativeLayout>
 
-              <!-- Bottom Bar -->
+              <!-- الشريط السفلي -->
               <LinearLayout
                   android:id="@+id/bottomControlsOverlay"
                   android:layout_width="match_parent"
@@ -666,21 +721,25 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # 8. Source Code
-          cat << 'EOF' > app/src/main/java/com/lion/player/model/VideoItem.kt
+          # 9. الكود البرمجي (Kotlin Source Files)
+          cat << 'EOF' > app/src/main/java/com/lion/player/model/MediaItem.kt
           package com.lion.player.model
 
           import android.net.Uri
 
-          data class VideoItem(
+          data class MediaItem(
               val id: Long,
               val title: String,
               val path: String,
               val uri: Uri,
               val duration: Long,
               val size: Long,
-              val resolution: String,
-              val folderName: String
+              val extraInfo: String,
+              val folderName: String,
+              val isFolder: Boolean = false,
+              val isAudio: Boolean = false,
+              val itemCount: Int = 0,
+              val dateAdded: Long = 0L
           )
           EOF
 
@@ -732,7 +791,7 @@ jobs:
           }
           EOF
 
-          cat << 'EOF' > app/src/main/java/com/lion/player/adapter/VideoAdapter.kt
+          cat << 'EOF' > app/src/main/java/com/lion/player/adapter/MediaAdapter.kt
           package com.lion.player.adapter
 
           import android.view.LayoutInflater
@@ -743,53 +802,65 @@ jobs:
           import androidx.recyclerview.widget.RecyclerView
           import com.bumptech.glide.Glide
           import com.lion.player.R
-          import com.lion.player.model.VideoItem
+          import com.lion.player.model.MediaItem
           import java.util.Locale
 
-          class VideoAdapter(
-              private val onVideoClick: (VideoItem) -> Unit,
-              private val onVideoLongClick: (VideoItem) -> Unit
-          ) : RecyclerView.Adapter<VideoAdapter.VideoViewHolder>() {
+          class MediaAdapter(
+              private val onItemClick: (MediaItem) -> Unit,
+              private val onItemLongClick: (MediaItem) -> Unit
+          ) : RecyclerView.Adapter<MediaAdapter.MediaViewHolder>() {
 
-              private val videos = mutableListOf<VideoItem>()
+              private val items = mutableListOf<MediaItem>()
 
-              fun submitList(list: List<VideoItem>) {
-                  videos.clear()
-                  videos.addAll(list)
+              fun submitList(list: List<MediaItem>) {
+                  items.clear()
+                  items.addAll(list)
                   notifyDataSetChanged()
               }
 
-              override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoViewHolder {
+              override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
                   val v = LayoutInflater.from(parent.context).inflate(R.layout.item_media_video, parent, false)
-                  return VideoViewHolder(v)
+                  return MediaViewHolder(v)
               }
 
-              override fun onBindViewHolder(holder: VideoViewHolder, position: Int) {
-                  holder.bind(videos[position])
+              override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
+                  holder.bind(items[position])
               }
 
-              override fun getItemCount(): Int = videos.size
+              override fun getItemCount(): Int = items.size
 
-              inner class VideoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+              inner class MediaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                   private val imgThumbnail: ImageView = itemView.findViewById(R.id.imgThumbnail)
                   private val txtTitle: TextView = itemView.findViewById(R.id.txtTitle)
                   private val txtDetails: TextView = itemView.findViewById(R.id.txtDetails)
 
-                  fun bind(item: VideoItem) {
+                  fun bind(item: MediaItem) {
                       txtTitle.text = item.title
-                      val durationMin = (item.duration / 1000) / 60
-                      val durationSec = (item.duration / 1000) % 60
-                      val sizeMb = item.size / (1024 * 1024)
-                      txtDetails.text = String.format(Locale.getDefault(), "%02d:%02d • %d MB • %s", durationMin, durationSec, sizeMb, item.resolution)
 
-                      Glide.with(itemView.context)
-                          .load(item.uri)
-                          .placeholder(R.drawable.ic_video)
-                          .into(imgThumbnail)
+                      if (item.isFolder) {
+                          imgThumbnail.setImageResource(R.drawable.ic_folder)
+                          txtDetails.text = "${item.itemCount} فيديو"
+                      } else if (item.isAudio) {
+                          imgThumbnail.setImageResource(R.drawable.ic_music_note)
+                          val durationMin = (item.duration / 1000) / 60
+                          val durationSec = (item.duration / 1000) % 60
+                          val sizeMb = item.size / (1024 * 1024)
+                          txtDetails.text = String.format(Locale.getDefault(), "%s • %02d:%02d • %d MB", item.extraInfo, durationMin, durationSec, sizeMb)
+                      } else {
+                          val durationMin = (item.duration / 1000) / 60
+                          val durationSec = (item.duration / 1000) % 60
+                          val sizeMb = item.size / (1024 * 1024)
+                          txtDetails.text = String.format(Locale.getDefault(), "%02d:%02d • %d MB • %s", durationMin, durationSec, sizeMb, item.extraInfo)
 
-                      itemView.setOnClickListener { onVideoClick(item) }
+                          Glide.with(itemView.context)
+                              .load(item.uri)
+                              .placeholder(R.drawable.ic_video)
+                              .into(imgThumbnail)
+                      }
+
+                      itemView.setOnClickListener { onItemClick(item) }
                       itemView.setOnLongClickListener {
-                          onVideoLongClick(item)
+                          onItemLongClick(item)
                           true
                       }
                   }
@@ -808,72 +879,184 @@ jobs:
           import android.os.Bundle
           import android.provider.MediaStore
           import android.widget.Toast
+          import androidx.activity.OnBackPressedCallback
           import androidx.appcompat.app.AlertDialog
           import androidx.appcompat.app.AppCompatActivity
           import androidx.core.app.ActivityCompat
           import androidx.core.content.ContextCompat
           import androidx.recyclerview.widget.LinearLayoutManager
           import com.lion.player.R
-          import com.lion.player.adapter.VideoAdapter
+          import com.lion.player.adapter.MediaAdapter
           import com.lion.player.databinding.ActivityMainBinding
-          import com.lion.player.model.VideoItem
+          import com.lion.player.model.MediaItem
 
           class MainActivity : AppCompatActivity() {
 
               private lateinit var binding: ActivityMainBinding
-              private lateinit var videoAdapter: VideoAdapter
-              private val videoList = mutableListOf<VideoItem>()
+              private lateinit var mediaAdapter: MediaAdapter
+              private val allVideosList = mutableListOf<MediaItem>()
+              private val allAudiosList = mutableListOf<MediaItem>()
+
+              private var isFolderView = true
+              private var currentSelectedFolder: String? = null
+              private var isAudioTabSelected = false
+
+              enum class SortBy { NAME, DATE, SIZE, DURATION }
+              private var currentSort = SortBy.DATE
+              private var isAscending = false
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
                   binding = ActivityMainBinding.inflate(layoutInflater)
                   setContentView(binding.root)
 
+                  setupToolbar()
                   setupRecyclerView()
                   setupBottomNav()
+                  setupBackPress()
                   checkPermissionsAndLoad()
 
                   binding.swipeRefresh.setOnRefreshListener {
-                      loadLocalVideos()
+                      if (isAudioTabSelected) loadLocalAudios() else loadLocalVideos()
                       binding.swipeRefresh.isRefreshing = false
                   }
               }
 
-              private fun setupRecyclerView() {
-                  videoAdapter = VideoAdapter(
-                      onVideoClick = { video ->
-                          val intent = Intent(this, PlayerActivity::class.java).apply {
-                              putExtra("VIDEO_URI", video.uri.toString())
-                              putExtra("VIDEO_TITLE", video.title)
+              private fun setupToolbar() {
+                  binding.topToolbar.inflateMenu(R.menu.top_main_menu)
+                  binding.topToolbar.setOnMenuItemClickListener { menuItem ->
+                      when (menuItem.itemId) {
+                          R.id.action_view_mode -> {
+                              if (!isAudioTabSelected) {
+                                  isFolderView = !isFolderView
+                                  currentSelectedFolder = null
+                                  updateToolbarTitle()
+                                  displayCurrentMedia()
+                                  Toast.makeText(this, if (isFolderView) "عرض كمجلدات" else "عرض كافة الملفات", Toast.LENGTH_SHORT).show()
+                              } else {
+                                  Toast.makeText(this, "عرض المجلدات متاح في قسم الفيديو", Toast.LENGTH_SHORT).show()
+                              }
+                              true
                           }
-                          startActivity(intent)
+                          R.id.action_sort -> {
+                              showSortAndOrderDialog()
+                              true
+                          }
+                          else -> false
+                      }
+                  }
+
+                  binding.topToolbar.setNavigationOnClickListener {
+                      if (currentSelectedFolder != null) {
+                          currentSelectedFolder = null
+                          updateToolbarTitle()
+                          displayCurrentMedia()
+                      }
+                  }
+              }
+
+              private fun setupRecyclerView() {
+                  mediaAdapter = MediaAdapter(
+                      onItemClick = { item ->
+                          if (item.isFolder) {
+                              currentSelectedFolder = item.folderName
+                              updateToolbarTitle()
+                              displayCurrentMedia()
+                          } else {
+                              val intent = Intent(this, PlayerActivity::class.java).apply {
+                                  putExtra("VIDEO_URI", item.uri.toString())
+                                  putExtra("VIDEO_TITLE", item.title)
+                              }
+                              startActivity(intent)
+                          }
                       },
-                      onVideoLongClick = { video ->
-                          showMediaActionsDialog(video)
+                      onItemLongClick = { item ->
+                          if (!item.isFolder) showItemOptions(item)
                       }
                   )
                   binding.recyclerViewMedia.layoutManager = LinearLayoutManager(this)
-                  binding.recyclerViewMedia.adapter = videoAdapter
+                  binding.recyclerViewMedia.adapter = mediaAdapter
               }
 
               private fun setupBottomNav() {
                   binding.bottomNavigation.setOnItemSelectedListener { item ->
                       when (item.itemId) {
                           R.id.nav_local -> {
+                              isAudioTabSelected = false
+                              currentSelectedFolder = null
+                              updateToolbarTitle()
                               loadLocalVideos()
+                              true
+                          }
+                          R.id.nav_music -> {
+                              isAudioTabSelected = true
+                              currentSelectedFolder = null
+                              updateToolbarTitle()
+                              loadLocalAudios()
                               true
                           }
                           R.id.nav_stream -> {
                               showStreamDialog()
                               true
                           }
-                          R.id.nav_music -> {
-                              Toast.makeText(this, "قسم الصوتيات", Toast.LENGTH_SHORT).show()
-                              true
-                          }
                           else -> false
                       }
                   }
+              }
+
+              private fun setupBackPress() {
+                  onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+                      override fun handleOnBackPressed() {
+                          if (currentSelectedFolder != null) {
+                              currentSelectedFolder = null
+                              updateToolbarTitle()
+                              displayCurrentMedia()
+                          } else {
+                              isEnabled = false
+                              onBackPressedDispatcher.onBackPressed()
+                          }
+                      }
+                  })
+              }
+
+              private fun updateToolbarTitle() {
+                  if (isAudioTabSelected) {
+                      binding.topToolbar.title = "الموسيقى والصوتيات"
+                      binding.topToolbar.setNavigationIcon(R.drawable.ic_lion_logo)
+                  } else if (currentSelectedFolder != null) {
+                      binding.topToolbar.title = currentSelectedFolder
+                      binding.topToolbar.setNavigationIcon(R.drawable.ic_back)
+                  } else {
+                      binding.topToolbar.title = "Lion Player"
+                      binding.topToolbar.setNavigationIcon(R.drawable.ic_lion_logo)
+                  }
+              }
+
+              private fun showSortAndOrderDialog() {
+                  val sortOptions = arrayOf(
+                      "الاسم (تصاعدي)", "الاسم (تنازلي)",
+                      "التاريخ (الأحدث أولاً)", "التاريخ (الأقدم أولاً)",
+                      "الحجم (الأكبر أولاً)", "الحجم (الأصغر أولاً)",
+                      "المدة (الأطول أولاً)", "المدة (الأقصر أولاً)"
+                  )
+
+                  AlertDialog.Builder(this)
+                      .setTitle("فرز وترتيب حسب:")
+                      .setItems(sortOptions) { _, which ->
+                          when (which) {
+                              0 -> { currentSort = SortBy.NAME; isAscending = true }
+                              1 -> { currentSort = SortBy.NAME; isAscending = false }
+                              2 -> { currentSort = SortBy.DATE; isAscending = false }
+                              3 -> { currentSort = SortBy.DATE; isAscending = true }
+                              4 -> { currentSort = SortBy.SIZE; isAscending = false }
+                              5 -> { currentSort = SortBy.SIZE; isAscending = true }
+                              6 -> { currentSort = SortBy.DURATION; isAscending = false }
+                              7 -> { currentSort = SortBy.DURATION; isAscending = true }
+                          }
+                          displayCurrentMedia()
+                          Toast.makeText(this, "تم الترتيب: ${sortOptions[which]}", Toast.LENGTH_SHORT).show()
+                      }
+                      .show()
               }
 
               private fun checkPermissionsAndLoad() {
@@ -895,7 +1078,7 @@ jobs:
               }
 
               private fun loadLocalVideos() {
-                  videoList.clear()
+                  allVideosList.clear()
                   val projection = arrayOf(
                       MediaStore.Video.Media._ID,
                       MediaStore.Video.Media.TITLE,
@@ -903,13 +1086,13 @@ jobs:
                       MediaStore.Video.Media.DURATION,
                       MediaStore.Video.Media.SIZE,
                       MediaStore.Video.Media.RESOLUTION,
-                      MediaStore.Video.Media.BUCKET_DISPLAY_NAME
+                      MediaStore.Video.Media.BUCKET_DISPLAY_NAME,
+                      MediaStore.Video.Media.DATE_ADDED
                   )
 
-                  val sortOrder = "${MediaStore.Video.Media.DATE_ADDED} DESC"
                   val cursor = contentResolver.query(
                       MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                      projection, null, null, sortOrder
+                      projection, null, null, null
                   )
 
                   cursor?.use {
@@ -920,6 +1103,7 @@ jobs:
                       val sizeCol = it.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
                       val resCol = it.getColumnIndex(MediaStore.Video.Media.RESOLUTION)
                       val folderCol = it.getColumnIndex(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
+                      val dateCol = it.getColumnIndex(MediaStore.Video.Media.DATE_ADDED)
 
                       while (it.moveToNext()) {
                           val id = it.getLong(idCol)
@@ -929,12 +1113,103 @@ jobs:
                           val size = it.getLong(sizeCol)
                           val resolution = if (resCol != -1) it.getString(resCol) ?: "HD" else "HD"
                           val folder = if (folderCol != -1) it.getString(folderCol) ?: "Local" else "Local"
+                          val dateAdded = if (dateCol != -1) it.getLong(dateCol) else 0L
                           val uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
 
-                          videoList.add(VideoItem(id, title, path, uri, duration, size, resolution, folder))
+                          allVideosList.add(MediaItem(id, title, path, uri, duration, size, resolution, folder, false, false, 0, dateAdded))
                       }
                   }
-                  videoAdapter.submitList(videoList)
+                  displayCurrentMedia()
+              }
+
+              private fun loadLocalAudios() {
+                  allAudiosList.clear()
+                  val projection = arrayOf(
+                      MediaStore.Audio.Media._ID,
+                      MediaStore.Audio.Media.TITLE,
+                      MediaStore.Audio.Media.ARTIST,
+                      MediaStore.Audio.Media.DATA,
+                      MediaStore.Audio.Media.DURATION,
+                      MediaStore.Audio.Media.SIZE,
+                      MediaStore.Audio.Media.DATE_ADDED
+                  )
+
+                  val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+                  val cursor = contentResolver.query(
+                      MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                      projection, selection, null, null
+                  )
+
+                  cursor?.use {
+                      val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                      val titleCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+                      val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                      val dataCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                      val durCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+                      val sizeCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
+                      val dateCol = it.getColumnIndex(MediaStore.Audio.Media.DATE_ADDED)
+
+                      while (it.moveToNext()) {
+                          val id = it.getLong(idCol)
+                          val title = it.getString(titleCol) ?: "Audio"
+                          val artist = it.getString(artistCol) ?: "Artist"
+                          val path = it.getString(dataCol) ?: ""
+                          val duration = it.getLong(durCol)
+                          val size = it.getLong(sizeCol)
+                          val dateAdded = if (dateCol != -1) it.getLong(dateCol) else 0L
+                          val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+
+                          allAudiosList.add(MediaItem(id, title, path, uri, duration, size, artist, "Music", false, true, 0, dateAdded))
+                      }
+                  }
+                  displayCurrentMedia()
+              }
+
+              private fun displayCurrentMedia() {
+                  if (isAudioTabSelected) {
+                      val sorted = sortItems(allAudiosList)
+                      mediaAdapter.submitList(sorted)
+                      return
+                  }
+
+                  if (isFolderView && currentSelectedFolder == null) {
+                      // عرض المجلدات
+                      val folderGroups = allVideosList.groupBy { it.folderName }
+                      val folders = folderGroups.map { (folderName, videos) ->
+                          MediaItem(
+                              id = 0,
+                              title = folderName,
+                              path = "",
+                              uri = android.net.Uri.EMPTY,
+                              duration = 0,
+                              size = 0,
+                              extraInfo = "",
+                              folderName = folderName,
+                              isFolder = true,
+                              isAudio = false,
+                              itemCount = videos.size,
+                              dateAdded = videos.maxOfOrNull { it.dateAdded } ?: 0L
+                          )
+                      }
+                      mediaAdapter.submitList(sortItems(folders))
+                  } else if (isFolderView && currentSelectedFolder != null) {
+                      // عرض فيديوهات المجلد المختار
+                      val folderVideos = allVideosList.filter { it.folderName == currentSelectedFolder }
+                      mediaAdapter.submitList(sortItems(folderVideos))
+                  } else {
+                      // عرض كافة الفيديوهات
+                      mediaAdapter.submitList(sortItems(allVideosList))
+                  }
+              }
+
+              private fun sortItems(list: List<MediaItem>): List<MediaItem> {
+                  val sorted = when (currentSort) {
+                      SortBy.NAME -> list.sortedBy { it.title.lowercase() }
+                      SortBy.DATE -> list.sortedBy { it.dateAdded }
+                      SortBy.SIZE -> list.sortedBy { it.size }
+                      SortBy.DURATION -> list.sortedBy { it.duration }
+                  }
+                  return if (isAscending) sorted else sorted.reversed()
               }
 
               private fun showStreamDialog() {
@@ -949,7 +1224,7 @@ jobs:
                           if (url.isNotEmpty()) {
                               val intent = Intent(this, PlayerActivity::class.java).apply {
                                   putExtra("VIDEO_URI", url)
-                                  putExtra("VIDEO_TITLE", "Online Video")
+                                  putExtra("VIDEO_TITLE", "Online Stream")
                               }
                               startActivity(intent)
                           }
@@ -958,24 +1233,24 @@ jobs:
                       .show()
               }
 
-              private fun showMediaActionsDialog(video: VideoItem) {
+              private fun showItemOptions(item: MediaItem) {
                   val options = arrayOf("مشاركة", "الخصائص")
                   AlertDialog.Builder(this)
-                      .setTitle(video.title)
+                      .setTitle(item.title)
                       .setItems(options) { _, which ->
                           when (which) {
                               0 -> {
                                   val share = Intent(Intent.ACTION_SEND).apply {
-                                      type = "video/*"
-                                      putExtra(Intent.EXTRA_STREAM, video.uri)
+                                      type = if (item.isAudio) "audio/*" else "video/*"
+                                      putExtra(Intent.EXTRA_STREAM, item.uri)
                                   }
-                                  startActivity(Intent.createChooser(share, "مشاركة الفيديو"))
+                                  startActivity(Intent.createChooser(share, "مشاركة الملف"))
                               }
                               1 -> {
                                   AlertDialog.Builder(this)
-                                      .setTitle("خصائص الفيديو")
-                                      .setMessage("الاسم: ${video.title}\nالمسار: ${video.path}\nالحجم: ${video.size / (1024*1024)} MB\nالدقة: ${video.resolution}")
-                                      .setPositiveButton("حسناً", null)
+                                      .setTitle("خصائص الملف")
+                                      .setMessage("الاسم: ${item.title}\nالمسار: ${item.path}\nالحجم: ${item.size / (1024*1024)} MB\nالمعلومات: ${item.extraInfo}")
+                                      .setPositiveButton("إغلاق", null)
                                       .show()
                               }
                           }
@@ -987,7 +1262,9 @@ jobs:
           cat << 'EOF' > app/src/main/java/com/lion/player/ui/PlayerActivity.kt
           package com.lion.player.ui
 
+          import android.annotation.SuppressLint
           import android.app.PictureInPictureParams
+          import android.content.pm.ActivityInfo
           import android.content.res.Configuration
           import android.net.Uri
           import android.os.Build
@@ -1022,6 +1299,15 @@ jobs:
               private var currentVolumePercent = 100
               private var currentBrightnessPercent = 50
               private var currentDecoderMode = DecoderMode.HW
+              private var orientationMode = 0 // 0: تلقائي, 1: أفقي, 2: عمودي
+
+              // إيماءات السحب الأفقي للتقديم والتأخير
+              private var isSeekingGesture = false
+              private var isVolumeOrBrightnessGesture = false
+              private var gestureInitialX = 0f
+              private var gestureInitialY = 0f
+              private var gestureInitialPosition = 0L
+              private var gestureTargetPosition = 0L
 
               private val handler = Handler(Looper.getMainLooper())
               private var isOverlayVisible = true
@@ -1088,6 +1374,11 @@ jobs:
                       cycleDecoder()
                   }
 
+                  // زر تدوير الشاشة
+                  binding.btnRotateScreen.setOnClickListener {
+                      toggleScreenRotation()
+                  }
+
                   binding.btnPlayPause.setOnClickListener {
                       player?.let {
                           if (it.isPlaying) it.pause() else it.play()
@@ -1128,6 +1419,24 @@ jobs:
                       override fun onStartTrackingTouch(sb: SeekBar?) {}
                       override fun onStopTrackingTouch(sb: SeekBar?) {}
                   })
+              }
+
+              private fun toggleScreenRotation() {
+                  orientationMode = (orientationMode + 1) % 3
+                  when (orientationMode) {
+                      0 -> {
+                          requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+                          Toast.makeText(this, "تدوير الشاشة: تلقائي", Toast.LENGTH_SHORT).show()
+                      }
+                      1 -> {
+                          requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                          Toast.makeText(this, "تدوير الشاشة: أفقي", Toast.LENGTH_SHORT).show()
+                      }
+                      2 -> {
+                          requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                          Toast.makeText(this, "تدوير الشاشة: عمودي", Toast.LENGTH_SHORT).show()
+                      }
+                  }
               }
 
               private fun cycleDecoder() {
@@ -1176,6 +1485,7 @@ jobs:
                   binding.playerView.resizeMode = next
               }
 
+              @SuppressLint("ClickableViewAccessibility")
               private fun setupGestures() {
                   val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
                       override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
@@ -1198,34 +1508,82 @@ jobs:
                           }
                           return true
                       }
-
-                      override fun onScroll(e1: MotionEvent?, e2: MotionEvent, dX: Float, dY: Float): Boolean {
-                          if (isKidsLocked || e1 == null) return false
-                          val screenWidth = window.decorView.width
-                          val screenHeight = window.decorView.height
-                          val deltaPercent = ((dY / screenHeight) * 100).toInt()
-
-                          if (e1.x > screenWidth * 0.6) {
-                              currentVolumePercent = (currentVolumePercent + deltaPercent).coerceIn(0, 200)
-                              audioBoostManager.setBoostLevel(currentVolumePercent)
-                              showHudFeedback("الصوت: ${currentVolumePercent}%", currentVolumePercent)
-                          } else if (e1.x < screenWidth * 0.4) {
-                              currentBrightnessPercent = (currentBrightnessPercent + deltaPercent).coerceIn(1, 100)
-                              val lp = window.attributes
-                              lp.screenBrightness = currentBrightnessPercent / 100f
-                              window.attributes = lp
-                              showHudFeedback("السطوع: ${currentBrightnessPercent}%", currentBrightnessPercent)
-                          }
-                          return true
-                      }
                   })
 
                   binding.playerRootLayout.setOnTouchListener { _, event ->
                       gestureDetector.onTouchEvent(event)
+                      if (isKidsLocked) return@setOnTouchListener true
+
+                      when (event.action) {
+                          MotionEvent.ACTION_DOWN -> {
+                              gestureInitialX = event.x
+                              gestureInitialY = event.y
+                              gestureInitialPosition = player?.currentPosition ?: 0L
+                              gestureTargetPosition = gestureInitialPosition
+                              isSeekingGesture = false
+                              isVolumeOrBrightnessGesture = false
+                          }
+                          MotionEvent.ACTION_MOVE -> {
+                              val dx = event.x - gestureInitialX
+                              val dy = event.y - gestureInitialY
+                              val absDx = Math.abs(dx)
+                              val absDy = Math.abs(dy)
+
+                              if (!isSeekingGesture && !isVolumeOrBrightnessGesture) {
+                                  if (absDx > absDy && absDx > 40) {
+                                      isSeekingGesture = true
+                                  } else if (absDy > absDx && absDy > 40) {
+                                      isVolumeOrBrightnessGesture = true
+                                  }
+                              }
+
+                              if (isSeekingGesture) {
+                                  // السحب الأفقي للتقديم والتأخير
+                                  val screenWidth = window.decorView.width.toFloat()
+                                  val seekDeltaMs = ((dx / screenWidth) * 90000L).toLong()
+                                  val totalDur = player?.duration ?: 0L
+                                  val safeDur = if (totalDur > 0) totalDur else Long.MAX_VALUE
+                                  gestureTargetPosition = (gestureInitialPosition + seekDeltaMs).coerceIn(0L, safeDur)
+
+                                  val sign = if (seekDeltaMs >= 0) "+" else ""
+                                  val deltaSec = seekDeltaMs / 1000
+                                  val hudText = "${sign}${deltaSec}s [${formatTime(gestureTargetPosition)} / ${formatTime(safeDur)}]"
+                                  val progressPercent = if (safeDur > 0) ((gestureTargetPosition.toFloat() / safeDur) * 100).toInt() else 50
+                                  showHudFeedback(hudText, progressPercent)
+                              } else if (isVolumeOrBrightnessGesture) {
+                                  val screenWidth = window.decorView.width.toFloat()
+                                  val screenHeight = window.decorView.height.toFloat()
+                                  val deltaPercent = ((-dy / screenHeight) * 100).toInt()
+
+                                  if (gestureInitialX > screenWidth * 0.55f) {
+                                      // يمين الشاشة: الصوت والتعزيز
+                                      currentVolumePercent = (currentVolumePercent + deltaPercent).coerceIn(0, 200)
+                                      audioBoostManager.setBoostLevel(currentVolumePercent)
+                                      showHudFeedback("الصوت: ${currentVolumePercent}%", (currentVolumePercent / 2))
+                                  } else if (gestureInitialX < screenWidth * 0.45f) {
+                                      // يسار الشاشة: السطوع
+                                      currentBrightnessPercent = (currentBrightnessPercent + deltaPercent).coerceIn(1, 100)
+                                      val lp = window.attributes
+                                      lp.screenBrightness = currentBrightnessPercent / 100f
+                                      window.attributes = lp
+                                      showHudFeedback("السطوع: ${currentBrightnessPercent}%", currentBrightnessPercent)
+                                  }
+                              }
+                          }
+                          MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                              if (isSeekingGesture) {
+                                  player?.seekTo(gestureTargetPosition)
+                                  isSeekingGesture = false
+                                  handler.postDelayed(hideHudRunnable, 800)
+                              }
+                              isVolumeOrBrightnessGesture = false
+                          }
+                      }
                       true
                   }
               }
 
+              @SuppressLint("ClickableViewAccessibility")
               private fun setupSubtitleDrag() {
                   var dX = 0f
                   var dY = 0f
@@ -1246,7 +1604,7 @@ jobs:
               private fun showHudFeedback(title: String, progress: Int) {
                   binding.hudGestureFeedback.visibility = View.VISIBLE
                   binding.txtHudTitle.text = title
-                  binding.progressHud.progress = progress
+                  binding.progressHud.progress = progress.coerceIn(0, 100)
                   handler.removeCallbacks(hideHudRunnable)
                   handler.postDelayed(hideHudRunnable, 1000)
               }
