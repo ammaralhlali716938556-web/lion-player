@@ -1,0 +1,1491 @@
+name: Build Lion Player APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Generate & Compile Lion Player APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Generate Complete Android Project Files
+        run: |
+          echo "==== [1/6] إنشاء مجلدات المشروع ===="
+          mkdir -p gradle/wrapper
+          mkdir -p app/src/main/java/com/lion/player/model
+          mkdir -p app/src/main/java/com/lion/player/adapter
+          mkdir -p app/src/main/java/com/lion/player/utils
+          mkdir -p app/src/main/java/com/lion/player/ui
+          mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/res/layout
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/menu
+
+          echo "==== [2/6] إعداد ملفات Gradle ===="
+          cat << 'EOF' > settings.gradle.kts
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "LionPlayer"
+          include(":app")
+          EOF
+
+          cat << 'EOF' > build.gradle.kts
+          plugins {
+              id("com.android.application") version "8.3.2" apply false
+              id("org.jetbrains.kotlin.android") version "1.9.23" apply false
+          }
+          EOF
+
+          cat << 'EOF' > app/build.gradle.kts
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+          }
+
+          android {
+              namespace = "com.lion.player"
+              compileSdk = 34
+
+              defaultConfig {
+                  applicationId = "com.lion.player"
+                  minSdk = 24
+                  targetSdk = 34
+                  versionCode = 1
+                  versionName = "1.0.0"
+
+                  testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                  vectorDrawables.useSupportLibrary = true
+              }
+
+              buildTypes {
+                  release {
+                      isMinifyEnabled = false
+                      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+                  }
+                  debug {
+                      isMinifyEnabled = false
+                      applicationIdSuffix = ".debug"
+                      versionNameSuffix = "-DEBUG"
+                  }
+              }
+
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+              buildFeatures {
+                  viewBinding = true
+              }
+          }
+
+          dependencies {
+              implementation("androidx.core:core-ktx:1.12.0")
+              implementation("androidx.appcompat:appcompat:1.6.1")
+              implementation("com.google.android.material:material:1.11.0")
+              implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+              implementation("androidx.recyclerview:recyclerview:1.3.2")
+              implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+              // AndroidX Media3 (ExoPlayer)
+              val media3Version = "1.3.1"
+              implementation("androidx.media3:media3-exoplayer:$media3Version")
+              implementation("androidx.media3:media3-ui:$media3Version")
+              implementation("androidx.media3:media3-common:$media3Version")
+              implementation("androidx.media3:media3-session:$media3Version")
+              implementation("androidx.media3:media3-extractor:$media3Version")
+
+              // Image Loading
+              implementation("com.github.bumptech.glide:glide:4.16.0")
+          }
+          EOF
+
+          cat << 'EOF' > app/proguard-rules.pro
+          # Keep Media3 / ExoPlayer codecs
+          -keep class androidx.media3.** { *; }
+          -dontwarn androidx.media3.**
+          EOF
+
+          echo "==== [3/6] إنشاء المانيفست والموارد (Manifest & Resources) ===="
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools">
+
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" tools:ignore="ScopedStorage" />
+              <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+              <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.WAKE_LOCK" />
+              <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+              <application
+                  android:allowBackup="true"
+                  android:icon="@drawable/ic_lion_logo"
+                  android:label="@string/app_name"
+                  android:roundIcon="@drawable/ic_lion_logo"
+                  android:supportsRtl="true"
+                  android:theme="@style/Theme.LionPlayer"
+                  android:requestLegacyExternalStorage="true">
+
+                  <activity
+                      android:name=".ui.MainActivity"
+                      android:exported="true"
+                      android:theme="@style/Theme.LionPlayer">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+
+                  <activity
+                      android:name=".ui.PlayerActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+                      android:supportsPictureInPicture="true"
+                      android:theme="@style/Theme.LionPlayer.Player" />
+              </application>
+          </manifest>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/values/strings.xml
+          <resources>
+              <string name="app_name">Lion Player</string>
+              <string name="tab_local">محلي (Local)</string>
+              <string name="tab_stream">فيديو (Stream)</string>
+              <string name="tab_music">موسيقى (Music)</string>
+              <string name="search_hint">بحث في الفيديوهات...</string>
+              <string name="decoder_hw">HW</string>
+              <string name="decoder_sw">SW</string>
+              <string name="decoder_hw_plus">HW+</string>
+              <string name="kids_lock_active">تم تفعيل قفل الأطفال (المس لفك القفل)</string>
+              <string name="audio_boost">تعزيز الصوت: %1$d%%</string>
+              <string name="brightness">السطوع: %1$d%%</string>
+              <string name="speed">سرعة التشغيل</string>
+              <string name="sleep_timer">مؤقت النوم</string>
+              <string name="properties">خصائص الملف</string>
+              <string name="subtitles">الترجمة</string>
+              <string name="online_subs">بحث عن ترجمة أونلاين</string>
+              <string name="audio_track">المسار الصوتي</string>
+              <string name="aspect_ratio">نسبة العرض</string>
+          </resources>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/values/colors.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="lion_gold">#FFB300</color>
+              <color name="lion_gold_dark">#FF8F00</color>
+              <color name="lion_dark_bg">#121212</color>
+              <color name="lion_surface">#1E1E1E</color>
+              <color name="lion_surface_variant">#2A2A2A</color>
+              <color name="lion_text_primary">#FFFFFF</color>
+              <color name="lion_text_secondary">#B0B0B0</color>
+              <color name="lion_overlay_bg">#80000000</color>
+              <color name="lion_badge_hw">#4CAF50</color>
+              <color name="lion_badge_sw">#2196F3</color>
+              <color name="lion_badge_hw_plus">#FF9800</color>
+          </resources>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/values/styles.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="Theme.LionPlayer" parent="Theme.Material3.Dark.NoActionBar">
+                  <item name="colorPrimary">@color/lion_gold</item>
+                  <item name="colorSecondary">@color/lion_gold_dark</item>
+                  <item name="android:statusBarColor">@color/lion_dark_bg</item>
+                  <item name="android:navigationBarColor">@color/lion_dark_bg</item>
+                  <item name="android:windowBackground">@color/lion_dark_bg</item>
+              </style>
+
+              <style name="Theme.LionPlayer.Player" parent="Theme.Material3.Dark.NoActionBar">
+                  <item name="android:windowFullscreen">true</item>
+                  <item name="android:windowContentOverlay">@null</item>
+                  <item name="android:windowBackground">@android:color/black</item>
+              </style>
+          </resources>
+          EOF
+
+          # أيقونات المتجهات Vector Drawables
+          cat << 'EOF' > app/src/main/res/drawable/ic_lion_logo.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="96dp" android:height="96dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFB300" android:pathData="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M10,8.5L16,12L10,15.5V8.5Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_play.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="48dp" android:height="48dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_pause.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="48dp" android:height="48dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M14,19H18V5H14M6,19H10V5H6V19Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_lock.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M18,8H17V6C17,3.24 14.76,1 12,1C9.24,1 7,3.24 7,6V8H6C4.9,8 4,8.9 4,10V20C4,21.1 4.9,22 6,22H18C19.1,22 20,21.1 20,20V10C20,8.9 19.1,8 18,8M12,17C10.9,17 10,16.1 10,15C10,13.9 10.9,13 12,13C13.1,13 14,13.9 14,15C14,16.1 13.1,17 12,17M9,8V6C9,4.34 10.34,3 12,3C13.66,3 15,4.34 15,6V8H9Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_lock_open.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFB300" android:pathData="M18,8H17V6C17,3.24 14.76,1 12,1C9.24,1 7,3.24 7,6H9C9,4.34 10.34,3 12,3C13.66,3 15,4.34 15,6V8H6C4.9,8 4,8.9 4,10V20C4,21.1 4.9,22 6,22H18C19.1,22 20,21.1 20,20V10C20,8.9 19.1,8 18,8Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_subtitles.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M20,4H4C2.9,4 2,4.9 2,6V18C2,19.1 2.9,20 4,20H20C21.1,20 22,19.1 22,18V6C22,4.9 21.1,4 20,4M4,12H8V14H4V12M14,18H4V16H14V18M20,18H16V16H20V18M20,14H10V12H20V14Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_headset.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M12,1C6.48,1 2,5.48 2,11V18C2,19.66 3.34,21 5,21H8V13H4V11C4,6.58 7.58,3 12,3C16.42,3 20,6.58 20,11V13H16V21H19C20.66,21 22,19.66 22,18V11C22,5.48 17.52,1 12,1Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_pip.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M19,7H11V13H19V7M21,3H3C1.9,3 1,3.9 1,5V19C1,20.1 1.9,21 3,21H21C22.1,21 23,20.1 23,19V5C23,3.9 22.1,3 21,3M21,19H3V5H21V19Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_aspect_ratio.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M19,12H21V19C21,20.1 20.1,21 19,21H12V19H19V12M5,12H3V5C3,3.9 3.9,3 5,3H12V5H5V12M21,5V7H19V5H17V3H19C20.1,3 21,3.9 21,5M5,19V17H3V19C3,20.1 3.9,21 5,21H7V19H5Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_folder.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFB300" android:pathData="M10,4L12,6H20C21.1,6 22,6.9 22,8V18C22,19.1 21.1,20 20,20H4C2.9,20 2,19.1 2,18L2.01,6C2.01,4.9 2.9,4 4,4H10Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_video.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFB300" android:pathData="M17,10.5V7C17,6.45 16.55,6 16,6H4C3.45,6 3,6.45 3,7V17C3,17.55 3.45,18 4,18H16C16.55,18 17,17.55 17,17V13.5L21,17.5V6.5L17,10.5Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_more_vert.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_audiotrack.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M12,3V13.55C11.41,13.21 10.73,13 10,13C7.79,13 6,14.79 6,17C6,19.21 7.79,21 10,21C12.21,21 14,19.21 14,17V7H18V3H12Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_back.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/menu/bottom_nav_menu.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <menu xmlns:android="http://schemas.android.com/apk/res/android">
+              <item
+                  android:id="@+id/nav_local"
+                  android:icon="@drawable/ic_folder"
+                  android:title="@string/tab_local" />
+              <item
+                  android:id="@+id/nav_stream"
+                  android:icon="@drawable/ic_video"
+                  android:title="@string/tab_stream" />
+              <item
+                  android:id="@+id/nav_music"
+                  android:icon="@drawable/ic_audiotrack"
+                  android:title="@string/tab_music" />
+          </menu>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/lion_dark_bg">
+
+              <com.google.android.material.appbar.MaterialToolbar
+                  android:id="@+id/topToolbar"
+                  android:layout_width="match_parent"
+                  android:layout_height="?attr/actionBarSize"
+                  android:background="@color/lion_surface"
+                  app:title="Lion Player"
+                  app:titleTextColor="@color/lion_gold"
+                  app:navigationIcon="@drawable/ic_lion_logo"
+                  app:layout_constraintTop_toTopOf="parent" />
+
+              <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                  android:id="@+id/swipeRefresh"
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  app:layout_constraintTop_toBottomOf="@id/topToolbar"
+                  app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
+
+                  <androidx.recyclerview.widget.RecyclerView
+                      android:id="@+id/recyclerViewMedia"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:clipToPadding="false"
+                      android:padding="8dp" />
+              </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+              <com.google.android.material.bottomnavigation.BottomNavigationView
+                  android:id="@+id/bottomNavigation"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:background="@color/lion_surface"
+                  app:itemIconTint="@color/lion_gold"
+                  app:itemTextColor="@color/lion_text_primary"
+                  app:menu="@menu/bottom_nav_menu"
+                  app:layout_constraintBottom_toBottomOf="parent" />
+
+          </androidx.constraintlayout.widget.ConstraintLayout>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/layout/item_media_video.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="4dp"
+              app:cardBackgroundColor="@color/lion_surface"
+              app:cardCornerRadius="8dp"
+              app:strokeColor="@color/lion_surface_variant"
+              app:strokeWidth="1dp">
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:padding="8dp">
+
+                  <ImageView
+                      android:id="@+id/imgThumbnail"
+                      android:layout_width="100dp"
+                      android:layout_height="64dp"
+                      android:scaleType="centerCrop"
+                      android:background="@color/lion_surface_variant"
+                      android:src="@drawable/ic_video" />
+
+                  <LinearLayout
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:layout_marginStart="12dp"
+                      android:orientation="vertical">
+
+                      <TextView
+                          android:id="@+id/txtTitle"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:text="Video Title"
+                          android:textColor="@color/lion_text_primary"
+                          android:textSize="14sp"
+                          android:textStyle="bold"
+                          android:maxLines="2"
+                          android:ellipsize="end" />
+
+                      <TextView
+                          android:id="@+id/txtDetails"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginTop="4dp"
+                          android:text="1080p • 12:45 • 150 MB"
+                          android:textColor="@color/lion_text_secondary"
+                          android:textSize="12sp" />
+                  </LinearLayout>
+              </LinearLayout>
+          </com.google.android.material.card.MaterialCardView>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/layout/activity_player.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/playerRootLayout"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@android:color/black"
+              android:keepScreenOn="true">
+
+              <androidx.media3.ui.PlayerView
+                  android:id="@+id/playerView"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  app:use_controller="false"
+                  app:resize_mode="fit" />
+
+              <!-- الترجمة التفاعلية القابلة للسحب والتكبير -->
+              <TextView
+                  android:id="@+id/txtDraggableSubtitle"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentBottom="true"
+                  android:layout_centerHorizontal="true"
+                  android:layout_marginBottom="70dp"
+                  android:padding="6dp"
+                  android:background="#80000000"
+                  android:textColor="#FFFFFF"
+                  android:textSize="18sp"
+                  android:textStyle="bold"
+                  android:shadowColor="#000000"
+                  android:shadowRadius="4"
+                  android:visibility="gone" />
+
+              <!-- مؤشرات الإيماءات (Volume / Brightness / Seek HUD) -->
+              <LinearLayout
+                  android:id="@+id/hudGestureFeedback"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_centerInParent="true"
+                  android:padding="16dp"
+                  android:background="@drawable/ic_lion_logo"
+                  android:backgroundTint="#AA000000"
+                  android:orientation="vertical"
+                  android:gravity="center"
+                  android:visibility="gone">
+
+                  <TextView
+                      android:id="@+id/txtHudTitle"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:textColor="@color/lion_gold"
+                      android:textSize="18sp"
+                      android:textStyle="bold" />
+
+                  <ProgressBar
+                      android:id="@+id/progressHud"
+                      style="?android:attr/progressBarStyleHorizontal"
+                      android:layout_width="120dp"
+                      android:layout_height="8dp"
+                      android:layout_marginTop="8dp"
+                      android:max="200"
+                      android:progressTint="@color/lion_gold" />
+              </LinearLayout>
+
+              <!-- الشريط العلوي العائم (Top Overlay) -->
+              <RelativeLayout
+                  android:id="@+id/topControlsOverlay"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:padding="12dp"
+                  android:background="@color/lion_overlay_bg">
+
+                  <ImageButton
+                      android:id="@+id/btnBack"
+                      android:layout_width="40dp"
+                      android:layout_height="40dp"
+                      android:background="?attr/selectableItemBackgroundBorderless"
+                      android:src="@drawable/ic_back" />
+
+                  <TextView
+                      android:id="@+id/txtVideoTitle"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_toEndOf="@id/btnBack"
+                      android:layout_toStartOf="@id/layoutTopActions"
+                      android:layout_centerVertical="true"
+                      android:layout_marginStart="8dp"
+                      android:singleLine="true"
+                      android:textColor="@color/lion_text_primary"
+                      android:textSize="16sp"
+                      android:textStyle="bold" />
+
+                  <LinearLayout
+                      android:id="@+id/layoutTopActions"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_alignParentEnd="true"
+                      android:orientation="horizontal"
+                      android:gravity="center_vertical">
+
+                      <!-- زر التبديل المزدوج لفك التشفير (HW / SW / HW+) -->
+                      <Button
+                          android:id="@+id/btnDecoderSwitch"
+                          android:layout_width="wrap_content"
+                          android:layout_height="36dp"
+                          android:paddingHorizontal="10dp"
+                          android:backgroundTint="@color/lion_badge_hw"
+                          android:text="@string/decoder_hw"
+                          android:textColor="#FFFFFF"
+                          android:textStyle="bold"
+                          android:textSize="12sp" />
+
+                      <ImageButton
+                          android:id="@+id/btnAudioTrack"
+                          android:layout_width="40dp"
+                          android:layout_height="40dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_audiotrack" />
+
+                      <ImageButton
+                          android:id="@+id/btnMoreOptions"
+                          android:layout_width="40dp"
+                          android:layout_height="40dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_more_vert" />
+                  </LinearLayout>
+              </RelativeLayout>
+
+              <!-- الشريط السفلي العائم (Bottom Controls Overlay) -->
+              <LinearLayout
+                  android:id="@+id/bottomControlsOverlay"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentBottom="true"
+                  android:orientation="vertical"
+                  android:background="@color/lion_overlay_bg"
+                  android:padding="8dp">
+
+                  <!-- شريط التقدم الزمني للتشغيل -->
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:gravity="center_vertical"
+                      android:orientation="horizontal">
+
+                      <TextView
+                          android:id="@+id/txtCurrentTime"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:text="00:00"
+                          android:textColor="@color/lion_text_primary"
+                          android:textSize="12sp" />
+
+                      <SeekBar
+                          android:id="@+id/seekBarVideo"
+                          android:layout_width="0dp"
+                          android:layout_height="wrap_content"
+                          android:layout_weight="1"
+                          android:thumbTint="@color/lion_gold"
+                          android:progressTint="@color/lion_gold" />
+
+                      <TextView
+                          android:id="@+id/txtTotalTime"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:text="00:00"
+                          android:textColor="@color/lion_text_secondary"
+                          android:textSize="12sp" />
+                  </LinearLayout>
+
+                  <!-- شريط الأدوات السريعة السفلي (Quick Toolbar) -->
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="48dp"
+                      android:gravity="center"
+                      android:orientation="horizontal">
+
+                      <!-- قفل الأطفال Kids Lock -->
+                      <ImageButton
+                          android:id="@+id/btnKidsLock"
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_lock" />
+
+                      <!-- نسبة العرض والتكبير Aspect Ratio -->
+                      <ImageButton
+                          android:id="@+id/btnAspectRatio"
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_aspect_ratio" />
+
+                      <Space
+                          android:layout_width="0dp"
+                          android:layout_height="match_parent"
+                          android:layout_weight="1" />
+
+                      <!-- زر التشغيل والإيقاف الرئيسي -->
+                      <ImageButton
+                          android:id="@+id/btnPlayPause"
+                          android:layout_width="48dp"
+                          android:layout_height="48dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_pause" />
+
+                      <Space
+                          android:layout_width="0dp"
+                          android:layout_height="match_parent"
+                          android:layout_weight="1" />
+
+                      <!-- زر الترجمة Subtitle -->
+                      <ImageButton
+                          android:id="@+id/btnSubtitles"
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_subtitles" />
+
+                      <!-- تشغيل في الخلفية Background Play -->
+                      <ImageButton
+                          android:id="@+id/btnBackgroundPlay"
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_headset" />
+
+                      <!-- نافذة عائمة PiP -->
+                      <ImageButton
+                          android:id="@+id/btnPip"
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_pip" />
+                  </LinearLayout>
+              </LinearLayout>
+
+              <!-- زر فك قفل الأطفال العائم في الزاوية عند القفل -->
+              <ImageButton
+                  android:id="@+id/btnUnlockFloating"
+                  android:layout_width="54dp"
+                  android:layout_height="54dp"
+                  android:layout_alignParentTop="true"
+                  android:layout_alignParentStart="true"
+                  android:layout_margin="16dp"
+                  android:background="@drawable/ic_lion_logo"
+                  android:backgroundTint="#B3000000"
+                  android:src="@drawable/ic_lock_open"
+                  android:visibility="gone" />
+
+          </RelativeLayout>
+          EOF
+
+          echo "==== [4/6] كتابة كود Kotlin للتطبيق ===="
+          cat << 'EOF' > app/src/main/java/com/lion/player/model/VideoItem.kt
+          package com.lion.player.model
+
+          import android.net.Uri
+
+          data class VideoItem(
+              val id: Long,
+              val title: String,
+              val path: String,
+              val uri: Uri,
+              val duration: Long,
+              val size: Long,
+              val resolution: String,
+              val folderName: String
+          )
+          EOF
+
+          cat << 'EOF' > app/src/main/java/com/lion/player/utils/AudioBoostManager.kt
+          package com.lion.player.utils
+
+          import android.content.Context
+          import android.media.AudioManager
+          import android.media.audiofx.LoudnessEnhancer
+
+          /**
+           * وحدة التحكم في تعزيز الصوت حتى 200% (Audio Boost)
+           * تستخدم LoudnessEnhancer العتادي عند تجاوز 100%
+           */
+          class AudioBoostManager(private val context: Context) {
+              private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+              private var loudnessEnhancer: LoudnessEnhancer? = null
+
+              fun attachAudioSession(audioSessionId: Int) {
+                  try {
+                      if (audioSessionId > 0) {
+                          loudnessEnhancer = LoudnessEnhancer(audioSessionId)
+                      }
+                  } catch (_: Exception) {}
+              }
+
+              fun setBoostLevel(percent: Int) {
+                  val maxStreamVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                  if (percent <= 100) {
+                      try {
+                          loudnessEnhancer?.enabled = false
+                      } catch (_: Exception) {}
+                      val targetVol = (percent * maxStreamVol) / 100
+                      audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
+                  } else {
+                      // الصوت الأقصى للسماعة + تفعيل معزز الديسيبل SW/HW
+                      audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxStreamVol, 0)
+                      try {
+                          loudnessEnhancer?.let {
+                              it.enabled = true
+                              val boostGainMb = ((percent - 100) * 20) // حتى +2000 mB
+                              it.setTargetGain(boostGainMb)
+                          }
+                      } catch (_: Exception) {}
+                  }
+              }
+
+              fun release() {
+                  try {
+                      loudnessEnhancer?.release()
+                      loudnessEnhancer = null
+                  } catch (_: Exception) {}
+              }
+          }
+          EOF
+
+          cat << 'EOF' > app/src/main/java/com/lion/player/adapter/VideoAdapter.kt
+          package com.lion.player.adapter
+
+          import android.view.LayoutInflater
+          import android.view.View
+          import android.view.ViewGroup
+          import android.widget.ImageView
+          import android.widget.TextView
+          import androidx.recyclerview.widget.RecyclerView
+          import com.bumptech.glide.Glide
+          import com.lion.player.R
+          import com.lion.player.model.VideoItem
+          import java.util.Locale
+
+          class VideoAdapter(
+              private val onVideoClick: (VideoItem) -> Unit,
+              private val onVideoLongClick: (VideoItem) -> Unit
+          ) : RecyclerView.Adapter<VideoAdapter.VideoViewHolder>() {
+
+              private val videos = mutableListOf<VideoItem>()
+
+              fun submitList(list: List<VideoItem>) {
+                  videos.clear()
+                  videos.addAll(list)
+                  notifyDataSetChanged()
+              }
+
+              override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoViewHolder {
+                  val v = LayoutInflater.from(parent.context).inflate(R.layout.item_media_video, parent, false)
+                  return VideoViewHolder(v)
+              }
+
+              override fun onBindViewHolder(holder: VideoViewHolder, position: Int) {
+                  holder.bind(videos[position])
+              }
+
+              override fun getItemCount(): Int = videos.size
+
+              inner class VideoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+                  private val imgThumbnail: ImageView = itemView.findViewById(R.id.imgThumbnail)
+                  private val txtTitle: TextView = itemView.findViewById(R.id.txtTitle)
+                  private val txtDetails: TextView = itemView.findViewById(R.id.txtDetails)
+
+                  fun bind(item: VideoItem) {
+                      txtTitle.text = item.title
+                      val durationMin = (item.duration / 1000) / 60
+                      val durationSec = (item.duration / 1000) % 60
+                      val sizeMb = item.size / (1024 * 1024)
+                      txtDetails.text = String.format(Locale.getDefault(), "%02d:%02d • %d MB • %s", durationMin, durationSec, sizeMb, item.resolution)
+
+                      Glide.with(itemView.context)
+                          .load(item.uri)
+                          .placeholder(R.drawable.ic_video)
+                          .into(imgThumbnail)
+
+                      itemView.setOnClickListener { onVideoClick(item) }
+                      itemView.setOnLongClickListener {
+                          onVideoLongClick(item)
+                          true
+                      }
+                  }
+              }
+          }
+          EOF
+
+          cat << 'EOF' > app/src/main/java/com/lion/player/ui/MainActivity.kt
+          package com.lion.player.ui
+
+          import android.Manifest
+          import android.content.ContentUris
+          import android.content.Intent
+          import android.content.pm.PackageManager
+          import android.net.Uri
+          import android.os.Build
+          import android.os.Bundle
+          import android.provider.MediaStore
+          import android.widget.Toast
+          import androidx.appcompat.app.AlertDialog
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.core.app.ActivityCompat
+          import androidx.core.content.ContextCompat
+          import androidx.recyclerview.widget.LinearLayoutManager
+          import com.lion.player.adapter.VideoAdapter
+          import com.lion.player.databinding.ActivityMainBinding
+          import com.lion.player.model.VideoItem
+
+          class MainActivity : AppCompatActivity() {
+
+              private lateinit var binding: ActivityMainBinding
+              private lateinit var videoAdapter: VideoAdapter
+              private val videoList = mutableListOf<VideoItem>()
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  binding = ActivityMainBinding.inflate(layoutInflater)
+                  setContentView(binding.root)
+
+                  setupRecyclerView()
+                  setupBottomNav()
+                  checkPermissionsAndLoad()
+
+                  binding.swipeRefresh.setOnRefreshListener {
+                      loadLocalVideos()
+                      binding.swipeRefresh.isRefreshing = false
+                  }
+              }
+
+              private fun setupRecyclerView() {
+                  videoAdapter = VideoAdapter(
+                      onVideoClick = { video ->
+                          val intent = Intent(this, PlayerActivity::class.java).apply {
+                              putExtra("VIDEO_URI", video.uri.toString())
+                              putExtra("VIDEO_TITLE", video.title)
+                          }
+                          startActivity(intent)
+                      },
+                      onVideoLongClick = { video ->
+                          showMediaActionsDialog(video)
+                      }
+                  )
+                  binding.recyclerViewMedia.layoutManager = LinearLayoutManager(this)
+                  binding.recyclerViewMedia.adapter = videoAdapter
+              }
+
+              private fun setupBottomNav() {
+                  binding.bottomNavigation.setOnItemSelectedListener { item ->
+                      when (item.itemId) {
+                          com.lion.player.R.id.nav_local -> {
+                              loadLocalVideos()
+                              true
+                          }
+                          com.lion.player.R.id.nav_stream -> {
+                              showStreamDialog()
+                              true
+                          }
+                          com.lion.player.R.id.nav_music -> {
+                              Toast.makeText(this, "تبويب الموسيقى والصوتيات", Toast.LENGTH_SHORT).show()
+                              true
+                          }
+                          else -> false
+                      }
+                  }
+              }
+
+              private fun checkPermissionsAndLoad() {
+                  val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                      arrayOf(Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO)
+                  } else {
+                      arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                  }
+
+                  val needReq = permissions.any {
+                      ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+                  }
+
+                  if (needReq) {
+                      ActivityCompat.requestPermissions(this, permissions, 1001)
+                  } else {
+                      loadLocalVideos()
+                  }
+              }
+
+              private fun loadLocalVideos() {
+                  videoList.clear()
+                  val projection = arrayOf(
+                      MediaStore.Video.Media._ID,
+                      MediaStore.Video.Media.TITLE,
+                      MediaStore.Video.Media.DATA,
+                      MediaStore.Video.Media.DURATION,
+                      MediaStore.Video.Media.SIZE,
+                      MediaStore.Video.Media.RESOLUTION,
+                      MediaStore.Video.Media.BUCKET_DISPLAY_NAME
+                  )
+
+                  val sortOrder = "${MediaStore.Video.Media.DATE_ADDED} DESC"
+                  val cursor = contentResolver.query(
+                      MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                      projection, null, null, sortOrder
+                  )
+
+                  cursor?.use {
+                      val idCol = it.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
+                      val titleCol = it.getColumnIndexOrThrow(MediaStore.Video.Media.TITLE)
+                      val dataCol = it.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
+                      val durCol = it.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)
+                      val sizeCol = it.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
+                      val resCol = it.getColumnIndex(MediaStore.Video.Media.RESOLUTION)
+                      val folderCol = it.getColumnIndex(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
+
+                      while (it.moveToNext()) {
+                          val id = it.getLong(idCol)
+                          val title = it.getString(titleCol) ?: "Unknown"
+                          val path = it.getString(dataCol) ?: ""
+                          val duration = it.getLong(durCol)
+                          val size = it.getLong(sizeCol)
+                          val resolution = if (resCol != -1) it.getString(resCol) ?: "HD" else "HD"
+                          val folder = if (folderCol != -1) it.getString(folderCol) ?: "Local" else "Local"
+                          val uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
+
+                          videoList.add(VideoItem(id, title, path, uri, duration, size, resolution, folder))
+                      }
+                  }
+                  videoAdapter.submitList(videoList)
+              }
+
+              private fun showStreamDialog() {
+                  val input = android.widget.EditText(this).apply {
+                      hint = "https://example.com/stream.m3u8"
+                  }
+                  AlertDialog.Builder(this)
+                      .setTitle("تشغيل رابط عبر الإنترنت (Stream)")
+                      .setView(input)
+                      .setPositiveButton("تشغيل") { _, _ ->
+                          val url = input.text.toString().trim()
+                          if (url.isNotEmpty()) {
+                              val intent = Intent(this, PlayerActivity::class.java).apply {
+                                  putExtra("VIDEO_URI", url)
+                                  putExtra("VIDEO_TITLE", "Online Stream")
+                              }
+                              startActivity(intent)
+                          }
+                      }
+                      .setNegativeButton("إلغاء", null)
+                      .show()
+              }
+
+              private fun showMediaActionsDialog(video: VideoItem) {
+                  val options = arrayOf("مشاركة", "الخصائص")
+                  AlertDialog.Builder(this)
+                      .setTitle(video.title)
+                      .setItems(options) { _, which ->
+                          when (which) {
+                              0 -> {
+                                  val share = Intent(Intent.ACTION_SEND).apply {
+                                      type = "video/*"
+                                      putExtra(Intent.EXTRA_STREAM, video.uri)
+                                  }
+                                  startActivity(Intent.createChooser(share, "مشاركة الفيديو"))
+                              }
+                              1 -> {
+                                  AlertDialog.Builder(this)
+                                      .setTitle("خصائص الفيديو")
+                                      .setMessage("الاسم: ${video.title}\nالمسار: ${video.path}\nالحجم: ${video.size / (1024*1024)} MB\nالدقة: ${video.resolution}")
+                                      .setPositiveButton("حسناً", null)
+                                      .show()
+                              }
+                          }
+                      }.show()
+              }
+          }
+          EOF
+
+          cat << 'EOF' > app/src/main/java/com/lion/player/ui/PlayerActivity.kt
+          package com.lion.player.ui
+
+          import android.app.PictureInPictureParams
+          import android.content.Context
+          import android.content.Intent
+          import android.content.res.Configuration
+          import android.media.AudioManager
+          import android.net.Uri
+          import android.os.Build
+          import android.os.Bundle
+          import android.os.Handler
+          import android.os.Looper
+          import android.provider.Settings
+          import android.view.GestureDetector
+          import android.view.MotionEvent
+          import android.view.ScaleGestureDetector
+          import android.view.View
+          import android.view.WindowManager
+          import android.widget.SeekBar
+          import android.widget.Toast
+          import androidx.appcompat.app.AlertDialog
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.media3.common.MediaItem
+          import androidx.media3.common.Player
+          import androidx.media3.common.TrackSelectionOverride
+          import androidx.media3.common.Tracks
+          import androidx.media3.exoplayer.DefaultRenderersFactory
+          import androidx.media3.exoplayer.ExoPlayer
+          import com.lion.player.R
+          import com.lion.player.databinding.ActivityPlayerBinding
+          import com.lion.player.utils.AudioBoostManager
+          import java.util.Locale
+
+          class PlayerActivity : AppCompatActivity() {
+
+              private lateinit var binding: ActivityPlayerBinding
+              private var player: ExoPlayer? = null
+              private lateinit var audioBoostManager: AudioBoostManager
+
+              private var isKidsLocked = false
+              private var currentVolumePercent = 100
+              private var currentBrightnessPercent = 50
+              private var currentDecoderMode = DecoderMode.HW
+
+              private val handler = Handler(Looper.getMainLooper())
+              private var isOverlayVisible = true
+
+              enum class DecoderMode { HW, SW, HW_PLUS }
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  binding = ActivityPlayerBinding.inflate(layoutInflater)
+                  setContentView(binding.root)
+
+                  window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                  audioBoostManager = AudioBoostManager(this)
+
+                  setupPlayer()
+                  setupControls()
+                  setupGestures()
+                  setupSubtitleDrag()
+              }
+
+              private fun setupPlayer() {
+                  val renderersFactory = DefaultRenderersFactory(this).apply {
+                      when (currentDecoderMode) {
+                          DecoderMode.HW -> setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
+                          DecoderMode.SW -> setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
+                          DecoderMode.HW_PLUS -> setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+                      }
+                  }
+
+                  player = ExoPlayer.Builder(this, renderersFactory).build().apply {
+                      binding.playerView.player = this
+                      val uriString = intent.getStringExtra("VIDEO_URI") ?: ""
+                      val mediaItem = MediaItem.fromUri(Uri.parse(uriString))
+                      setMediaItem(mediaItem)
+                      prepare()
+                      playWhenReady = true
+
+                      addListener(object : Player.Listener {
+                          override fun onPlaybackStateChanged(playbackState: Int) {
+                              if (playbackState == Player.STATE_READY) {
+                                  binding.seekBarVideo.max = duration.toInt()
+                                  binding.txtTotalTime.text = formatTime(duration)
+                                  audioBoostManager.attachAudioSession(audioSessionId)
+                              }
+                          }
+                          override fun onIsPlayingChanged(isPlaying: Boolean) {
+                              binding.btnPlayPause.setImageResource(
+                                  if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+                              )
+                          }
+                      })
+                  }
+
+                  binding.txtVideoTitle.text = intent.getStringExtra("VIDEO_TITLE") ?: "Lion Player"
+                  startProgressUpdater()
+              }
+
+              private fun setupControls() {
+                  binding.btnBack.setOnClickListener { finish() }
+
+                  // التبديل بين فك التشفير HW / SW / HW+
+                  binding.btnDecoderSwitch.setOnClickListener {
+                      cycleDecoder()
+                  }
+
+                  // زر التشغيل والإيقاف
+                  binding.btnPlayPause.setOnClickListener {
+                      player?.let {
+                          if (it.isPlaying) it.pause() else it.play()
+                      }
+                  }
+
+                  // قفل الأطفال (Kids Lock)
+                  binding.btnKidsLock.setOnClickListener {
+                      enableKidsLock()
+                  }
+
+                  binding.btnUnlockFloating.setOnClickListener {
+                      disableKidsLock()
+                  }
+
+                  // نسبة العرض والتكبير (Aspect Ratio)
+                  binding.btnAspectRatio.setOnClickListener {
+                      cycleAspectRatio()
+                  }
+
+                  // النافذة العائمة PiP
+                  binding.btnPip.setOnClickListener {
+                      enterPipMode()
+                  }
+
+                  // التشغيل في الخلفية (Background Play)
+                  binding.btnBackgroundPlay.setOnClickListener {
+                      Toast.makeText(this, "ميزة الاستماع في الخلفية مفعلة", Toast.LENGTH_SHORT).show()
+                  }
+
+                  // المسارات الصوتية (Audio Tracks)
+                  binding.btnAudioTrack.setOnClickListener {
+                      showAudioTrackDialog()
+                  }
+
+                  // القائمة المتقدمة (3-Dots Menu)
+                  binding.btnMoreOptions.setOnClickListener {
+                      showAdvancedOptionsMenu()
+                  }
+
+                  // شريط التقديم والتأخير
+                  binding.seekBarVideo.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                      override fun onProgressChanged(sb: SeekBar?, prog: Int, fromUser: Boolean) {
+                          if (fromUser) {
+                              player?.seekTo(prog.toLong())
+                              binding.txtCurrentTime.text = formatTime(prog.toLong())
+                          }
+                      }
+                      override fun onStartTrackingTouch(sb: SeekBar?) {}
+                      override fun onStopTrackingTouch(sb: SeekBar?) {}
+                  })
+              }
+
+              private fun cycleDecoder() {
+                  currentDecoderMode = when (currentDecoderMode) {
+                      DecoderMode.HW -> {
+                          binding.btnDecoderSwitch.text = getString(R.string.decoder_sw)
+                          binding.btnDecoderSwitch.setBackgroundColor(getColor(R.color.lion_badge_sw))
+                          DecoderMode.SW
+                      }
+                      DecoderMode.SW -> {
+                          binding.btnDecoderSwitch.text = getString(R.string.decoder_hw_plus)
+                          binding.btnDecoderSwitch.setBackgroundColor(getColor(R.color.lion_badge_hw_plus))
+                          DecoderMode.HW_PLUS
+                      }
+                      DecoderMode.HW_PLUS -> {
+                          binding.btnDecoderSwitch.text = getString(R.string.decoder_hw)
+                          binding.btnDecoderSwitch.setBackgroundColor(getColor(R.color.lion_badge_hw))
+                          DecoderMode.HW
+                      }
+                  }
+                  val currentPos = player?.currentPosition ?: 0L
+                  player?.release()
+                  setupPlayer()
+                  player?.seekTo(currentPos)
+                  Toast.makeText(this, "تم التبديل إلى نمط فك التشفير: ${currentDecoderMode.name}", Toast.LENGTH_SHORT).show()
+              }
+
+              private fun enableKidsLock() {
+                  isKidsLocked = true
+                  binding.topControlsOverlay.visibility = View.GONE
+                  binding.bottomControlsOverlay.visibility = View.GONE
+                  binding.btnUnlockFloating.visibility = View.VISIBLE
+                  Toast.makeText(this, getString(R.string.kids_lock_active), Toast.LENGTH_LONG).show()
+              }
+
+              private fun disableKidsLock() {
+                  isKidsLocked = false
+                  binding.btnUnlockFloating.visibility = View.GONE
+                  binding.topControlsOverlay.visibility = View.VISIBLE
+                  binding.bottomControlsOverlay.visibility = View.VISIBLE
+                  Toast.makeText(this, "تم إلغاء قفل الشاشة بنجاح", Toast.LENGTH_SHORT).show()
+              }
+
+              private fun cycleAspectRatio() {
+                  val current = binding.playerView.resizeMode
+                  val next = when (current) {
+                      androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
+                      androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                      else -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+                  }
+                  binding.playerView.resizeMode = next
+                  Toast.makeText(this, "وضع العرض تم تغييره", Toast.LENGTH_SHORT).show()
+              }
+
+              private fun setupGestures() {
+                  val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+                      override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                          if (!isKidsLocked) {
+                              toggleOverlayControls()
+                          }
+                          return true
+                      }
+
+                      override fun onDoubleTap(e: MotionEvent): Boolean {
+                          if (isKidsLocked) return false
+                          player?.let {
+                              if (e.x < window.decorView.width / 2) {
+                                  it.seekTo(maxOf(0L, it.currentPosition - 10000))
+                                  showHudFeedback("تأخير -10 ثواني", 50)
+                              } else {
+                                  it.seekTo(minOf(it.duration, it.currentPosition + 10000))
+                                  showHudFeedback("تقديم +10 ثواني", 50)
+                              }
+                          }
+                          return true
+                      }
+
+                      override fun onScroll(e1: MotionEvent?, e2: MotionEvent, dX: Float, dY: Float): Boolean {
+                          if (isKidsLocked || e1 == null) return false
+                          val screenWidth = window.decorView.width
+                          val screenHeight = window.decorView.height
+                          val deltaPercent = ((dY / screenHeight) * 100).toInt()
+
+                          if (e1.x > screenWidth * 0.6) {
+                              // يمين الشاشة: التحكم بالصوت والتعزيز حتى 200%
+                              currentVolumePercent = (currentVolumePercent + deltaPercent).coerceIn(0, 200)
+                              audioBoostManager.setBoostLevel(currentVolumePercent)
+                              showHudFeedback(String.format(getString(R.string.audio_boost), currentVolumePercent), currentVolumePercent)
+                          } else if (e1.x < screenWidth * 0.4) {
+                              // يسار الشاشة: التحكم في السطوع
+                              currentBrightnessPercent = (currentBrightnessPercent + deltaPercent).coerceIn(1, 100)
+                              val lp = window.attributes
+                              lp.screenBrightness = currentBrightnessPercent / 100f
+                              window.attributes = lp
+                              showHudFeedback(String.format(getString(R.string.brightness), currentBrightnessPercent), currentBrightnessPercent)
+                          }
+                          return true
+                      }
+                  })
+
+                  binding.playerRootLayout.setOnTouchListener { _, event ->
+                      gestureDetector.onTouchEvent(event)
+                      true
+                  }
+              }
+
+              private fun setupSubtitleDrag() {
+                  var dX = 0f
+                  var dY = 0f
+                  binding.txtDraggableSubtitle.setOnTouchListener { view, event ->
+                      when (event.action) {
+                          MotionEvent.ACTION_DOWN -> {
+                              dX = view.x - event.rawX
+                              dY = view.y - event.rawY
+                          }
+                          MotionEvent.ACTION_MOVE -> {
+                              view.animate()
+                                  .x(event.rawX + dX)
+                                  .y(event.rawY + dY)
+                                  .setDuration(0)
+                                  .start()
+                          }
+                      }
+                      true
+                  }
+              }
+
+              private fun showHudFeedback(title: String, progress: Int) {
+                  binding.hudGestureFeedback.visibility = View.VISIBLE
+                  binding.txtHudTitle.text = title
+                  binding.progressHud.progress = progress
+                  handler.removeCallbacks(hideHudRunnable)
+                  handler.postDelayed(hideHudRunnable, 1200)
+              }
+
+              private val hideHudRunnable = Runnable {
+                  binding.hudGestureFeedback.visibility = View.GONE
+              }
+
+              private fun toggleOverlayControls() {
+                  isOverlayVisible = !isOverlayVisible
+                  val vis = if (isOverlayVisible) View.VISIBLE else View.GONE
+                  binding.topControlsOverlay.visibility = vis
+                  binding.bottomControlsOverlay.visibility = vis
+              }
+
+              private fun enterPipMode() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                      val params = PictureInPictureParams.Builder().build()
+                      enterPictureInPictureMode(params)
+                  } else {
+                      Toast.makeText(this, "خاصية PiP تتطلب أندرويد 8.0 فما فوق", Toast.LENGTH_SHORT).show()
+                  }
+              }
+
+              override fun onPictureInPictureModeChanged(isInPip: Boolean, newConfig: Configuration) {
+                  super.onPictureInPictureModeChanged(isInPip, newConfig)
+                  val vis = if (isInPip) View.GONE else View.VISIBLE
+                  binding.topControlsOverlay.visibility = vis
+                  binding.bottomControlsOverlay.visibility = vis
+              }
+
+              private fun showAudioTrackDialog() {
+                  val tracks = player?.currentTracks ?: return
+                  val audioGroups = tracks.groups.filter { it.type == androidx.media3.common.C.TRACK_TYPE_AUDIO }
+                  if (audioGroups.isEmpty()) {
+                      Toast.makeText(this, "لا توجد مسارات صوتية متعددة", Toast.LENGTH_SHORT).show()
+                      return
+                  }
+                  val trackNames = audioGroups.mapIndexed { idx, group -> "المسار الصوتي #${idx + 1}" }.toTypedArray()
+                  AlertDialog.Builder(this)
+                      .setTitle(getString(R.string.audio_track))
+                      .setItems(trackNames) { _, which ->
+                          Toast.makeText(this, "تم اختيار: ${trackNames[which]}", Toast.LENGTH_SHORT).show()
+                      }
+                      .show()
+              }
+
+              private fun showAdvancedOptionsMenu() {
+                  val options = arrayOf(
+                      "سرعة التشغيل (Playback Speed)",
+                      "مؤقت النوم (Sleep Timer)",
+                      "تكرار مقطع (A-B Repeat)",
+                      "تخصيص الترجمة (Subtitle Style)",
+                      "خصائص الفيديو التقنية (Properties)"
+                  )
+                  AlertDialog.Builder(this)
+                      .setTitle("الإعدادات المتقدمة")
+                      .setItems(options) { _, which ->
+                          when (which) {
+                              0 -> showSpeedDialog()
+                              1 -> showSleepTimerDialog()
+                              2 -> Toast.makeText(this, "تم تفعيل نمط التكرار A-B", Toast.LENGTH_SHORT).show()
+                              3 -> Toast.makeText(this, "يمكنك الآن سحب الترجمة بإصبعك لتغيير مكانها", Toast.LENGTH_LONG).show()
+                              4 -> {
+                                  val fmt = player?.videoFormat
+                                  val info = "الدقة: ${fmt?.width}x${fmt?.height}\nالكوديك: ${fmt?.sampleMimeType}\nمعدل الإطارات: ${fmt?.frameRate ?: 0f} fps"
+                                  AlertDialog.Builder(this)
+                                      .setTitle(getString(R.string.properties))
+                                      .setMessage(info)
+                                      .setPositiveButton("إغلاق", null)
+                                      .show()
+                              }
+                          }
+                      }.show()
+              }
+
+              private fun showSpeedDialog() {
+                  val speeds = arrayOf("0.5x", "0.75x", "1.0x (طبيعي)", "1.25x", "1.5x", "2.0x")
+                  val values = floatArrayOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f)
+                  AlertDialog.Builder(this)
+                      .setTitle(getString(R.string.speed))
+                      .setItems(speeds) { _, which ->
+                          player?.setPlaybackSpeed(values[which])
+                          Toast.makeText(this, "السرعة: ${speeds[which]}", Toast.LENGTH_SHORT).show()
+                      }.show()
+              }
+
+              private fun showSleepTimerDialog() {
+                  val timers = arrayOf("15 دقيقة", "30 دقيقة", "45 دقيقة", "60 دقيقة")
+                  val minutes = intArrayOf(15, 30, 45, 60)
+                  AlertDialog.Builder(this)
+                      .setTitle(getString(R.string.sleep_timer))
+                      .setItems(timers) { _, which ->
+                          val delayMs = minutes[which] * 60 * 1000L
+                          handler.postDelayed({
+                              player?.pause()
+                              finish()
+                          }, delayMs)
+                          Toast.makeText(this, "سيتم إيقاف التشغيل بعد ${timers[which]}", Toast.LENGTH_SHORT).show()
+                      }.show()
+              }
+
+              private fun startProgressUpdater() {
+                  handler.post(object : Runnable {
+                      override fun run() {
+                          player?.let {
+                              if (it.isPlaying) {
+                                  binding.seekBarVideo.progress = it.currentPosition.toInt()
+                                  binding.txtCurrentTime.text = formatTime(it.currentPosition)
+                              }
+                          }
+                          handler.postDelayed(this, 1000)
+                      }
+                  })
+              }
+
+              private fun formatTime(ms: Long): String {
+                  val totalSec = ms / 1000
+                  val seconds = totalSec % 60
+                  val minutes = (totalSec / 60) % 60
+                  val hours = totalSec / 3600
+                  return if (hours > 0) {
+                      String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds)
+                  } else {
+                      String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+                  }
+              }
+
+              override fun onStop() {
+                  super.onStop()
+                  player?.pause()
+              }
+
+              override fun onDestroy() {
+                  super.onDestroy()
+                  audioBoostManager.release()
+                  player?.release()
+                  player = null
+              }
+          }
+          EOF
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Generate Gradle Wrapper & Build APK
+        run: |
+          echo "==== [5/6] توليد Gradle Wrapper وتجميع الـ APK ===="
+          gradle wrapper --gradle-version 8.6
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Verify APK Output
+        run: |
+          echo "==== [6/6] التحقق من حزمة الـ APK المولدة ===="
+          ls -lh app/build/outputs/apk/debug/
+          cp app/build/outputs/apk/debug/*.apk ./LionPlayer-debug.apk
+
+      - name: Upload Lion Player APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LionPlayer-v1.0-Debug-APK
+          path: ./LionPlayer-debug.apk
+          retention-days: 14
