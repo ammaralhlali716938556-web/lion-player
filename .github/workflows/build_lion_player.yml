@@ -32,6 +32,8 @@ jobs:
           mkdir -p gradle
           mkdir -p app/src/main/java/com/lionplayer/app/model
           mkdir -p app/src/main/java/com/lionplayer/app/adapter
+          mkdir -p app/src/main/java/com/lionplayer/app/player
+          mkdir -p app/src/main/java/com/lionplayer/app/receiver
           mkdir -p app/src/main/java/com/lionplayer/app/ui
           mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/res/layout
@@ -137,6 +139,7 @@ jobs:
           # 5. app/proguard-rules.pro
           cat << 'EOF' > app/proguard-rules.pro
           -keep class androidx.media3.** { *; }
+          -keep class com.lionplayer.app.model.** { *; }
           EOF
 
           # 6. AndroidManifest.xml
@@ -172,6 +175,18 @@ jobs:
                       android:supportsPictureInPicture="true"
                       android:launchMode="singleTask"
                       android:exported="false" />
+
+                  <!-- Receiver للتحكم في الإشعار أثناء العمل بالخلفية -->
+                  <receiver
+                      android:name=".receiver.NotificationReceiver"
+                      android:exported="false">
+                      <intent-filter>
+                          <action android:name="com.lionplayer.app.ACTION_NOTIF_PREV" />
+                          <action android:name="com.lionplayer.app.ACTION_NOTIF_PLAY_PAUSE" />
+                          <action android:name="com.lionplayer.app.ACTION_NOTIF_NEXT" />
+                          <action android:name="com.lionplayer.app.ACTION_NOTIF_CLOSE" />
+                      </intent-filter>
+                  </receiver>
               </application>
           </manifest>
           EOF
@@ -812,11 +827,11 @@ jobs:
                   app:layout_constraintTop_toTopOf="parent"
                   app:layout_constraintStart_toStartOf="parent" />
 
-              <!-- Vertical Brightness HUD (Left) -->
+              <!-- Vertical Brightness HUD (Left Tower) -->
               <LinearLayout
                   android:id="@+id/hudBrightness"
-                  android:layout_width="60dp"
-                  android:layout_height="220dp"
+                  android:layout_width="64dp"
+                  android:layout_height="230dp"
                   android:layout_marginStart="24dp"
                   android:background="@drawable/bg_hud"
                   android:gravity="center"
@@ -838,8 +853,8 @@ jobs:
                       style="@android:style/Widget.ProgressBar.Horizontal"
                       android:layout_width="120dp"
                       android:layout_height="12dp"
-                      android:layout_marginTop="24dp"
-                      android:layout_marginBottom="24dp"
+                      android:layout_marginTop="28dp"
+                      android:layout_marginBottom="28dp"
                       android:max="100"
                       android:progress="50"
                       android:progressDrawable="@drawable/progress_hud"
@@ -855,11 +870,11 @@ jobs:
                       android:textStyle="bold" />
               </LinearLayout>
 
-              <!-- Vertical Volume HUD (Right) -->
+              <!-- Vertical Volume HUD (Right Tower) -->
               <LinearLayout
                   android:id="@+id/hudVolume"
-                  android:layout_width="60dp"
-                  android:layout_height="220dp"
+                  android:layout_width="64dp"
+                  android:layout_height="230dp"
                   android:layout_marginEnd="24dp"
                   android:background="@drawable/bg_hud"
                   android:gravity="center"
@@ -881,8 +896,8 @@ jobs:
                       style="@android:style/Widget.ProgressBar.Horizontal"
                       android:layout_width="120dp"
                       android:layout_height="12dp"
-                      android:layout_marginTop="24dp"
-                      android:layout_marginBottom="24dp"
+                      android:layout_marginTop="28dp"
+                      android:layout_marginBottom="28dp"
                       android:max="100"
                       android:progress="50"
                       android:progressDrawable="@drawable/progress_hud"
@@ -1050,7 +1065,275 @@ jobs:
           ) : Serializable
           EOF
 
-          # 14. MediaAdapter.kt
+          # 14. LionPlayerManager.kt
+          cat << 'EOF' > app/src/main/java/com/lionplayer/app/player/LionPlayerManager.kt
+          package com.lionplayer.app.player
+
+          import android.app.NotificationChannel
+          import android.app.NotificationManager
+          import android.app.PendingIntent
+          import android.content.Context
+          import android.content.Intent
+          import android.net.Uri
+          import android.os.Build
+          import android.widget.Toast
+          import androidx.core.app.NotificationCompat
+          import androidx.media3.common.AudioAttributes
+          import androidx.media3.common.C
+          import androidx.media3.common.MediaItem
+          import androidx.media3.common.Player
+          import androidx.media3.exoplayer.ExoPlayer
+          import com.lionplayer.app.R
+          import com.lionplayer.app.model.MediaItem as LionMediaItem
+          import com.lionplayer.app.receiver.NotificationReceiver
+          import com.lionplayer.app.ui.PlayerActivity
+          import java.util.ArrayList
+
+          object LionPlayerManager {
+
+              const val CHANNEL_ID = "lion_playback_channel"
+              const val NOTIFICATION_ID = 2024
+
+              var player: ExoPlayer? = null
+                  private set
+
+              var playlist: ArrayList<LionMediaItem> = arrayListOf()
+              var currentIndex: Int = 0
+              var allowBackgroundPlayback: Boolean = false
+
+              var onTrackChanged: ((LionMediaItem) -> Unit)? = null
+              var onPlaybackStateChanged: ((Boolean) -> Unit)? = null
+
+              fun getOrCreatePlayer(context: Context): ExoPlayer {
+                  if (player == null) {
+                      val appContext = context.applicationContext
+                      player = ExoPlayer.Builder(appContext)
+                          .setAudioAttributes(
+                              AudioAttributes.Builder()
+                                  .setUsage(C.USAGE_MEDIA)
+                                  .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                                  .build(),
+                              true
+                          )
+                          .setWakeMode(C.WAKE_MODE_LOCAL)
+                          .build().apply {
+                              addListener(object : Player.Listener {
+                                  override fun onIsPlayingChanged(isPlaying: Boolean) {
+                                      onPlaybackStateChanged?.invoke(isPlaying)
+                                      updateNotification(appContext)
+                                  }
+
+                                  override fun onPlaybackStateChanged(playbackState: Int) {
+                                      if (playbackState == Player.STATE_ENDED) {
+                                          if (currentIndex < playlist.size - 1) {
+                                              playNext(appContext)
+                                          } else {
+                                              onPlaybackStateChanged?.invoke(false)
+                                              updateNotification(appContext)
+                                          }
+                                      }
+                                  }
+                              })
+                          }
+                      createNotificationChannel(appContext)
+                  }
+                  return player!!
+              }
+
+              fun playPlaylist(context: Context, list: ArrayList<LionMediaItem>, index: Int) {
+                  val appContext = context.applicationContext
+                  val p = getOrCreatePlayer(appContext)
+
+                  val currentItem = playlist.getOrNull(currentIndex)
+                  val targetItem = list.getOrNull(index)
+
+                  // إذا كان العنصر المطلوب هو نفسه المشغل حالياً، لا نعيد تشغيله من البداية
+                  if (currentItem != null && targetItem != null && currentItem.id == targetItem.id && p.isPlaying) {
+                      playlist = list
+                      currentIndex = index
+                      onTrackChanged?.invoke(targetItem)
+                      return
+                  }
+
+                  playlist = list
+                  currentIndex = index
+                  playCurrentItem(appContext)
+              }
+
+              fun playCurrentItem(context: Context) {
+                  val item = playlist.getOrNull(currentIndex) ?: return
+                  val appContext = context.applicationContext
+                  val p = getOrCreatePlayer(appContext)
+
+                  // الملفات الصوتية تدعم الاستمرار بالخلفية تلقائياً
+                  if (!item.isVideo) {
+                      allowBackgroundPlayback = true
+                  }
+
+                  val mediaItem = MediaItem.fromUri(Uri.parse(item.uri))
+                  p.setMediaItem(mediaItem)
+                  p.prepare()
+                  p.play()
+
+                  onTrackChanged?.invoke(item)
+                  onPlaybackStateChanged?.invoke(true)
+                  updateNotification(appContext)
+              }
+
+              fun playNext(context: Context) {
+                  if (currentIndex < playlist.size - 1) {
+                      currentIndex++
+                      playCurrentItem(context)
+                  } else {
+                      Toast.makeText(context.applicationContext, "هذا هو العنصر الأخير في القائمة", Toast.LENGTH_SHORT).show()
+                  }
+              }
+
+              fun playPrevious(context: Context) {
+                  if (currentIndex > 0) {
+                      currentIndex--
+                      playCurrentItem(context)
+                  } else {
+                      Toast.makeText(context.applicationContext, "هذا هو العنصر الأول في القائمة", Toast.LENGTH_SHORT).show()
+                  }
+              }
+
+              fun togglePlayPause(context: Context) {
+                  val p = player ?: return
+                  if (p.isPlaying) {
+                      p.pause()
+                  } else {
+                      p.play()
+                  }
+                  updateNotification(context)
+              }
+
+              fun stop(context: Context) {
+                  allowBackgroundPlayback = false
+                  player?.stop()
+                  dismissNotification(context)
+                  onPlaybackStateChanged?.invoke(false)
+              }
+
+              fun release() {
+                  allowBackgroundPlayback = false
+                  player?.release()
+                  player = null
+              }
+
+              fun getCurrentItem(): LionMediaItem? = playlist.getOrNull(currentIndex)
+
+              fun createNotificationChannel(context: Context) {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                      val name = "Lion Playback"
+                      val desc = "Lion Player Media Playback Controls"
+                      val importance = NotificationManager.IMPORTANCE_LOW
+                      val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                          description = desc
+                          setShowBadge(false)
+                          setSound(null, null)
+                          enableVibration(false)
+                      }
+                      val manager = context.getSystemService(NotificationManager::class.java)
+                      manager?.createNotificationChannel(channel)
+                  }
+              }
+
+              fun updateNotification(context: Context) {
+                  val currentItem = playlist.getOrNull(currentIndex) ?: return
+                  val isPlaying = player?.isPlaying == true
+                  val appContext = context.applicationContext
+
+                  val pendingFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                  } else {
+                      PendingIntent.FLAG_UPDATE_CURRENT
+                  }
+
+                  val contentIntent = Intent(appContext, PlayerActivity::class.java).apply {
+                      flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                  }
+                  val contentPendingIntent = PendingIntent.getActivity(appContext, 0, contentIntent, pendingFlags)
+
+                  val prevIntent = Intent(NotificationReceiver.ACTION_NOTIF_PREV).setPackage(appContext.packageName)
+                  val prevPending = PendingIntent.getBroadcast(appContext, 1, prevIntent, pendingFlags)
+
+                  val playPauseIntent = Intent(NotificationReceiver.ACTION_NOTIF_PLAY_PAUSE).setPackage(appContext.packageName)
+                  val playPausePending = PendingIntent.getBroadcast(appContext, 2, playPauseIntent, pendingFlags)
+
+                  val nextIntent = Intent(NotificationReceiver.ACTION_NOTIF_NEXT).setPackage(appContext.packageName)
+                  val nextPending = PendingIntent.getBroadcast(appContext, 3, nextIntent, pendingFlags)
+
+                  val closeIntent = Intent(NotificationReceiver.ACTION_NOTIF_CLOSE).setPackage(appContext.packageName)
+                  val closePending = PendingIntent.getBroadcast(appContext, 4, closeIntent, pendingFlags)
+
+                  val playPauseIcon = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+                  val playPauseTitle = if (isPlaying) "إيقاف مؤقت" else "تشغيل"
+
+                  val builder = NotificationCompat.Builder(appContext, CHANNEL_ID)
+                      .setSmallIcon(R.drawable.ic_lion_logo)
+                      .setContentTitle(currentItem.title)
+                      .setContentText(if (currentItem.isVideo) "مشغل ليون - فيديو" else "مشغل ليون - صوت")
+                      .setContentIntent(contentPendingIntent)
+                      .setOngoing(isPlaying)
+                      .setOnlyAlertOnce(true)
+                      .setPriority(NotificationCompat.PRIORITY_LOW)
+                      .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                      .addAction(R.drawable.ic_skip_previous, "السابق", prevPending)
+                      .addAction(playPauseIcon, playPauseTitle, playPausePending)
+                      .addAction(R.drawable.ic_skip_next, "التالي", nextPending)
+                      .addAction(R.drawable.ic_close, "إنهاء", closePending)
+
+                  try {
+                      builder.setStyle(
+                          androidx.media.app.NotificationCompat.MediaStyle()
+                              .setShowActionsInCompactView(0, 1, 2)
+                      )
+                  } catch (e: Exception) {}
+
+                  val manager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                  try {
+                      manager.notify(NOTIFICATION_ID, builder.build())
+                  } catch (e: SecurityException) {}
+              }
+
+              fun dismissNotification(context: Context) {
+                  val manager = context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                  manager.cancel(NOTIFICATION_ID)
+              }
+          }
+          EOF
+
+          # 15. NotificationReceiver.kt
+          cat << 'EOF' > app/src/main/java/com/lionplayer/app/receiver/NotificationReceiver.kt
+          package com.lionplayer.app.receiver
+
+          import android.content.BroadcastReceiver
+          import android.content.Context
+          import android.content.Intent
+          import com.lionplayer.app.player.LionPlayerManager
+
+          class NotificationReceiver : BroadcastReceiver() {
+
+              companion object {
+                  const val ACTION_NOTIF_PREV = "com.lionplayer.app.ACTION_NOTIF_PREV"
+                  const val ACTION_NOTIF_PLAY_PAUSE = "com.lionplayer.app.ACTION_NOTIF_PLAY_PAUSE"
+                  const val ACTION_NOTIF_NEXT = "com.lionplayer.app.ACTION_NOTIF_NEXT"
+                  const val ACTION_NOTIF_CLOSE = "com.lionplayer.app.ACTION_NOTIF_CLOSE"
+              }
+
+              override fun onReceive(context: Context, intent: Intent?) {
+                  when (intent?.action) {
+                      ACTION_NOTIF_PREV -> LionPlayerManager.playPrevious(context)
+                      ACTION_NOTIF_PLAY_PAUSE -> LionPlayerManager.togglePlayPause(context)
+                      ACTION_NOTIF_NEXT -> LionPlayerManager.playNext(context)
+                      ACTION_NOTIF_CLOSE -> LionPlayerManager.stop(context)
+                  }
+              }
+          }
+          EOF
+
+          # 16. MediaAdapter.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/adapter/MediaAdapter.kt
           package com.lionplayer.app.adapter
 
@@ -1146,7 +1429,7 @@ jobs:
           }
           EOF
 
-          # 15. MainActivity.kt
+          # 17. MainActivity.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/MainActivity.kt
           package com.lionplayer.app.ui
 
@@ -1568,13 +1851,10 @@ jobs:
           }
           EOF
 
-          # 16. PlayerActivity.kt
+          # 18. PlayerActivity.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
           package com.lionplayer.app.ui
 
-          import android.app.NotificationChannel
-          import android.app.NotificationManager
-          import android.app.PendingIntent
           import android.app.PictureInPictureParams
           import android.content.BroadcastReceiver
           import android.content.Context
@@ -1582,7 +1862,6 @@ jobs:
           import android.content.IntentFilter
           import android.content.pm.ActivityInfo
           import android.media.AudioManager
-          import android.net.Uri
           import android.os.Build
           import android.os.Bundle
           import android.os.Handler
@@ -1595,32 +1874,17 @@ jobs:
           import android.widget.*
           import androidx.appcompat.app.AlertDialog
           import androidx.appcompat.app.AppCompatActivity
-          import androidx.core.app.NotificationCompat
-          import androidx.media3.common.AudioAttributes
-          import androidx.media3.common.C
           import androidx.media3.common.PlaybackParameters
-          import androidx.media3.common.Player
-          import androidx.media3.exoplayer.ExoPlayer
           import androidx.media3.ui.AspectRatioFrameLayout
           import androidx.media3.ui.PlayerView
           import com.lionplayer.app.R
           import com.lionplayer.app.model.MediaItem as LionMediaItem
+          import com.lionplayer.app.player.LionPlayerManager
           import java.util.ArrayList
           import java.util.Locale
 
           class PlayerActivity : AppCompatActivity() {
 
-              companion object {
-                  private const val CHANNEL_ID = "lion_playback_channel"
-                  private const val NOTIFICATION_ID = 2024
-
-                  private const val ACTION_NOTIF_PREV = "com.lionplayer.app.ACTION_NOTIF_PREV"
-                  private const val ACTION_NOTIF_PLAY_PAUSE = "com.lionplayer.app.ACTION_NOTIF_PLAY_PAUSE"
-                  private const val ACTION_NOTIF_NEXT = "com.lionplayer.app.ACTION_NOTIF_NEXT"
-                  private const val ACTION_NOTIF_CLOSE = "com.lionplayer.app.ACTION_NOTIF_CLOSE"
-              }
-
-              private var player: ExoPlayer? = null
               private lateinit var playerView: PlayerView
 
               private lateinit var topControls: View
@@ -1658,18 +1922,14 @@ jobs:
               private var controlsVisible = true
               private var rotationState = 0
               private var isScreenOff = false
-              private var allowBackgroundPlayback = false
 
               private var audioManager: AudioManager? = null
               private var maxSystemVolume: Int = 15
 
-              private var playlist: ArrayList<LionMediaItem> = arrayListOf()
-              private var currentIndex = 0
-
               private val handler = Handler(Looper.getMainLooper())
               private val updateProgressRunnable = object : Runnable {
                   override fun run() {
-                      player?.let {
+                      LionPlayerManager.player?.let {
                           if (it.isPlaying) {
                               val current = it.currentPosition
                               val total = it.duration.coerceAtLeast(0L)
@@ -1684,16 +1944,18 @@ jobs:
               }
 
               private var gestureStartX = 0f
-              private var gestureStartY = 0f
+              private var initialGestureY = 0f
               private var isDraggingVertical = false
               private var isDraggingHorizontal = false
               private var gestureMode = 0
               private val GESTURE_VOLUME = 1
               private val GESTURE_BRIGHTNESS = 2
+              private var initialVolume = 0
+              private var initialBrightness = 0.5f
               private var initialSeekPosition = 0L
               private var targetSeekPosition = 0L
 
-              // Screen off broadcast receiver
+              // مستقبل إغلاق الشاشة للحفاظ على استمرار الصوت
               private val screenReceiver = object : BroadcastReceiver() {
                   override fun onReceive(context: Context?, intent: Intent?) {
                       if (intent?.action == Intent.ACTION_SCREEN_OFF) {
@@ -1704,63 +1966,46 @@ jobs:
                   }
               }
 
-              // Notification Action Receiver
-              private val notificationReceiver = object : BroadcastReceiver() {
-                  override fun onReceive(context: Context?, intent: Intent?) {
-                      when (intent?.action) {
-                          ACTION_NOTIF_PREV -> playPrevious()
-                          ACTION_NOTIF_PLAY_PAUSE -> {
-                              player?.let {
-                                  if (it.isPlaying) it.pause() else it.play()
-                                  updateNotification()
-                              }
-                          }
-                          ACTION_NOTIF_NEXT -> playNext()
-                          ACTION_NOTIF_CLOSE -> {
-                              dismissNotification()
-                              player?.stop()
-                              finish()
-                          }
-                      }
-                  }
-              }
-
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
                   window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                   setContentView(R.layout.activity_player)
 
-                  val incomingList = intent.getSerializableExtra("PLAYLIST") as? ArrayList<*>
-                  playlist = incomingList?.filterIsInstance<LionMediaItem>()?.let { ArrayList(it) } ?: arrayListOf()
-                  currentIndex = intent.getIntExtra("CURRENT_INDEX", 0)
-
                   initViews()
                   initAudioManager()
                   setupListeners()
                   setupGestureDetection()
-                  createNotificationChannel()
 
-                  // Register receivers
+                  // ربط المشغل بـ PlayerView
+                  val p = LionPlayerManager.getOrCreatePlayer(this)
+                  playerView.player = p
+
                   val screenFilter = IntentFilter().apply {
                       addAction(Intent.ACTION_SCREEN_OFF)
                       addAction(Intent.ACTION_SCREEN_ON)
                   }
                   registerReceiver(screenReceiver, screenFilter)
 
-                  val notifFilter = IntentFilter().apply {
-                      addAction(ACTION_NOTIF_PREV)
-                      addAction(ACTION_NOTIF_PLAY_PAUSE)
-                      addAction(ACTION_NOTIF_NEXT)
-                      addAction(ACTION_NOTIF_CLOSE)
-                  }
-                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                      registerReceiver(notificationReceiver, notifFilter, Context.RECEIVER_NOT_EXPORTED)
-                  } else {
-                      registerReceiver(notificationReceiver, notifFilter)
-                  }
+                  handleIntent(intent)
+              }
 
-                  initPlayer()
-                  playItem(currentIndex)
+              override fun onNewIntent(intent: Intent?) {
+                  super.onNewIntent(intent)
+                  setIntent(intent)
+                  intent?.let { handleIntent(it) }
+              }
+
+              private fun handleIntent(intent: Intent) {
+                  val incomingList = intent.getSerializableExtra("PLAYLIST") as? ArrayList<*>
+                  val list = incomingList?.filterIsInstance<LionMediaItem>()?.let { ArrayList(it) }
+                  val index = intent.getIntExtra("CURRENT_INDEX", -1)
+
+                  if (list != null && index >= 0) {
+                      LionPlayerManager.playPlaylist(this, list, index)
+                  } else {
+                      LionPlayerManager.getCurrentItem()?.let { updateUIForItem(it) }
+                  }
+                  updatePlayPauseButton(LionPlayerManager.player?.isPlaying == true)
               }
 
               private fun initViews() {
@@ -1802,68 +2047,21 @@ jobs:
                   maxSystemVolume = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
               }
 
-              private fun initPlayer() {
-                  player = ExoPlayer.Builder(this)
-                      .setAudioAttributes(
-                          AudioAttributes.Builder()
-                              .setUsage(C.USAGE_MEDIA)
-                              .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                              .build(),
-                          true
-                      )
-                      .setWakeMode(C.WAKE_MODE_LOCAL)
-                      .build()
-
-                  playerView.player = player
-
-                  player?.addListener(object : Player.Listener {
-                      override fun onIsPlayingChanged(isPlaying: Boolean) {
-                          updatePlayPauseButton(isPlaying)
-                          updateNotification()
-                      }
-
-                      override fun onPlaybackStateChanged(playbackState: Int) {
-                          if (playbackState == Player.STATE_ENDED) {
-                              if (currentIndex < playlist.size - 1) {
-                                  playNext()
-                              } else {
-                                  updatePlayPauseButton(false)
-                                  updateNotification()
-                              }
-                          }
-                      }
-                  })
-              }
-
-              private fun playItem(index: Int) {
-                  if (index !in playlist.indices) return
-                  currentIndex = index
-                  val item = playlist[currentIndex]
+              private fun updateUIForItem(item: LionMediaItem) {
                   tvVideoTitle.text = item.title
+                  val dur = item.duration.coerceAtLeast(0L)
+                  tvTotalTime.text = formatDuration(dur)
+                  playerSeekBar.max = dur.toInt()
+                  val curr = LionPlayerManager.player?.currentPosition ?: 0L
+                  playerSeekBar.progress = curr.toInt()
+                  tvCurrentTime.text = formatDuration(curr)
 
-                  val mediaItem = androidx.media3.common.MediaItem.fromUri(Uri.parse(item.uri))
-                  player?.setMediaItem(mediaItem)
-                  player?.prepare()
-                  player?.play()
-
-                  updatePlayPauseButton(true)
-                  updateNotification()
-              }
-
-              private fun playNext() {
-                  if (currentIndex < playlist.size - 1) {
-                      playItem(currentIndex + 1)
-                  } else {
-                      Toast.makeText(this, "هذا هو العنصر الأخير في القائمة", Toast.LENGTH_SHORT).show()
-                  }
-              }
-
-              private fun playPrevious() {
-                  if (currentIndex > 0) {
-                      playItem(currentIndex - 1)
-                  } else {
-                      Toast.makeText(this, "هذا هو العنصر الأول في القائمة", Toast.LENGTH_SHORT).show()
-                  }
+                  // إخفاء أزرار الفيديو إذا كان ملف صوتي
+                  val videoControlsVis = if (item.isVideo) View.VISIBLE else View.GONE
+                  btnRotate.visibility = videoControlsVis
+                  btnDecoder.visibility = videoControlsVis
+                  btnPip.visibility = videoControlsVis
+                  btnResize.visibility = videoControlsVis
               }
 
               private fun updatePlayPauseButton(isPlaying: Boolean) {
@@ -1874,86 +2072,8 @@ jobs:
                   }
               }
 
-              private fun createNotificationChannel() {
-                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                      val name = "Lion Playback"
-                      val desc = "Lion Player Media Playback Controls"
-                      val importance = NotificationManager.IMPORTANCE_LOW
-                      val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                          description = desc
-                          setShowBadge(false)
-                          setSound(null, null)
-                          enableVibration(false)
-                      }
-                      val manager = getSystemService(NotificationManager::class.java)
-                      manager?.createNotificationChannel(channel)
-                  }
-              }
-
-              private fun updateNotification() {
-                  val currentItem = playlist.getOrNull(currentIndex) ?: return
-                  val isPlaying = player?.isPlaying == true
-
-                  val pendingFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                  } else {
-                      PendingIntent.FLAG_UPDATE_CURRENT
-                  }
-
-                  val contentIntent = Intent(this, PlayerActivity::class.java).apply {
-                      setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                  }
-                  val contentPendingIntent = PendingIntent.getActivity(this, 0, contentIntent, pendingFlags)
-
-                  val prevIntent = Intent(ACTION_NOTIF_PREV).setPackage(packageName)
-                  val prevPending = PendingIntent.getBroadcast(this, 1, prevIntent, pendingFlags)
-
-                  val playPauseIntent = Intent(ACTION_NOTIF_PLAY_PAUSE).setPackage(packageName)
-                  val playPausePending = PendingIntent.getBroadcast(this, 2, playPauseIntent, pendingFlags)
-
-                  val nextIntent = Intent(ACTION_NOTIF_NEXT).setPackage(packageName)
-                  val nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, pendingFlags)
-
-                  val closeIntent = Intent(ACTION_NOTIF_CLOSE).setPackage(packageName)
-                  val closePending = PendingIntent.getBroadcast(this, 4, closeIntent, pendingFlags)
-
-                  val playPauseIcon = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
-                  val playPauseTitle = if (isPlaying) "إيقاف مؤقت" else "تشغيل"
-
-                  val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-                      .setSmallIcon(R.drawable.ic_lion_logo)
-                      .setContentTitle(currentItem.title)
-                      .setContentText(if (currentItem.isVideo) "مشغل ليون - فيديو" else "مشغل ليون - صوت")
-                      .setContentIntent(contentPendingIntent)
-                      .setOngoing(isPlaying)
-                      .setOnlyAlertOnce(true)
-                      .setPriority(NotificationCompat.PRIORITY_LOW)
-                      .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                      .addAction(R.drawable.ic_skip_previous, "السابق", prevPending)
-                      .addAction(playPauseIcon, playPauseTitle, playPausePending)
-                      .addAction(R.drawable.ic_skip_next, "التالي", nextPending)
-                      .addAction(R.drawable.ic_close, "إنهاء", closePending)
-
-                  try {
-                      builder.setStyle(
-                          androidx.media.app.NotificationCompat.MediaStyle()
-                              .setShowActionsInCompactView(0, 1, 2)
-                      )
-                  } catch (e: Exception) {}
-
-                  val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                  try {
-                      manager.notify(NOTIFICATION_ID, builder.build())
-                  } catch (e: SecurityException) {}
-              }
-
-              private fun dismissNotification() {
-                  val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                  manager.cancel(NOTIFICATION_ID)
-              }
-
               private fun setupListeners() {
-                  btnBack.setOnClickListener { onBackPressed() }
+                  btnBack.setOnClickListener { handleBackAction() }
 
                   btnRotate.setOnClickListener {
                       rotationState = (rotationState + 1) % 3
@@ -1974,13 +2094,11 @@ jobs:
                   }
 
                   btnPlayPause.setOnClickListener {
-                      player?.let {
-                          if (it.isPlaying) it.pause() else it.play()
-                      }
+                      LionPlayerManager.togglePlayPause(this)
                   }
 
-                  btnNext.setOnClickListener { playNext() }
-                  btnPrev.setOnClickListener { playPrevious() }
+                  btnNext.setOnClickListener { LionPlayerManager.playNext(this) }
+                  btnPrev.setOnClickListener { LionPlayerManager.playPrevious(this) }
 
                   btnLock.setOnClickListener {
                       isLocked = true
@@ -2035,7 +2153,7 @@ jobs:
                                   5 -> 2.0f
                                   else -> 1.0f
                               }
-                              player?.playbackParameters = PlaybackParameters(speedVal)
+                              LionPlayerManager.player?.playbackParameters = PlaybackParameters(speedVal)
                               btnSpeed.text = speeds[which]
                           }
                           .show()
@@ -2044,7 +2162,7 @@ jobs:
                   playerSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                       override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
                           if (fromUser) {
-                              player?.seekTo(progress.toLong())
+                              LionPlayerManager.player?.seekTo(progress.toLong())
                               tvCurrentTime.text = formatDuration(progress.toLong())
                           }
                       }
@@ -2068,11 +2186,12 @@ jobs:
                       override fun onDoubleTap(e: MotionEvent): Boolean {
                           if (isLocked) return true
                           val screenWidth = resources.displayMetrics.widthPixels
+                          val p = LionPlayerManager.player ?: return true
                           if (e.x > screenWidth / 2) {
-                              player?.let { it.seekTo((it.currentPosition + 10000).coerceAtMost(it.duration)) }
+                              p.seekTo((p.currentPosition + 10000).coerceAtMost(p.duration))
                               Toast.makeText(this@PlayerActivity, "+10 ثواني", Toast.LENGTH_SHORT).show()
                           } else {
-                              player?.let { it.seekTo((it.currentPosition - 10000).coerceAtLeast(0L)) }
+                              p.seekTo((p.currentPosition - 10000).coerceAtLeast(0L))
                               Toast.makeText(this@PlayerActivity, "-10 ثواني", Toast.LENGTH_SHORT).show()
                           }
                           return true
@@ -2089,39 +2208,45 @@ jobs:
                       when (event.action) {
                           MotionEvent.ACTION_DOWN -> {
                               gestureStartX = event.x
-                              gestureStartY = event.y
+                              initialGestureY = event.y
                               isDraggingVertical = false
                               isDraggingHorizontal = false
                               gestureMode = 0
-                              initialSeekPosition = player?.currentPosition ?: 0L
+                              initialSeekPosition = LionPlayerManager.player?.currentPosition ?: 0L
+
+                              audioManager?.let { am ->
+                                  initialVolume = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+                              }
+                              val lp = window.attributes
+                              initialBrightness = if (lp.screenBrightness >= 0f) lp.screenBrightness else 0.5f
                           }
                           MotionEvent.ACTION_MOVE -> {
                               val dx = event.x - gestureStartX
-                              val dy = event.y - gestureStartY
+                              val dy = event.y - initialGestureY
 
                               if (!isDraggingVertical && !isDraggingHorizontal) {
-                                  if (kotlin.math.abs(dy) > 30 && kotlin.math.abs(dy) > kotlin.math.abs(dx)) {
+                                  if (kotlin.math.abs(dy) > 25 && kotlin.math.abs(dy) > kotlin.math.abs(dx)) {
                                       isDraggingVertical = true
                                       gestureMode = if (gestureStartX > screenWidth / 2) GESTURE_VOLUME else GESTURE_BRIGHTNESS
-                                  } else if (kotlin.math.abs(dx) > 30 && kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
+                                  } else if (kotlin.math.abs(dx) > 25 && kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
                                       isDraggingHorizontal = true
                                   }
                               }
 
                               if (isDraggingVertical) {
-                                  val deltaY = gestureStartY - event.y
-                                  val deltaPercent = (deltaY / screenHeight) * 100f * 1.5f
-                                  gestureStartY = event.y
+                                  val deltaY = initialGestureY - event.y
+                                  val deltaPercent = (deltaY / (screenHeight * 0.6f)) * 100f
 
                                   if (gestureMode == GESTURE_VOLUME) {
-                                      adjustVolume(deltaPercent)
+                                      updateVolumeByPercent(deltaPercent)
                                   } else if (gestureMode == GESTURE_BRIGHTNESS) {
-                                      adjustBrightness(deltaPercent)
+                                      updateBrightnessByPercent(deltaPercent)
                                   }
                               } else if (isDraggingHorizontal) {
                                   val deltaX = gestureStartX - event.x
                                   val seekOffsetMs = (deltaX / screenWidth) * 60000L
-                                  targetSeekPosition = (initialSeekPosition + seekOffsetMs.toLong()).coerceIn(0L, player?.duration?.coerceAtLeast(0L) ?: 0L)
+                                  val maxDur = LionPlayerManager.player?.duration?.coerceAtLeast(0L) ?: 0L
+                                  targetSeekPosition = (initialSeekPosition + seekOffsetMs.toLong()).coerceIn(0L, maxDur)
 
                                   hudSeek.visibility = View.VISIBLE
                                   val diffSeconds = (targetSeekPosition - initialSeekPosition) / 1000
@@ -2131,7 +2256,7 @@ jobs:
                           }
                           MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                               if (isDraggingHorizontal) {
-                                  player?.seekTo(targetSeekPosition)
+                                  LionPlayerManager.player?.seekTo(targetSeekPosition)
                                   hudSeek.visibility = View.GONE
                               }
                               hudVolume.visibility = View.GONE
@@ -2144,36 +2269,31 @@ jobs:
                   }
               }
 
-              private fun adjustVolume(deltaPercent: Float) {
+              private fun updateVolumeByPercent(deltaPercent: Float) {
                   audioManager?.let { am ->
-                      val currentVol = am.getStreamVolume(AudioManager.STREAM_MUSIC)
-                      val currentPercent = (currentVol.toFloat() / maxSystemVolume.toFloat()) * 100f
-                      var newPercent = currentPercent + deltaPercent
-                      newPercent = newPercent.coerceIn(0f, 100f)
+                      val initialPercent = (initialVolume.toFloat() / maxSystemVolume.toFloat()) * 100f
+                      val targetPercent = (initialPercent + deltaPercent).coerceIn(0f, 100f)
 
-                      val targetVol = ((newPercent / 100f) * maxSystemVolume).toInt().coerceIn(0, maxSystemVolume)
+                      val targetVol = kotlin.math.round((targetPercent / 100f) * maxSystemVolume).toInt().coerceIn(0, maxSystemVolume)
                       am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
 
                       hudVolume.visibility = View.VISIBLE
-                      volumeProgressBar.progress = newPercent.toInt()
-                      tvVolumeValue.text = "${newPercent.toInt()}%"
+                      volumeProgressBar.progress = targetPercent.toInt()
+                      tvVolumeValue.text = "${targetPercent.toInt()}%"
                   }
               }
 
-              private fun adjustBrightness(deltaPercent: Float) {
-                  val layoutParams = window.attributes
-                  var currentBrightness = layoutParams.screenBrightness
-                  if (currentBrightness < 0f) currentBrightness = 0.5f
+              private fun updateBrightnessByPercent(deltaPercent: Float) {
+                  val initialPercent = initialBrightness * 100f
+                  val targetPercent = (initialPercent + deltaPercent).coerceIn(1f, 100f)
 
-                  var newBrightness = currentBrightness + (deltaPercent / 100f)
-                  newBrightness = newBrightness.coerceIn(0.01f, 1.0f)
-                  layoutParams.screenBrightness = newBrightness
+                  val layoutParams = window.attributes
+                  layoutParams.screenBrightness = (targetPercent / 100f).coerceIn(0.01f, 1.0f)
                   window.attributes = layoutParams
 
-                  val percent = (newBrightness * 100).toInt()
                   hudBrightness.visibility = View.VISIBLE
-                  brightnessProgressBar.progress = percent
-                  tvBrightnessValue.text = "$percent%"
+                  brightnessProgressBar.progress = targetPercent.toInt()
+                  tvBrightnessValue.text = "${targetPercent.toInt()}%"
               }
 
               private fun formatDuration(durationMs: Long): String {
@@ -2188,49 +2308,75 @@ jobs:
                   }
               }
 
-              override fun onBackPressed() {
+              /**
+               * معالجة زر الرجوع:
+               * 1. إذا كان فيديو: يخيّر المستخدم بين استمرار العمل في الخلفية أو الإغلاق التام.
+               * 2. إذا كان مقطع صوتي: يرجع مباشرةً للقائمة السابقة دون خروج من التطبيق مع استمرار الصوت.
+               */
+              private fun handleBackAction() {
                   if (isLocked) {
                       Toast.makeText(this, "الشاشة مقفلة! اضغط على زر القفل أولاً", Toast.LENGTH_SHORT).show()
                       return
                   }
 
-                  if (player?.isPlaying == true) {
+                  val currentItem = LionPlayerManager.getCurrentItem()
+                  val isVideo = currentItem?.isVideo ?: true
+
+                  if (isVideo) {
+                      // مقطع مرئي (فيديو): تخيير المستخدم بين استمرار العمل أو الإغلاق
                       AlertDialog.Builder(this)
-                          .setTitle("تشغيل في الخلفية")
-                          .setMessage("هل ترغب في استمرار تشغيل الصوت في الخلفية؟")
-                          .setPositiveButton("نعم (تشغيل في الخلفية)") { _, _ ->
-                              allowBackgroundPlayback = true
-                              updateNotification()
-                              moveTaskToBack(true)
+                          .setTitle("تشغيل الفيديو")
+                          .setMessage("هل تريد استمرار تشغيل الفيديو في الخلفية أم الإغلاق؟")
+                          .setPositiveButton("استمرار بالعمل") { _, _ ->
+                              LionPlayerManager.allowBackgroundPlayback = true
+                              LionPlayerManager.updateNotification(this)
+                              finish()
                           }
-                          .setNegativeButton("لا (إيقاف وخروج)") { _, _ ->
-                              allowBackgroundPlayback = false
-                              dismissNotification()
-                              player?.stop()
+                          .setNegativeButton("إغلاق") { _, _ ->
+                              LionPlayerManager.stop(this)
                               finish()
                           }
                           .setNeutralButton("إلغاء", null)
                           .show()
                   } else {
-                      dismissNotification()
-                      super.onBackPressed()
+                      // مقطع صوتي: إرجاع للقائمة السابقة مباشرة دون إغلاق التطبيق واستمرار الصوت
+                      LionPlayerManager.allowBackgroundPlayback = true
+                      LionPlayerManager.updateNotification(this)
+                      finish()
                   }
+              }
+
+              override fun onBackPressed() {
+                  handleBackAction()
               }
 
               override fun onStart() {
                   super.onStart()
+                  LionPlayerManager.onTrackChanged = { item ->
+                      runOnUiThread { updateUIForItem(item) }
+                  }
+                  LionPlayerManager.onPlaybackStateChanged = { isPlaying ->
+                      runOnUiThread { updatePlayPauseButton(isPlaying) }
+                  }
+                  LionPlayerManager.getCurrentItem()?.let { updateUIForItem(it) }
+                  playerView.player = LionPlayerManager.player
+                  updatePlayPauseButton(LionPlayerManager.player?.isPlaying == true)
                   handler.post(updateProgressRunnable)
               }
 
               override fun onStop() {
                   super.onStop()
-                  val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
-                  val isInteractive = powerManager?.isInteractive ?: true
-                  if (!isInteractive || isScreenOff || allowBackgroundPlayback) {
-                      updateNotification()
+                  LionPlayerManager.onTrackChanged = null
+                  LionPlayerManager.onPlaybackStateChanged = null
+                  val currentItem = LionPlayerManager.getCurrentItem()
+                  val isAudio = currentItem?.isVideo == false
+                  val isInteractive = (getSystemService(Context.POWER_SERVICE) as? PowerManager)?.isInteractive ?: true
+
+                  if (!isInteractive || isScreenOff || isAudio || LionPlayerManager.allowBackgroundPlayback) {
+                      LionPlayerManager.updateNotification(this)
                   } else {
-                      player?.pause()
-                      updateNotification()
+                      LionPlayerManager.player?.pause()
+                      LionPlayerManager.updateNotification(this)
                   }
               }
 
@@ -2240,12 +2386,10 @@ jobs:
                   try {
                       unregisterReceiver(screenReceiver)
                   } catch (e: Exception) {}
-                  try {
-                      unregisterReceiver(notificationReceiver)
-                  } catch (e: Exception) {}
-                  dismissNotification()
-                  player?.release()
-                  player = null
+                  playerView.player = null
+                  if (!LionPlayerManager.allowBackgroundPlayback && LionPlayerManager.player?.isPlaying != true) {
+                      LionPlayerManager.dismissNotification(this)
+                  }
               }
           }
           EOF
