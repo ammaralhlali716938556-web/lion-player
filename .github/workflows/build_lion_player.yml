@@ -27,7 +27,7 @@ jobs:
 
       - name: Create App Code & Environment
         run: |
-          # 1. إعداد بيئة Gradle والذاكرة
+          # 1. إعداد مسار SDK والذاكرة
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           cat << 'EOF' > gradle.properties
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
@@ -231,7 +231,7 @@ jobs:
           </resources>
           EOF
 
-          # 6. الأيقونات (Drawables)
+          # 6. الأيقونات والمتجهات (Drawables)
           cat << 'EOF' > app/src/main/res/drawable/ic_lion_logo.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="48dp" android:height="48dp" android:viewportWidth="24" android:viewportHeight="24">
@@ -459,7 +459,6 @@ jobs:
           </androidx.constraintlayout.widget.ConstraintLayout>
           EOF
 
-          # تخطيط القائمة الأفقية (List)
           cat << 'EOF' > app/src/main/res/layout/item_media_video.xml
           <?xml version="1.0" encoding="utf-8"?>
           <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -511,7 +510,6 @@ jobs:
           </com.google.android.material.card.MaterialCardView>
           EOF
 
-          # تخطيط المصغرات والشبكة (Grid: Large & Small)
           cat << 'EOF' > app/src/main/res/layout/item_media_grid.xml
           <?xml version="1.0" encoding="utf-8"?>
           <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -563,7 +561,6 @@ jobs:
           </com.google.android.material.card.MaterialCardView>
           EOF
 
-          # تخطيط المشغل (Player Layout)
           cat << 'EOF' > app/src/main/res/layout/activity_player.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -593,7 +590,7 @@ jobs:
                   android:textStyle="bold"
                   android:visibility="gone" />
 
-              <!-- مؤشر التقديم والتأخير الأفقي في المنتصف -->
+              <!-- مؤشر التقديم والتأخير الأفقي -->
               <LinearLayout
                   android:id="@+id/hudSeek"
                   android:layout_width="wrap_content"
@@ -614,7 +611,7 @@ jobs:
                       android:textStyle="bold" />
               </LinearLayout>
 
-              <!-- عمود رفع وخفض الصوت العمودي (يمين الشاشة) -->
+              <!-- عمود الصوت الرأسي (يمين الشاشة) -->
               <LinearLayout
                   android:id="@+id/hudVolume"
                   android:layout_width="wrap_content"
@@ -653,7 +650,7 @@ jobs:
                       android:textStyle="bold" />
               </LinearLayout>
 
-              <!-- عمود رفع وخفض السطوع العمودي (يسار الشاشة) -->
+              <!-- عمود السطوع الرأسي (يسار الشاشة) -->
               <LinearLayout
                   android:id="@+id/hudBrightness"
                   android:layout_width="wrap_content"
@@ -761,7 +758,7 @@ jobs:
                   </LinearLayout>
               </RelativeLayout>
 
-              <!-- الشريط السفلي -->
+              <!-- الشريط السفلي مع التبديل بين التالي والسابق -->
               <LinearLayout
                   android:id="@+id/bottomControlsOverlay"
                   android:layout_width="match_parent"
@@ -802,7 +799,7 @@ jobs:
                           android:textSize="12sp" />
                   </LinearLayout>
 
-                  <!-- شريط أزرار التحكم مع السابق والتالي -->
+                  <!-- تم التبديل: التالي على اليسار والسابق على اليمين -->
                   <LinearLayout
                       android:layout_width="match_parent"
                       android:layout_height="48dp"
@@ -828,15 +825,15 @@ jobs:
                           android:layout_height="match_parent"
                           android:layout_weight="1" />
 
-                      <!-- زر السابق -->
+                      <!-- زر التالي أصبح على اليسار -->
                       <ImageButton
-                          android:id="@+id/btnPrevious"
+                          android:id="@+id/btnNext"
                           android:layout_width="44dp"
                           android:layout_height="44dp"
                           android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_skip_previous" />
+                          android:src="@drawable/ic_skip_next" />
 
-                      <!-- زر التشغيل والإيقاف -->
+                      <!-- زر التشغيل والإيقاف في المنتصف -->
                       <ImageButton
                           android:id="@+id/btnPlayPause"
                           android:layout_width="48dp"
@@ -844,13 +841,13 @@ jobs:
                           android:background="?attr/selectableItemBackgroundBorderless"
                           android:src="@drawable/ic_pause" />
 
-                      <!-- زر التالي -->
+                      <!-- زر السابق أصبح على اليمين -->
                       <ImageButton
-                          android:id="@+id/btnNext"
+                          android:id="@+id/btnPrevious"
                           android:layout_width="44dp"
                           android:layout_height="44dp"
                           android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_skip_next" />
+                          android:src="@drawable/ic_skip_previous" />
 
                       <Space
                           android:layout_width="0dp"
@@ -1368,7 +1365,6 @@ jobs:
                   val activeList = if (isAudioTabSelected) allAudiosList else allVideosList
 
                   if (isFolderView && currentSelectedFolder == null) {
-                      // عرض المجلدات
                       val folderGroups = activeList.groupBy { it.folderName }
                       val folders = folderGroups.map { (folderName, items) ->
                           MediaItem(
@@ -1388,11 +1384,9 @@ jobs:
                       }
                       mediaAdapter.submitList(sortItems(folders))
                   } else if (isFolderView && currentSelectedFolder != null) {
-                      // عرض عناصر المجلد المختار
                       val folderItems = activeList.filter { it.folderName == currentSelectedFolder }
                       mediaAdapter.submitList(sortItems(folderItems))
                   } else {
-                      // عرض كافة الملفات مباشرة
                       mediaAdapter.submitList(sortItems(activeList))
                   }
               }
@@ -1508,6 +1502,8 @@ jobs:
               private var isVolumeOrBrightnessGesture = false
               private var gestureInitialX = 0f
               private var gestureInitialY = 0f
+              private var gestureInitialVolume = 0
+              private var gestureInitialBrightness = 0
               private var gestureInitialPosition = 0L
               private var gestureTargetPosition = 0L
 
@@ -1528,7 +1524,7 @@ jobs:
                   playlistTitles = intent.getStringArrayListExtra("PLAYLIST_TITLES") ?: arrayListOf()
                   currentTrackIndex = intent.getIntExtra("CURRENT_INDEX", 0)
 
-                  // تهيئة نسبة الصوت الحالية للجهاز
+                  // تهيئة نسبة الصوت الحالية
                   val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
                   val maxV = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                   val curV = am.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -1633,7 +1629,7 @@ jobs:
                       }
                   }
 
-                  // زري السابق والتالي
+                  // ربط الأزرار المتبادلة
                   binding.btnNext.setOnClickListener { playNextTrack() }
                   binding.btnPrevious.setOnClickListener { playPreviousTrack() }
 
@@ -1770,6 +1766,8 @@ jobs:
                           MotionEvent.ACTION_DOWN -> {
                               gestureInitialX = event.x
                               gestureInitialY = event.y
+                              gestureInitialVolume = currentVolumePercent
+                              gestureInitialBrightness = currentBrightnessPercent
                               gestureInitialPosition = player?.currentPosition ?: 0L
                               gestureTargetPosition = gestureInitialPosition
                               isSeekingGesture = false
@@ -1777,7 +1775,8 @@ jobs:
                           }
                           MotionEvent.ACTION_MOVE -> {
                               val dx = event.x - gestureInitialX
-                              val dy = event.y - gestureInitialY
+                              // السحب للأعلى (event.y أقل من البداية) يعطي dy موجباً لزيادة القيمة
+                              val dy = gestureInitialY - event.y
                               val absDx = Math.abs(dx)
                               val absDy = Math.abs(dy)
 
@@ -1790,7 +1789,7 @@ jobs:
                               }
 
                               if (isSeekingGesture) {
-                                  // عكس اتجاه السحب: السحب يساراً (dx سالب) يقدم (+)، والسحب يميناً (dx موجب) يؤخر (-)
+                                  // السحب لليسار يقدم والسحب لليمين يؤخر
                                   val screenWidth = window.decorView.width.toFloat()
                                   val seekDeltaMs = ((-dx / screenWidth) * 90000L).toLong()
                                   val totalDur = player?.duration ?: 0L
@@ -1801,18 +1800,17 @@ jobs:
                                   val deltaSec = seekDeltaMs / 1000
                                   showSeekHud("${sign}${deltaSec}s [${formatTime(gestureTargetPosition)} / ${formatTime(safeDur)}]")
                               } else if (isVolumeOrBrightnessGesture) {
-                                  val screenWidth = window.decorView.width.toFloat()
                                   val screenHeight = window.decorView.height.toFloat()
-                                  val deltaPercent = ((-dy / screenHeight) * 100).toInt()
+                                  val deltaPercent = ((dy / screenHeight) * 100).toInt()
 
-                                  if (gestureInitialX > screenWidth * 0.55f) {
-                                      // يمين الشاشة: التحكم بالصوت حتى 100% فقط
-                                      currentVolumePercent = (currentVolumePercent + deltaPercent).coerceIn(0, 100)
+                                  if (gestureInitialX > window.decorView.width * 0.55f) {
+                                      // يمين الشاشة: الصوت (فوق يزداد / تحت ينقص حتى 100%)
+                                      currentVolumePercent = (gestureInitialVolume + deltaPercent).coerceIn(0, 100)
                                       audioBoostManager.setBoostLevel(currentVolumePercent)
                                       showVolumeHud(currentVolumePercent)
-                                  } else if (gestureInitialX < screenWidth * 0.45f) {
-                                      // يسار الشاشة: التحكم بالسطوع
-                                      currentBrightnessPercent = (currentBrightnessPercent + deltaPercent).coerceIn(1, 100)
+                                  } else if (gestureInitialX < window.decorView.width * 0.45f) {
+                                      // يسار الشاشة: السطوع (فوق يزداد / تحت ينقص حتى 100%)
+                                      currentBrightnessPercent = (gestureInitialBrightness + deltaPercent).coerceIn(1, 100)
                                       val lp = window.attributes
                                       lp.screenBrightness = currentBrightnessPercent / 100f
                                       window.attributes = lp
