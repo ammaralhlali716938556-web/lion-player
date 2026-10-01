@@ -71,8 +71,8 @@ jobs:
               }
           }
 
-          task clean(type: Delete) {
-              delete rootProject.buildDir
+          tasks.register('clean', Delete) {
+              delete rootProject.layout.buildDirectory
           }
           EOF
 
@@ -103,7 +103,6 @@ jobs:
                       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                   }
                   debug {
-                      applicationIdSuffix ".debug"
                       debuggable true
                   }
               }
@@ -143,8 +142,7 @@ jobs:
           # 6. AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package="com.lionplayer.app">
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
               <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
               <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
@@ -727,7 +725,7 @@ jobs:
                   app:use_controller="false"
                   app:surface_type="surface_view" />
 
-              <!-- Top Overlay -->
+              <!-- Top Controls Overlay -->
               <LinearLayout
                   android:id="@+id/topControls"
                   android:layout_width="match_parent"
@@ -924,7 +922,7 @@ jobs:
                       android:textStyle="bold" />
               </LinearLayout>
 
-              <!-- Bottom Controls -->
+              <!-- Bottom Controls Overlay -->
               <LinearLayout
                   android:id="@+id/bottomControls"
                   android:layout_width="match_parent"
@@ -1156,7 +1154,6 @@ jobs:
           import android.content.ContentUris
           import android.content.Intent
           import android.content.pm.PackageManager
-          import android.net.Uri
           import android.os.Build
           import android.os.Bundle
           import android.provider.MediaStore
@@ -1179,7 +1176,7 @@ jobs:
           import com.lionplayer.app.adapter.MediaAdapter
           import com.lionplayer.app.model.MediaItem
           import java.io.File
-          import java.io.Serializable
+          import java.util.ArrayList
 
           class MainActivity : AppCompatActivity() {
 
@@ -1226,10 +1223,10 @@ jobs:
                           currentSelectedFolder = item.title
                           refreshListDisplay()
                       } else {
-                          val playlist = displayedList.filter { !it.isFolder }
+                          val playlist = ArrayList(displayedList.filter { !it.isFolder })
                           val index = playlist.indexOfFirst { it.id == item.id }.coerceAtLeast(0)
                           val intent = Intent(this, PlayerActivity::class.java).apply {
-                              putExtra("PLAYLIST", playlist as Serializable)
+                              putExtra("PLAYLIST", playlist)
                               putExtra("CURRENT_INDEX", index)
                           }
                           startActivity(intent)
@@ -1337,7 +1334,12 @@ jobs:
                           val size = cursor.getLong(sizeCol)
                           val dateAdded = cursor.getLong(dateCol)
                           val contentUri = ContentUris.withAppendedId(uri, id).toString()
-                          val folderName = try { File(path).parentFile?.name ?: "الرئيسي" } catch (_: Exception) { "الرئيسي" }
+                          val folderName = try {
+                              val parent = File(path).parentFile?.name
+                              if (!parent.isNullOrEmpty()) parent else "الرئيسي"
+                          } catch (e: Exception) {
+                              "الرئيسي"
+                          }
 
                           rawVideosList.add(
                               MediaItem(id, title, contentUri, duration, size, dateAdded, true, folderName)
@@ -1374,7 +1376,12 @@ jobs:
                           val size = cursor.getLong(sizeCol)
                           val dateAdded = cursor.getLong(dateCol)
                           val contentUri = ContentUris.withAppendedId(uri, id).toString()
-                          val folderName = try { File(path).parentFile?.name ?: "الرئيسي" } catch (_: Exception) { "الرئيسي" }
+                          val folderName = try {
+                              val parent = File(path).parentFile?.name
+                              if (!parent.isNullOrEmpty()) parent else "الرئيسي"
+                          } catch (e: Exception) {
+                              "الرئيسي"
+                          }
 
                           rawAudioList.add(
                               MediaItem(id, title, contentUri, duration, size, dateAdded, false, folderName)
@@ -1568,12 +1575,12 @@ jobs:
           import android.app.NotificationChannel
           import android.app.NotificationManager
           import android.app.PendingIntent
+          import android.app.PictureInPictureParams
           import android.content.BroadcastReceiver
           import android.content.Context
           import android.content.Intent
           import android.content.IntentFilter
           import android.content.pm.ActivityInfo
-          import android.content.res.Configuration
           import android.media.AudioManager
           import android.net.Uri
           import android.os.Build
@@ -1589,7 +1596,6 @@ jobs:
           import androidx.appcompat.app.AlertDialog
           import androidx.appcompat.app.AppCompatActivity
           import androidx.core.app.NotificationCompat
-          import androidx.core.content.ContextCompat
           import androidx.media3.common.AudioAttributes
           import androidx.media3.common.C
           import androidx.media3.common.PlaybackParameters
@@ -1599,6 +1605,7 @@ jobs:
           import androidx.media3.ui.PlayerView
           import com.lionplayer.app.R
           import com.lionplayer.app.model.MediaItem as LionMediaItem
+          import java.util.ArrayList
           import java.util.Locale
 
           class PlayerActivity : AppCompatActivity() {
@@ -1723,7 +1730,8 @@ jobs:
                   window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                   setContentView(R.layout.activity_player)
 
-                  playlist = intent.getSerializableExtra("PLAYLIST") as? ArrayList<LionMediaItem> ?: arrayListOf()
+                  val incomingList = intent.getSerializableExtra("PLAYLIST") as? ArrayList<*>
+                  playlist = incomingList?.filterIsInstance<LionMediaItem>()?.let { ArrayList(it) } ?: arrayListOf()
                   currentIndex = intent.getIntExtra("CURRENT_INDEX", 0)
 
                   initViews()
@@ -1886,28 +1894,28 @@ jobs:
                   val currentItem = playlist.getOrNull(currentIndex) ?: return
                   val isPlaying = player?.isPlaying == true
 
-                  val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                  val pendingFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                       PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                   } else {
                       PendingIntent.FLAG_UPDATE_CURRENT
                   }
 
                   val contentIntent = Intent(this, PlayerActivity::class.java).apply {
-                      flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                      setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                   }
-                  val contentPendingIntent = PendingIntent.getActivity(this, 0, contentIntent, flags)
+                  val contentPendingIntent = PendingIntent.getActivity(this, 0, contentIntent, pendingFlags)
 
                   val prevIntent = Intent(ACTION_NOTIF_PREV).setPackage(packageName)
-                  val prevPending = PendingIntent.getBroadcast(this, 1, prevIntent, flags)
+                  val prevPending = PendingIntent.getBroadcast(this, 1, prevIntent, pendingFlags)
 
                   val playPauseIntent = Intent(ACTION_NOTIF_PLAY_PAUSE).setPackage(packageName)
-                  val playPausePending = PendingIntent.getBroadcast(this, 2, playPauseIntent, flags)
+                  val playPausePending = PendingIntent.getBroadcast(this, 2, playPauseIntent, pendingFlags)
 
                   val nextIntent = Intent(ACTION_NOTIF_NEXT).setPackage(packageName)
-                  val nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, flags)
+                  val nextPending = PendingIntent.getBroadcast(this, 3, nextIntent, pendingFlags)
 
                   val closeIntent = Intent(ACTION_NOTIF_CLOSE).setPackage(packageName)
-                  val closePending = PendingIntent.getBroadcast(this, 4, closeIntent, flags)
+                  val closePending = PendingIntent.getBroadcast(this, 4, closeIntent, pendingFlags)
 
                   val playPauseIcon = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
                   val playPauseTitle = if (isPlaying) "إيقاف مؤقت" else "تشغيل"
@@ -1931,12 +1939,12 @@ jobs:
                           androidx.media.app.NotificationCompat.MediaStyle()
                               .setShowActionsInCompactView(0, 1, 2)
                       )
-                  } catch (_: Throwable) {}
+                  } catch (e: Exception) {}
 
                   val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                   try {
                       manager.notify(NOTIFICATION_ID, builder.build())
-                  } catch (_: SecurityException) {}
+                  } catch (e: SecurityException) {}
               }
 
               private fun dismissNotification() {
@@ -1992,7 +2000,8 @@ jobs:
 
                   btnPip.setOnClickListener {
                       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                          enterPictureInPictureMode()
+                          val params = PictureInPictureParams.Builder().build()
+                          enterPictureInPictureMode(params)
                       } else {
                           Toast.makeText(this, "ميزة النافذة العائمة غير مدعومة على إصدار أندرويد هذا", Toast.LENGTH_SHORT).show()
                       }
@@ -2230,10 +2239,10 @@ jobs:
                   handler.removeCallbacks(updateProgressRunnable)
                   try {
                       unregisterReceiver(screenReceiver)
-                  } catch (_: Exception) {}
+                  } catch (e: Exception) {}
                   try {
                       unregisterReceiver(notificationReceiver)
-                  } catch (_: Exception) {}
+                  } catch (e: Exception) {}
                   dismissNotification()
                   player?.release()
                   player = null
