@@ -27,7 +27,7 @@ jobs:
 
       - name: Create App Code & Environment
         run: |
-          # 1. إعداد مسار SDK والذاكرة
+          # 1. إعداد بيئة Gradle والذاكرة
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           cat << 'EOF' > gradle.properties
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
@@ -138,7 +138,7 @@ jobs:
           -keep class androidx.media3.** { *; }
           EOF
 
-          # 4. المانيفست AndroidManifest.xml
+          # 4. AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -179,7 +179,7 @@ jobs:
           </manifest>
           EOF
 
-          # 5. الموارد (Values)
+          # 5. Values
           cat << 'EOF' > app/src/main/res/values/strings.xml
           <resources>
               <string name="app_name">Lion Player</string>
@@ -231,7 +231,7 @@ jobs:
           </resources>
           EOF
 
-          # 6. الأيقونات والمتجهات (Vector Drawables)
+          # 6. الأيقونات (Drawables)
           cat << 'EOF' > app/src/main/res/drawable/ic_lion_logo.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="48dp" android:height="48dp" android:viewportWidth="24" android:viewportHeight="24">
@@ -250,6 +250,20 @@ jobs:
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="36dp" android:height="36dp" android:viewportWidth="24" android:viewportHeight="24">
               <path android:fillColor="#FFFFFF" android:pathData="M6,19h4V5H6v14zm8,-14v14h4V5h-4z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_skip_previous.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="36dp" android:height="36dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M6,6h2v12H6zm3.5,6l8.5,6V6z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_skip_next.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="36dp" android:height="36dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFF" android:pathData="M6,18l8.5,-6L6,6v12zM16,6v12h2V6h-2z"/>
           </vector>
           EOF
 
@@ -351,15 +365,27 @@ jobs:
           </vector>
           EOF
 
+          cat << 'EOF' > app/src/main/res/drawable/ic_brightness.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFB300" android:pathData="M20,8.69V4h-4.69L12,0.69 8.69,4H4v4.69L0.69,12 4,15.31V20h4.69L12,23.31 15.31,20H20v-4.69L23.31,12 20,8.69zM12,18c-3.31,0 -6,-2.69 -6,-6s2.69,-6 6,-6 6,2.69 6,6 -2.69,6 -6,6z"/>
+          </vector>
+          EOF
+
           # 7. القوائم (Menus)
           cat << 'EOF' > app/src/main/res/menu/top_main_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
           <menu xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto">
               <item
-                  android:id="@+id/action_view_mode"
+                  android:id="@+id/action_folder_toggle"
+                  android:icon="@drawable/ic_folder"
+                  android:title="مجلدات / كافة الملفات"
+                  app:showAsAction="always" />
+              <item
+                  android:id="@+id/action_display_style"
                   android:icon="@drawable/ic_view_mode"
-                  android:title="طريقة العرض"
+                  android:title="شكل العرض"
                   app:showAsAction="always" />
               <item
                   android:id="@+id/action_sort"
@@ -417,7 +443,7 @@ jobs:
                       android:id="@+id/recyclerViewMedia"
                       android:layout_width="match_parent"
                       android:layout_height="match_parent"
-                      android:padding="6dp" />
+                      android:padding="4dp" />
               </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
               <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -433,13 +459,14 @@ jobs:
           </androidx.constraintlayout.widget.ConstraintLayout>
           EOF
 
+          # تخطيط القائمة الأفقية (List)
           cat << 'EOF' > app/src/main/res/layout/item_media_video.xml
           <?xml version="1.0" encoding="utf-8"?>
           <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:layout_margin="4dp"
+              android:layout_margin="3dp"
               app:cardBackgroundColor="@color/lion_surface"
               app:cardCornerRadius="8dp">
 
@@ -451,8 +478,8 @@ jobs:
 
                   <ImageView
                       android:id="@+id/imgThumbnail"
-                      android:layout_width="96dp"
-                      android:layout_height="60dp"
+                      android:layout_width="90dp"
+                      android:layout_height="56dp"
                       android:scaleType="centerCrop"
                       android:src="@drawable/ic_video" />
 
@@ -476,7 +503,7 @@ jobs:
                           android:id="@+id/txtDetails"
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"
-                          android:layout_marginTop="4dp"
+                          android:layout_marginTop="3dp"
                           android:textColor="@color/lion_text_secondary"
                           android:textSize="12sp" />
                   </LinearLayout>
@@ -484,6 +511,59 @@ jobs:
           </com.google.android.material.card.MaterialCardView>
           EOF
 
+          # تخطيط المصغرات والشبكة (Grid: Large & Small)
+          cat << 'EOF' > app/src/main/res/layout/item_media_grid.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="3dp"
+              app:cardBackgroundColor="@color/lion_surface"
+              app:cardCornerRadius="8dp">
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical">
+
+                  <ImageView
+                      android:id="@+id/imgThumbnail"
+                      android:layout_width="match_parent"
+                      android:layout_height="100dp"
+                      android:scaleType="centerCrop"
+                      android:src="@drawable/ic_video" />
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical"
+                      android:padding="6dp">
+
+                      <TextView
+                          android:id="@+id/txtTitle"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:textColor="@color/lion_text_primary"
+                          android:textSize="12sp"
+                          android:textStyle="bold"
+                          android:maxLines="2"
+                          android:ellipsize="end" />
+
+                      <TextView
+                          android:id="@+id/txtDetails"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginTop="2dp"
+                          android:textColor="@color/lion_text_secondary"
+                          android:textSize="10sp"
+                          android:singleLine="true" />
+                  </LinearLayout>
+              </LinearLayout>
+          </com.google.android.material.card.MaterialCardView>
+          EOF
+
+          # تخطيط المشغل (Player Layout)
           cat << 'EOF' > app/src/main/res/layout/activity_player.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -513,9 +593,9 @@ jobs:
                   android:textStyle="bold"
                   android:visibility="gone" />
 
-              <!-- مؤشر التقديم والتأخير / الصوت / السطوع HUD -->
+              <!-- مؤشر التقديم والتأخير الأفقي في المنتصف -->
               <LinearLayout
-                  android:id="@+id/hudGestureFeedback"
+                  android:id="@+id/hudSeek"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:layout_centerInParent="true"
@@ -526,21 +606,90 @@ jobs:
                   android:visibility="gone">
 
                   <TextView
-                      android:id="@+id/txtHudTitle"
+                      android:id="@+id/txtSeekHud"
                       android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
                       android:textColor="@color/lion_gold"
-                      android:textSize="16sp"
+                      android:textSize="18sp"
                       android:textStyle="bold" />
+              </LinearLayout>
+
+              <!-- عمود رفع وخفض الصوت العمودي (يمين الشاشة) -->
+              <LinearLayout
+                  android:id="@+id/hudVolume"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentEnd="true"
+                  android:layout_centerVertical="true"
+                  android:layout_marginEnd="20dp"
+                  android:padding="10dp"
+                  android:background="#B3000000"
+                  android:orientation="vertical"
+                  android:gravity="center"
+                  android:visibility="gone">
+
+                  <ImageView
+                      android:layout_width="22dp"
+                      android:layout_height="22dp"
+                      android:src="@drawable/ic_audiotrack" />
 
                   <ProgressBar
-                      android:id="@+id/progressHud"
+                      android:id="@+id/progressVolume"
                       style="?android:attr/progressBarStyleHorizontal"
-                      android:layout_width="140dp"
+                      android:layout_width="120dp"
                       android:layout_height="8dp"
-                      android:layout_marginTop="8dp"
+                      android:layout_marginTop="55dp"
+                      android:layout_marginBottom="55dp"
+                      android:rotation="270"
                       android:max="100"
                       android:progressTint="@color/lion_gold" />
+
+                  <TextView
+                      android:id="@+id/txtVolumePercent"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:textColor="@color/lion_gold"
+                      android:textSize="13sp"
+                      android:textStyle="bold" />
+              </LinearLayout>
+
+              <!-- عمود رفع وخفض السطوع العمودي (يسار الشاشة) -->
+              <LinearLayout
+                  android:id="@+id/hudBrightness"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentStart="true"
+                  android:layout_centerVertical="true"
+                  android:layout_marginStart="20dp"
+                  android:padding="10dp"
+                  android:background="#B3000000"
+                  android:orientation="vertical"
+                  android:gravity="center"
+                  android:visibility="gone">
+
+                  <ImageView
+                      android:layout_width="22dp"
+                      android:layout_height="22dp"
+                      android:src="@drawable/ic_brightness" />
+
+                  <ProgressBar
+                      android:id="@+id/progressBrightness"
+                      style="?android:attr/progressBarStyleHorizontal"
+                      android:layout_width="120dp"
+                      android:layout_height="8dp"
+                      android:layout_marginTop="55dp"
+                      android:layout_marginBottom="55dp"
+                      android:rotation="270"
+                      android:max="100"
+                      android:progressTint="@color/lion_gold" />
+
+                  <TextView
+                      android:id="@+id/txtBrightnessPercent"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:textColor="@color/lion_gold"
+                      android:textSize="13sp"
+                      android:textStyle="bold" />
               </LinearLayout>
 
               <!-- الشريط العلوي -->
@@ -589,7 +738,6 @@ jobs:
                           android:textSize="12sp"
                           android:textStyle="bold" />
 
-                      <!-- زر تدوير الشاشة -->
                       <ImageButton
                           android:id="@+id/btnRotateScreen"
                           android:layout_width="36dp"
@@ -654,9 +802,10 @@ jobs:
                           android:textSize="12sp" />
                   </LinearLayout>
 
+                  <!-- شريط أزرار التحكم مع السابق والتالي -->
                   <LinearLayout
                       android:layout_width="match_parent"
-                      android:layout_height="44dp"
+                      android:layout_height="48dp"
                       android:gravity="center"
                       android:orientation="horizontal">
 
@@ -679,12 +828,29 @@ jobs:
                           android:layout_height="match_parent"
                           android:layout_weight="1" />
 
+                      <!-- زر السابق -->
                       <ImageButton
-                          android:id="@+id/btnPlayPause"
+                          android:id="@+id/btnPrevious"
                           android:layout_width="44dp"
                           android:layout_height="44dp"
                           android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_skip_previous" />
+
+                      <!-- زر التشغيل والإيقاف -->
+                      <ImageButton
+                          android:id="@+id/btnPlayPause"
+                          android:layout_width="48dp"
+                          android:layout_height="48dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
                           android:src="@drawable/ic_pause" />
+
+                      <!-- زر التالي -->
+                      <ImageButton
+                          android:id="@+id/btnNext"
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_skip_next" />
 
                       <Space
                           android:layout_width="0dp"
@@ -721,7 +887,7 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # 9. الكود البرمجي (Kotlin Source Files)
+          # 9. ملفات Kotlin
           cat << 'EOF' > app/src/main/java/com/lion/player/model/MediaItem.kt
           package com.lion.player.model
 
@@ -748,45 +914,15 @@ jobs:
 
           import android.content.Context
           import android.media.AudioManager
-          import android.media.audiofx.LoudnessEnhancer
 
           class AudioBoostManager(context: Context) {
               private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-              private var loudnessEnhancer: LoudnessEnhancer? = null
-
-              fun attachAudioSession(audioSessionId: Int) {
-                  try {
-                      if (audioSessionId > 0) {
-                          loudnessEnhancer = LoudnessEnhancer(audioSessionId)
-                      }
-                  } catch (_: Exception) {}
-              }
 
               fun setBoostLevel(percent: Int) {
+                  val clamped = percent.coerceIn(0, 100)
                   val maxStreamVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                  if (percent <= 100) {
-                      try {
-                          loudnessEnhancer?.enabled = false
-                      } catch (_: Exception) {}
-                      val targetVol = (percent * maxStreamVol) / 100
-                      audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
-                  } else {
-                      audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxStreamVol, 0)
-                      try {
-                          loudnessEnhancer?.let {
-                              it.enabled = true
-                              val boostGainMb = ((percent - 100) * 20)
-                              it.setTargetGain(boostGainMb)
-                          }
-                      } catch (_: Exception) {}
-                  }
-              }
-
-              fun release() {
-                  try {
-                      loudnessEnhancer?.release()
-                      loudnessEnhancer = null
-                  } catch (_: Exception) {}
+                  val targetVol = (clamped * maxStreamVol) / 100
+                  audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
               }
           }
           EOF
@@ -810,6 +946,9 @@ jobs:
               private val onItemLongClick: (MediaItem) -> Unit
           ) : RecyclerView.Adapter<MediaAdapter.MediaViewHolder>() {
 
+              enum class DisplayStyle { LIST, GRID_LARGE, GRID_SMALL }
+              var currentStyle = DisplayStyle.LIST
+
               private val items = mutableListOf<MediaItem>()
 
               fun submitList(list: List<MediaItem>) {
@@ -818,8 +957,13 @@ jobs:
                   notifyDataSetChanged()
               }
 
+              override fun getItemViewType(position: Int): Int {
+                  return if (currentStyle == DisplayStyle.LIST) 0 else 1
+              }
+
               override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
-                  val v = LayoutInflater.from(parent.context).inflate(R.layout.item_media_video, parent, false)
+                  val layoutId = if (viewType == 0) R.layout.item_media_video else R.layout.item_media_grid
+                  val v = LayoutInflater.from(parent.context).inflate(layoutId, parent, false)
                   return MediaViewHolder(v)
               }
 
@@ -839,7 +983,7 @@ jobs:
 
                       if (item.isFolder) {
                           imgThumbnail.setImageResource(R.drawable.ic_folder)
-                          txtDetails.text = "${item.itemCount} فيديو"
+                          txtDetails.text = "${item.itemCount} عنصر"
                       } else if (item.isAudio) {
                           imgThumbnail.setImageResource(R.drawable.ic_music_note)
                           val durationMin = (item.duration / 1000) / 60
@@ -884,11 +1028,13 @@ jobs:
           import androidx.appcompat.app.AppCompatActivity
           import androidx.core.app.ActivityCompat
           import androidx.core.content.ContextCompat
+          import androidx.recyclerview.widget.GridLayoutManager
           import androidx.recyclerview.widget.LinearLayoutManager
           import com.lion.player.R
           import com.lion.player.adapter.MediaAdapter
           import com.lion.player.databinding.ActivityMainBinding
           import com.lion.player.model.MediaItem
+          import java.io.File
 
           class MainActivity : AppCompatActivity() {
 
@@ -904,6 +1050,7 @@ jobs:
               enum class SortBy { NAME, DATE, SIZE, DURATION }
               private var currentSort = SortBy.DATE
               private var isAscending = false
+              private var currentStyle = MediaAdapter.DisplayStyle.LIST
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
@@ -926,16 +1073,16 @@ jobs:
                   binding.topToolbar.inflateMenu(R.menu.top_main_menu)
                   binding.topToolbar.setOnMenuItemClickListener { menuItem ->
                       when (menuItem.itemId) {
-                          R.id.action_view_mode -> {
-                              if (!isAudioTabSelected) {
-                                  isFolderView = !isFolderView
-                                  currentSelectedFolder = null
-                                  updateToolbarTitle()
-                                  displayCurrentMedia()
-                                  Toast.makeText(this, if (isFolderView) "عرض كمجلدات" else "عرض كافة الملفات", Toast.LENGTH_SHORT).show()
-                              } else {
-                                  Toast.makeText(this, "عرض المجلدات متاح في قسم الفيديو", Toast.LENGTH_SHORT).show()
-                              }
+                          R.id.action_folder_toggle -> {
+                              isFolderView = !isFolderView
+                              currentSelectedFolder = null
+                              updateToolbarTitle()
+                              displayCurrentMedia()
+                              Toast.makeText(this, if (isFolderView) "عرض كمجلدات" else "عرض كافة الملفات", Toast.LENGTH_SHORT).show()
+                              true
+                          }
+                          R.id.action_display_style -> {
+                              showDisplayStyleDialog()
                               true
                           }
                           R.id.action_sort -> {
@@ -955,6 +1102,31 @@ jobs:
                   }
               }
 
+              private fun showDisplayStyleDialog() {
+                  val styles = arrayOf("📄 قائمة تفصيلية (عمود واحد)", "🖼️ مصغرات كبيرة (عمودين)", "🔲 مصغرات صغيرة (3 أعمدة)")
+                  AlertDialog.Builder(this)
+                      .setTitle("اختر شكل العرض:")
+                      .setItems(styles) { _, which ->
+                          when (which) {
+                              0 -> {
+                                  currentStyle = MediaAdapter.DisplayStyle.LIST
+                                  binding.recyclerViewMedia.layoutManager = LinearLayoutManager(this)
+                              }
+                              1 -> {
+                                  currentStyle = MediaAdapter.DisplayStyle.GRID_LARGE
+                                  binding.recyclerViewMedia.layoutManager = GridLayoutManager(this, 2)
+                              }
+                              2 -> {
+                                  currentStyle = MediaAdapter.DisplayStyle.GRID_SMALL
+                                  binding.recyclerViewMedia.layoutManager = GridLayoutManager(this, 3)
+                              }
+                          }
+                          mediaAdapter.currentStyle = currentStyle
+                          mediaAdapter.notifyDataSetChanged()
+                      }
+                      .show()
+              }
+
               private fun setupRecyclerView() {
                   mediaAdapter = MediaAdapter(
                       onItemClick = { item ->
@@ -963,11 +1135,7 @@ jobs:
                               updateToolbarTitle()
                               displayCurrentMedia()
                           } else {
-                              val intent = Intent(this, PlayerActivity::class.java).apply {
-                                  putExtra("VIDEO_URI", item.uri.toString())
-                                  putExtra("VIDEO_TITLE", item.title)
-                              }
-                              startActivity(intent)
+                              launchPlayer(item)
                           }
                       },
                       onItemLongClick = { item ->
@@ -976,6 +1144,31 @@ jobs:
                   )
                   binding.recyclerViewMedia.layoutManager = LinearLayoutManager(this)
                   binding.recyclerViewMedia.adapter = mediaAdapter
+              }
+
+              private fun launchPlayer(clickedItem: MediaItem) {
+                  val activeList = if (isAudioTabSelected) allAudiosList else allVideosList
+                  val currentItems = if (currentSelectedFolder != null) {
+                      activeList.filter { it.folderName == currentSelectedFolder }
+                  } else if (!isFolderView) {
+                      activeList
+                  } else {
+                      listOf(clickedItem)
+                  }
+
+                  val sorted = sortItems(currentItems)
+                  val uris = ArrayList(sorted.map { it.uri.toString() })
+                  val titles = ArrayList(sorted.map { it.title })
+                  val index = sorted.indexOfFirst { it.id == clickedItem.id }.coerceAtLeast(0)
+
+                  val intent = Intent(this, PlayerActivity::class.java).apply {
+                      putStringArrayListExtra("PLAYLIST_URIS", uris)
+                      putStringArrayListExtra("PLAYLIST_TITLES", titles)
+                      putExtra("CURRENT_INDEX", index)
+                      putExtra("VIDEO_URI", clickedItem.uri.toString())
+                      putExtra("VIDEO_TITLE", clickedItem.title)
+                  }
+                  startActivity(intent)
               }
 
               private fun setupBottomNav() {
@@ -1020,12 +1213,12 @@ jobs:
               }
 
               private fun updateToolbarTitle() {
-                  if (isAudioTabSelected) {
-                      binding.topToolbar.title = "الموسيقى والصوتيات"
-                      binding.topToolbar.setNavigationIcon(R.drawable.ic_lion_logo)
-                  } else if (currentSelectedFolder != null) {
+                  if (currentSelectedFolder != null) {
                       binding.topToolbar.title = currentSelectedFolder
                       binding.topToolbar.setNavigationIcon(R.drawable.ic_back)
+                  } else if (isAudioTabSelected) {
+                      binding.topToolbar.title = "الموسيقى والصوتيات"
+                      binding.topToolbar.setNavigationIcon(R.drawable.ic_lion_logo)
                   } else {
                       binding.topToolbar.title = "Lion Player"
                       binding.topToolbar.setNavigationIcon(R.drawable.ic_lion_logo)
@@ -1054,7 +1247,7 @@ jobs:
                               7 -> { currentSort = SortBy.DURATION; isAscending = true }
                           }
                           displayCurrentMedia()
-                          Toast.makeText(this, "تم الترتيب: ${sortOptions[which]}", Toast.LENGTH_SHORT).show()
+                          Toast.makeText(this, "تم الفرز بنجاح", Toast.LENGTH_SHORT).show()
                       }
                       .show()
               }
@@ -1159,23 +1352,25 @@ jobs:
                           val dateAdded = if (dateCol != -1) it.getLong(dateCol) else 0L
                           val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
 
-                          allAudiosList.add(MediaItem(id, title, path, uri, duration, size, artist, "Music", false, true, 0, dateAdded))
+                          val folder = try {
+                              File(path).parentFile?.name ?: "Music"
+                          } catch (_: Exception) {
+                              "Music"
+                          }
+
+                          allAudiosList.add(MediaItem(id, title, path, uri, duration, size, artist, folder, false, true, 0, dateAdded))
                       }
                   }
                   displayCurrentMedia()
               }
 
               private fun displayCurrentMedia() {
-                  if (isAudioTabSelected) {
-                      val sorted = sortItems(allAudiosList)
-                      mediaAdapter.submitList(sorted)
-                      return
-                  }
+                  val activeList = if (isAudioTabSelected) allAudiosList else allVideosList
 
                   if (isFolderView && currentSelectedFolder == null) {
                       // عرض المجلدات
-                      val folderGroups = allVideosList.groupBy { it.folderName }
-                      val folders = folderGroups.map { (folderName, videos) ->
+                      val folderGroups = activeList.groupBy { it.folderName }
+                      val folders = folderGroups.map { (folderName, items) ->
                           MediaItem(
                               id = 0,
                               title = folderName,
@@ -1186,19 +1381,19 @@ jobs:
                               extraInfo = "",
                               folderName = folderName,
                               isFolder = true,
-                              isAudio = false,
-                              itemCount = videos.size,
-                              dateAdded = videos.maxOfOrNull { it.dateAdded } ?: 0L
+                              isAudio = isAudioTabSelected,
+                              itemCount = items.size,
+                              dateAdded = items.maxOfOrNull { it.dateAdded } ?: 0L
                           )
                       }
                       mediaAdapter.submitList(sortItems(folders))
                   } else if (isFolderView && currentSelectedFolder != null) {
-                      // عرض فيديوهات المجلد المختار
-                      val folderVideos = allVideosList.filter { it.folderName == currentSelectedFolder }
-                      mediaAdapter.submitList(sortItems(folderVideos))
+                      // عرض عناصر المجلد المختار
+                      val folderItems = activeList.filter { it.folderName == currentSelectedFolder }
+                      mediaAdapter.submitList(sortItems(folderItems))
                   } else {
-                      // عرض كافة الفيديوهات
-                      mediaAdapter.submitList(sortItems(allVideosList))
+                      // عرض كافة الملفات مباشرة
+                      mediaAdapter.submitList(sortItems(activeList))
                   }
               }
 
@@ -1264,8 +1459,10 @@ jobs:
 
           import android.annotation.SuppressLint
           import android.app.PictureInPictureParams
+          import android.content.Context
           import android.content.pm.ActivityInfo
           import android.content.res.Configuration
+          import android.media.AudioManager
           import android.net.Uri
           import android.os.Build
           import android.os.Bundle
@@ -1296,12 +1493,17 @@ jobs:
               private lateinit var audioBoostManager: AudioBoostManager
 
               private var isKidsLocked = false
-              private var currentVolumePercent = 100
+              private var currentVolumePercent = 70
               private var currentBrightnessPercent = 50
               private var currentDecoderMode = DecoderMode.HW
-              private var orientationMode = 0 // 0: تلقائي, 1: أفقي, 2: عمودي
+              private var orientationMode = 0
 
-              // إيماءات السحب الأفقي للتقديم والتأخير
+              // قائمة التشغيل
+              private var playlistUris = ArrayList<String>()
+              private var playlistTitles = ArrayList<String>()
+              private var currentTrackIndex = 0
+
+              // إيماءات السحب
               private var isSeekingGesture = false
               private var isVolumeOrBrightnessGesture = false
               private var gestureInitialX = 0f
@@ -1322,6 +1524,16 @@ jobs:
                   window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                   audioBoostManager = AudioBoostManager(this)
 
+                  playlistUris = intent.getStringArrayListExtra("PLAYLIST_URIS") ?: arrayListOf()
+                  playlistTitles = intent.getStringArrayListExtra("PLAYLIST_TITLES") ?: arrayListOf()
+                  currentTrackIndex = intent.getIntExtra("CURRENT_INDEX", 0)
+
+                  // تهيئة نسبة الصوت الحالية للجهاز
+                  val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                  val maxV = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                  val curV = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+                  if (maxV > 0) currentVolumePercent = ((curV.toFloat() / maxV) * 100).toInt()
+
                   setupPlayer()
                   setupControls()
                   setupGestures()
@@ -1341,11 +1553,16 @@ jobs:
                   player = exo
                   binding.playerView.player = exo
 
-                  val uriString = intent.getStringExtra("VIDEO_URI") ?: ""
-                  val mediaItem = MediaItem.fromUri(Uri.parse(uriString))
-                  exo.setMediaItem(mediaItem)
-                  exo.prepare()
-                  exo.playWhenReady = true
+                  val initialUri = intent.getStringExtra("VIDEO_URI") ?: (playlistUris.getOrNull(currentTrackIndex) ?: "")
+                  val initialTitle = intent.getStringExtra("VIDEO_TITLE") ?: (playlistTitles.getOrNull(currentTrackIndex) ?: "Lion Player")
+
+                  if (initialUri.isNotEmpty()) {
+                      exo.setMediaItem(MediaItem.fromUri(Uri.parse(initialUri)))
+                      exo.prepare()
+                      exo.playWhenReady = true
+                  }
+
+                  binding.txtVideoTitle.text = initialTitle
 
                   exo.addListener(object : Player.Listener {
                       override fun onPlaybackStateChanged(playbackState: Int) {
@@ -1353,7 +1570,8 @@ jobs:
                               val dur = if (exo.duration > 0) exo.duration else 0L
                               binding.seekBarVideo.max = dur.toInt()
                               binding.txtTotalTime.text = formatTime(dur)
-                              audioBoostManager.attachAudioSession(exo.audioSessionId)
+                          } else if (playbackState == Player.STATE_ENDED) {
+                              playNextTrack()
                           }
                       }
                       override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -1363,8 +1581,39 @@ jobs:
                       }
                   })
 
-                  binding.txtVideoTitle.text = intent.getStringExtra("VIDEO_TITLE") ?: "Lion Player"
                   startProgressUpdater()
+              }
+
+              private fun playTrackAtIndex(index: Int) {
+                  if (index in playlistUris.indices) {
+                      currentTrackIndex = index
+                      val uri = playlistUris[index]
+                      val title = playlistTitles.getOrNull(index) ?: "Lion Player"
+                      binding.txtVideoTitle.text = title
+                      player?.let {
+                          it.setMediaItem(MediaItem.fromUri(Uri.parse(uri)))
+                          it.prepare()
+                          it.playWhenReady = true
+                      }
+                  }
+              }
+
+              private fun playNextTrack() {
+                  if (playlistUris.isNotEmpty() && currentTrackIndex < playlistUris.size - 1) {
+                      playTrackAtIndex(currentTrackIndex + 1)
+                      Toast.makeText(this, "التالي: ${playlistTitles.getOrNull(currentTrackIndex) ?: ""}", Toast.LENGTH_SHORT).show()
+                  } else {
+                      Toast.makeText(this, "نهاية القائمة", Toast.LENGTH_SHORT).show()
+                  }
+              }
+
+              private fun playPreviousTrack() {
+                  if (playlistUris.isNotEmpty() && currentTrackIndex > 0) {
+                      playTrackAtIndex(currentTrackIndex - 1)
+                      Toast.makeText(this, "السابق: ${playlistTitles.getOrNull(currentTrackIndex) ?: ""}", Toast.LENGTH_SHORT).show()
+                  } else {
+                      Toast.makeText(this, "بداية القائمة", Toast.LENGTH_SHORT).show()
+                  }
               }
 
               private fun setupControls() {
@@ -1374,7 +1623,6 @@ jobs:
                       cycleDecoder()
                   }
 
-                  // زر تدوير الشاشة
                   binding.btnRotateScreen.setOnClickListener {
                       toggleScreenRotation()
                   }
@@ -1384,6 +1632,10 @@ jobs:
                           if (it.isPlaying) it.pause() else it.play()
                       }
                   }
+
+                  // زري السابق والتالي
+                  binding.btnNext.setOnClickListener { playNextTrack() }
+                  binding.btnPrevious.setOnClickListener { playPreviousTrack() }
 
                   binding.btnKidsLock.setOnClickListener {
                       enableKidsLock()
@@ -1500,10 +1752,10 @@ jobs:
                           player?.let {
                               if (e.x < window.decorView.width / 2) {
                                   it.seekTo(maxOf(0L, it.currentPosition - 10000))
-                                  showHudFeedback("تأخير -10 ثواني", 50)
+                                  showSeekHud("تأخير -10 ثواني")
                               } else {
                                   it.seekTo(minOf(it.duration, it.currentPosition + 10000))
-                                  showHudFeedback("تقديم +10 ثواني", 50)
+                                  showSeekHud("تقديم +10 ثواني")
                               }
                           }
                           return true
@@ -1538,35 +1790,33 @@ jobs:
                               }
 
                               if (isSeekingGesture) {
-                                  // السحب الأفقي للتقديم والتأخير
+                                  // عكس اتجاه السحب: السحب يساراً (dx سالب) يقدم (+)، والسحب يميناً (dx موجب) يؤخر (-)
                                   val screenWidth = window.decorView.width.toFloat()
-                                  val seekDeltaMs = ((dx / screenWidth) * 90000L).toLong()
+                                  val seekDeltaMs = ((-dx / screenWidth) * 90000L).toLong()
                                   val totalDur = player?.duration ?: 0L
                                   val safeDur = if (totalDur > 0) totalDur else Long.MAX_VALUE
                                   gestureTargetPosition = (gestureInitialPosition + seekDeltaMs).coerceIn(0L, safeDur)
 
                                   val sign = if (seekDeltaMs >= 0) "+" else ""
                                   val deltaSec = seekDeltaMs / 1000
-                                  val hudText = "${sign}${deltaSec}s [${formatTime(gestureTargetPosition)} / ${formatTime(safeDur)}]"
-                                  val progressPercent = if (safeDur > 0) ((gestureTargetPosition.toFloat() / safeDur) * 100).toInt() else 50
-                                  showHudFeedback(hudText, progressPercent)
+                                  showSeekHud("${sign}${deltaSec}s [${formatTime(gestureTargetPosition)} / ${formatTime(safeDur)}]")
                               } else if (isVolumeOrBrightnessGesture) {
                                   val screenWidth = window.decorView.width.toFloat()
                                   val screenHeight = window.decorView.height.toFloat()
                                   val deltaPercent = ((-dy / screenHeight) * 100).toInt()
 
                                   if (gestureInitialX > screenWidth * 0.55f) {
-                                      // يمين الشاشة: الصوت والتعزيز
-                                      currentVolumePercent = (currentVolumePercent + deltaPercent).coerceIn(0, 200)
+                                      // يمين الشاشة: التحكم بالصوت حتى 100% فقط
+                                      currentVolumePercent = (currentVolumePercent + deltaPercent).coerceIn(0, 100)
                                       audioBoostManager.setBoostLevel(currentVolumePercent)
-                                      showHudFeedback("الصوت: ${currentVolumePercent}%", (currentVolumePercent / 2))
+                                      showVolumeHud(currentVolumePercent)
                                   } else if (gestureInitialX < screenWidth * 0.45f) {
-                                      // يسار الشاشة: السطوع
+                                      // يسار الشاشة: التحكم بالسطوع
                                       currentBrightnessPercent = (currentBrightnessPercent + deltaPercent).coerceIn(1, 100)
                                       val lp = window.attributes
                                       lp.screenBrightness = currentBrightnessPercent / 100f
                                       window.attributes = lp
-                                      showHudFeedback("السطوع: ${currentBrightnessPercent}%", currentBrightnessPercent)
+                                      showBrightnessHud(currentBrightnessPercent)
                                   }
                               }
                           }
@@ -1574,13 +1824,42 @@ jobs:
                               if (isSeekingGesture) {
                                   player?.seekTo(gestureTargetPosition)
                                   isSeekingGesture = false
-                                  handler.postDelayed(hideHudRunnable, 800)
+                                  handler.postDelayed({ binding.hudSeek.visibility = View.GONE }, 700)
                               }
                               isVolumeOrBrightnessGesture = false
                           }
                       }
                       true
                   }
+              }
+
+              private fun showSeekHud(text: String) {
+                  binding.hudSeek.visibility = View.VISIBLE
+                  binding.txtSeekHud.text = text
+              }
+
+              private fun showVolumeHud(percent: Int) {
+                  binding.hudVolume.visibility = View.VISIBLE
+                  binding.progressVolume.progress = percent
+                  binding.txtVolumePercent.text = "${percent}%"
+                  handler.removeCallbacks(hideVolumeRunnable)
+                  handler.postDelayed(hideVolumeRunnable, 1000)
+              }
+
+              private val hideVolumeRunnable = Runnable {
+                  binding.hudVolume.visibility = View.GONE
+              }
+
+              private fun showBrightnessHud(percent: Int) {
+                  binding.hudBrightness.visibility = View.VISIBLE
+                  binding.progressBrightness.progress = percent
+                  binding.txtBrightnessPercent.text = "${percent}%"
+                  handler.removeCallbacks(hideBrightnessRunnable)
+                  handler.postDelayed(hideBrightnessRunnable, 1000)
+              }
+
+              private val hideBrightnessRunnable = Runnable {
+                  binding.hudBrightness.visibility = View.GONE
               }
 
               @SuppressLint("ClickableViewAccessibility")
@@ -1599,18 +1878,6 @@ jobs:
                       }
                       true
                   }
-              }
-
-              private fun showHudFeedback(title: String, progress: Int) {
-                  binding.hudGestureFeedback.visibility = View.VISIBLE
-                  binding.txtHudTitle.text = title
-                  binding.progressHud.progress = progress.coerceIn(0, 100)
-                  handler.removeCallbacks(hideHudRunnable)
-                  handler.postDelayed(hideHudRunnable, 1000)
-              }
-
-              private val hideHudRunnable = Runnable {
-                  binding.hudGestureFeedback.visibility = View.GONE
               }
 
               private fun toggleOverlayControls() {
@@ -1718,7 +1985,6 @@ jobs:
 
               override fun onDestroy() {
                   super.onDestroy()
-                  audioBoostManager.release()
                   player?.release()
                   player = null
               }
