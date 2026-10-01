@@ -20,17 +20,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Android SDK & Accept Licenses
-        uses: android-actions/setup-android@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
 
-      - name: Accept Android SDK Licenses
+      - name: Create App Code
         run: |
-          yes | sdkmanager --licenses || true
-
-      - name: Generate Clean Project Files
-        run: |
-          # 1. إنشاء المجلدات
-          mkdir -p gradle/wrapper
           mkdir -p app/src/main/java/com/lion/player/model
           mkdir -p app/src/main/java/com/lion/player/adapter
           mkdir -p app/src/main/java/com/lion/player/utils
@@ -40,8 +36,8 @@ jobs:
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/menu
 
-          # 2. ملفات Gradle
-          cat << 'EOF' > settings.gradle.kts
+          # settings.gradle
+          cat << 'EOF' > settings.gradle
           pluginManagement {
               repositories {
                   google()
@@ -57,78 +53,78 @@ jobs:
               }
           }
           rootProject.name = "LionPlayer"
-          include(":app")
+          include ':app'
           EOF
 
-          cat << 'EOF' > build.gradle.kts
+          # build.gradle (Root)
+          cat << 'EOF' > build.gradle
           plugins {
-              id("com.android.application") version "8.2.2" apply false
-              id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+              id 'com.android.application' version '8.2.2' apply false
+              id 'org.jetbrains.kotlin.android' version '1.9.22' apply false
           }
           EOF
 
-          cat << 'EOF' > app/build.gradle.kts
+          # app/build.gradle
+          cat << 'EOF' > app/build.gradle
           plugins {
-              id("com.android.application")
-              id("org.jetbrains.kotlin.android")
+              id 'com.android.application'
+              id 'org.jetbrains.kotlin.android'
           }
 
           android {
-              namespace = "com.lion.player"
-              compileSdk = 34
+              namespace 'com.lion.player'
+              compileSdk 34
 
               defaultConfig {
-                  applicationId = "com.lion.player"
-                  minSdk = 24
-                  targetSdk = 34
-                  versionCode = 1
-                  versionName = "1.0.0"
+                  applicationId "com.lion.player"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0.0"
 
-                  testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                  vectorDrawables {
-                      useSupportLibrary = true
-                  }
+                  testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+                  vectorDrawables.useSupportLibrary = true
               }
 
               buildTypes {
                   release {
-                      isMinifyEnabled = false
-                      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+                      minifyEnabled false
+                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                   }
                   debug {
-                      isMinifyEnabled = false
+                      minifyEnabled false
                   }
               }
 
               compileOptions {
-                  sourceCompatibility = JavaVersion.VERSION_17
-                  targetCompatibility = JavaVersion.VERSION_17
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
               }
               kotlinOptions {
-                  jvmTarget = "17"
+                  jvmTarget = '17'
               }
               buildFeatures {
-                  viewBinding = true
+                  viewBinding true
               }
           }
 
           dependencies {
-              implementation("androidx.core:core-ktx:1.12.0")
-              implementation("androidx.appcompat:appcompat:1.6.1")
-              implementation("com.google.android.material:material:1.11.0")
-              implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-              implementation("androidx.recyclerview:recyclerview:1.3.2")
-              implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+              implementation 'androidx.core:core-ktx:1.12.0'
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.google.android.material:material:1.11.0'
+              implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+              implementation 'androidx.recyclerview:recyclerview:1.3.2'
+              implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
               // Media3 ExoPlayer
-              val media3Version = "1.3.0"
-              implementation("androidx.media3:media3-exoplayer:$media3Version")
-              implementation("androidx.media3:media3-ui:$media3Version")
-              implementation("androidx.media3:media3-common:$media3Version")
-              implementation("androidx.media3:media3-session:$media3Version")
+              def media3 = "1.3.0"
+              implementation "androidx.media3:media3-exoplayer:$media3"
+              implementation "androidx.media3:media3-ui:$media3"
+              implementation "androidx.media3:media3-common:$media3"
+              implementation "androidx.media3:media3-session:$media3"
 
-              // Glide
-              implementation("com.github.bumptech.glide:glide:4.16.0")
+              // Image Loading
+              implementation 'com.github.bumptech.glide:glide:4.16.0'
           }
           EOF
 
@@ -137,7 +133,7 @@ jobs:
           -keep class androidx.media3.** { *; }
           EOF
 
-          # 3. AndroidManifest.xml
+          # AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -178,7 +174,7 @@ jobs:
           </manifest>
           EOF
 
-          # 4. Values (Strings, Colors, Styles)
+          # Values
           cat << 'EOF' > app/src/main/res/values/strings.xml
           <resources>
               <string name="app_name">Lion Player</string>
@@ -205,7 +201,6 @@ jobs:
               <color name="lion_gold_dark">#FF8F00</color>
               <color name="lion_dark_bg">#121212</color>
               <color name="lion_surface">#1E1E1E</color>
-              <color name="lion_surface_variant">#2A2A2A</color>
               <color name="lion_text_primary">#FFFFFF</color>
               <color name="lion_text_secondary">#B0B0B0</color>
               <color name="lion_badge_hw">#4CAF50</color>
@@ -232,7 +227,7 @@ jobs:
           </resources>
           EOF
 
-          # 5. متجهات الأيقونات النظيفة (Safe Drawables)
+          # Icons Drawables
           cat << 'EOF' > app/src/main/res/drawable/ic_lion_logo.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="48dp" android:height="48dp" android:viewportWidth="24" android:viewportHeight="24">
@@ -324,7 +319,7 @@ jobs:
           </vector>
           EOF
 
-          # 6. قوائم وتخطيطات الشاشات
+          # UI Layouts
           cat << 'EOF' > app/src/main/res/menu/bottom_nav_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
           <menu xmlns:android="http://schemas.android.com/apk/res/android">
@@ -498,7 +493,7 @@ jobs:
                       android:progressTint="@color/lion_gold" />
               </LinearLayout>
 
-              <!-- Top Bar -->
+              <!-- Top Controls -->
               <RelativeLayout
                   android:id="@+id/topControlsOverlay"
                   android:layout_width="match_parent"
@@ -560,7 +555,7 @@ jobs:
                   </LinearLayout>
               </RelativeLayout>
 
-              <!-- Bottom Bar -->
+              <!-- Bottom Controls -->
               <LinearLayout
                   android:id="@+id/bottomControlsOverlay"
                   android:layout_width="match_parent"
@@ -668,7 +663,7 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # 7. ملفات Kotlin
+          # Source Code
           cat << 'EOF' > app/src/main/java/com/lion/player/model/VideoItem.kt
           package com.lion.player.model
 
@@ -1371,24 +1366,13 @@ jobs:
           }
           EOF
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.4'
-
-      - name: Build Debug APK
+      - name: Build APK with Gradle
         run: |
           gradle assembleDebug --stacktrace --no-daemon
-
-      - name: Copy & Prepare APK Artifact
-        run: |
-          mkdir -p artifacts
-          cp app/build/outputs/apk/debug/*.apk artifacts/LionPlayer-Debug.apk
-          ls -lh artifacts/
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: LionPlayer-Debug-APK
-          path: artifacts/LionPlayer-Debug.apk
+          path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
