@@ -25,8 +25,17 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Create App Code
+      - name: Create App Code & Environment
         run: |
+          # 1. إعداد مسار SDK والذاكرة
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          cat << 'EOF' > gradle.properties
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.nonTransitiveRClass=false
+          EOF
+
+          # 2. إنشاء المجلدات
           mkdir -p app/src/main/java/com/lion/player/model
           mkdir -p app/src/main/java/com/lion/player/adapter
           mkdir -p app/src/main/java/com/lion/player/utils
@@ -36,7 +45,7 @@ jobs:
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/menu
 
-          # settings.gradle
+          # 3. ملفات Gradle
           cat << 'EOF' > settings.gradle
           pluginManagement {
               repositories {
@@ -56,7 +65,6 @@ jobs:
           include ':app'
           EOF
 
-          # build.gradle (Root)
           cat << 'EOF' > build.gradle
           plugins {
               id 'com.android.application' version '8.2.2' apply false
@@ -64,7 +72,6 @@ jobs:
           }
           EOF
 
-          # app/build.gradle
           cat << 'EOF' > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -116,14 +123,12 @@ jobs:
               implementation 'androidx.recyclerview:recyclerview:1.3.2'
               implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
-              // Media3 ExoPlayer
-              def media3 = "1.3.0"
-              implementation "androidx.media3:media3-exoplayer:$media3"
-              implementation "androidx.media3:media3-ui:$media3"
-              implementation "androidx.media3:media3-common:$media3"
-              implementation "androidx.media3:media3-session:$media3"
+              // Media3
+              implementation 'androidx.media3:media3-exoplayer:1.3.0'
+              implementation 'androidx.media3:media3-ui:1.3.0'
+              implementation 'androidx.media3:media3-common:1.3.0'
 
-              // Image Loading
+              // Glide
               implementation 'com.github.bumptech.glide:glide:4.16.0'
           }
           EOF
@@ -133,7 +138,7 @@ jobs:
           -keep class androidx.media3.** { *; }
           EOF
 
-          # AndroidManifest.xml
+          # 4. AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -174,7 +179,7 @@ jobs:
           </manifest>
           EOF
 
-          # Values
+          # 5. Values (Strings بدون علامات % معطوبة، Colors، Styles)
           cat << 'EOF' > app/src/main/res/values/strings.xml
           <resources>
               <string name="app_name">Lion Player</string>
@@ -185,8 +190,6 @@ jobs:
               <string name="decoder_sw">SW</string>
               <string name="decoder_hw_plus">HW+</string>
               <string name="kids_lock_active">تم تفعيل قفل الأطفال</string>
-              <string name="audio_boost">الصوت: %1$d%%</string>
-              <string name="brightness">السطوع: %1$d%%</string>
               <string name="speed">سرعة التشغيل</string>
               <string name="sleep_timer">مؤقت النوم</string>
               <string name="properties">خصائص الملف</string>
@@ -201,6 +204,7 @@ jobs:
               <color name="lion_gold_dark">#FF8F00</color>
               <color name="lion_dark_bg">#121212</color>
               <color name="lion_surface">#1E1E1E</color>
+              <color name="lion_surface_variant">#2A2A2A</color>
               <color name="lion_text_primary">#FFFFFF</color>
               <color name="lion_text_secondary">#B0B0B0</color>
               <color name="lion_badge_hw">#4CAF50</color>
@@ -212,7 +216,7 @@ jobs:
           cat << 'EOF' > app/src/main/res/values/styles.xml
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
-              <style name="Theme.LionPlayer" parent="Theme.Material3.Dark.NoActionBar">
+              <style name="Theme.LionPlayer" parent="Theme.MaterialComponents.DayNight.NoActionBar">
                   <item name="colorPrimary">@color/lion_gold</item>
                   <item name="colorSecondary">@color/lion_gold_dark</item>
                   <item name="android:statusBarColor">@color/lion_dark_bg</item>
@@ -220,14 +224,14 @@ jobs:
                   <item name="android:windowBackground">@color/lion_dark_bg</item>
               </style>
 
-              <style name="Theme.LionPlayer.Player" parent="Theme.Material3.Dark.NoActionBar">
+              <style name="Theme.LionPlayer.Player" parent="Theme.MaterialComponents.DayNight.NoActionBar">
                   <item name="android:windowFullscreen">true</item>
                   <item name="android:windowBackground">@android:color/black</item>
               </style>
           </resources>
           EOF
 
-          # Icons Drawables
+          # 6. Icons Drawables
           cat << 'EOF' > app/src/main/res/drawable/ic_lion_logo.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="48dp" android:height="48dp" android:viewportWidth="24" android:viewportHeight="24">
@@ -319,7 +323,7 @@ jobs:
           </vector>
           EOF
 
-          # UI Layouts
+          # 7. Layouts
           cat << 'EOF' > app/src/main/res/menu/bottom_nav_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
           <menu xmlns:android="http://schemas.android.com/apk/res/android">
@@ -447,8 +451,7 @@ jobs:
                   android:id="@+id/playerView"
                   android:layout_width="match_parent"
                   android:layout_height="match_parent"
-                  app:use_controller="false"
-                  app:resize_mode="fit" />
+                  app:use_controller="false" />
 
               <TextView
                   android:id="@+id/txtDraggableSubtitle"
@@ -493,7 +496,7 @@ jobs:
                       android:progressTint="@color/lion_gold" />
               </LinearLayout>
 
-              <!-- Top Controls -->
+              <!-- Top Bar -->
               <RelativeLayout
                   android:id="@+id/topControlsOverlay"
                   android:layout_width="match_parent"
@@ -555,7 +558,7 @@ jobs:
                   </LinearLayout>
               </RelativeLayout>
 
-              <!-- Bottom Controls -->
+              <!-- Bottom Bar -->
               <LinearLayout
                   android:id="@+id/bottomControlsOverlay"
                   android:layout_width="match_parent"
@@ -663,7 +666,7 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # Source Code
+          # 8. Source Code
           cat << 'EOF' > app/src/main/java/com/lion/player/model/VideoItem.kt
           package com.lion.player.model
 
@@ -1061,8 +1064,9 @@ jobs:
                   exo.addListener(object : Player.Listener {
                       override fun onPlaybackStateChanged(playbackState: Int) {
                           if (playbackState == Player.STATE_READY) {
-                              binding.seekBarVideo.max = exo.duration.toInt()
-                              binding.txtTotalTime.text = formatTime(exo.duration)
+                              val dur = if (exo.duration > 0) exo.duration else 0L
+                              binding.seekBarVideo.max = dur.toInt()
+                              binding.txtTotalTime.text = formatTime(dur)
                               audioBoostManager.attachAudioSession(exo.audioSessionId)
                           }
                       }
@@ -1130,17 +1134,14 @@ jobs:
                   currentDecoderMode = when (currentDecoderMode) {
                       DecoderMode.HW -> {
                           binding.btnDecoderSwitch.text = getString(R.string.decoder_sw)
-                          binding.btnDecoderSwitch.setBackgroundColor(getColor(R.color.lion_badge_sw))
                           DecoderMode.SW
                       }
                       DecoderMode.SW -> {
                           binding.btnDecoderSwitch.text = getString(R.string.decoder_hw_plus)
-                          binding.btnDecoderSwitch.setBackgroundColor(getColor(R.color.lion_badge_hw_plus))
                           DecoderMode.HW_PLUS
                       }
                       DecoderMode.HW_PLUS -> {
                           binding.btnDecoderSwitch.text = getString(R.string.decoder_hw)
-                          binding.btnDecoderSwitch.setBackgroundColor(getColor(R.color.lion_badge_hw))
                           DecoderMode.HW
                       }
                   }
@@ -1168,9 +1169,9 @@ jobs:
               private fun cycleAspectRatio() {
                   val current = binding.playerView.resizeMode
                   val next = when (current) {
-                      androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
-                      androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                      else -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+                      0 -> 3
+                      3 -> 4
+                      else -> 0
                   }
                   binding.playerView.resizeMode = next
               }
@@ -1207,13 +1208,13 @@ jobs:
                           if (e1.x > screenWidth * 0.6) {
                               currentVolumePercent = (currentVolumePercent + deltaPercent).coerceIn(0, 200)
                               audioBoostManager.setBoostLevel(currentVolumePercent)
-                              showHudFeedback(String.format(getString(R.string.audio_boost), currentVolumePercent), currentVolumePercent)
+                              showHudFeedback("الصوت: ${currentVolumePercent}%", currentVolumePercent)
                           } else if (e1.x < screenWidth * 0.4) {
                               currentBrightnessPercent = (currentBrightnessPercent + deltaPercent).coerceIn(1, 100)
                               val lp = window.attributes
                               lp.screenBrightness = currentBrightnessPercent / 100f
                               window.attributes = lp
-                              showHudFeedback(String.format(getString(R.string.brightness), currentBrightnessPercent), currentBrightnessPercent)
+                              showHudFeedback("السطوع: ${currentBrightnessPercent}%", currentBrightnessPercent)
                           }
                           return true
                       }
@@ -1315,10 +1316,10 @@ jobs:
                                   Toast.makeText(this, "تم ضبط إيقاف التشغيل بعد 30 دقيقة", Toast.LENGTH_SHORT).show()
                               }
                               2 -> {
-                                  val fmt = player?.videoFormat
+                                  val size = player?.videoSize
                                   AlertDialog.Builder(this)
                                       .setTitle(getString(R.string.properties))
-                                      .setMessage("الأبعاد: ${fmt?.width}x${fmt?.height}\nالكوديك: ${fmt?.sampleMimeType}")
+                                      .setMessage("الأبعاد: ${size?.width}x${size?.height}")
                                       .setPositiveButton("إغلاق", null)
                                       .show()
                               }
