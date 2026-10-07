@@ -173,6 +173,7 @@ jobs:
                   </activity>
                   <activity
                       android:name=".ui.PlayerActivity"
+                      android:theme="@style/Theme.LionPlayer.Player"
                       android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
                       android:supportsPictureInPicture="true"
                       android:launchMode="singleTask"
@@ -234,7 +235,15 @@ jobs:
                   <item name="colorPrimaryDark">@color/primary_dark</item>
                   <item name="colorAccent">@color/accent</item>
                   <item name="android:windowBackground">@color/background_dark</item>
+                  <item name="android:windowFullscreen">false</item>
+                  <item name="android:statusBarColor">@color/surface_dark</item>
+                  <item name="android:navigationBarColor">@color/surface_dark</item>
+              </style>
+
+              <style name="Theme.LionPlayer.Player" parent="Theme.LionPlayer">
                   <item name="android:windowFullscreen">true</item>
+                  <item name="android:statusBarColor">#00000000</item>
+                  <item name="android:navigationBarColor">#00000000</item>
               </style>
           </resources>
           EOF
@@ -662,6 +671,7 @@ jobs:
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:fitsSystemWindows="true"
               android:background="@color/background_dark">
 
               <com.google.android.material.appbar.MaterialToolbar
@@ -1376,7 +1386,7 @@ jobs:
           </androidx.constraintlayout.widget.ConstraintLayout>
           EOF
 
-          # 13. MediaItem.kt (تضمين الحقول الجديدة: الألبوم، الفنان، المفضلة، المسار)
+          # 13. MediaItem.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/model/MediaItem.kt
           package com.lionplayer.app.model
 
@@ -1400,7 +1410,7 @@ jobs:
           ) : Serializable
           EOF
 
-          # 14. ThumbnailLoader.kt (محمل مصغرات الصور الذكي في الخلفية)
+          # 14. ThumbnailLoader.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/adapter/ThumbnailLoader.kt
           package com.lionplayer.app.adapter
 
@@ -1828,7 +1838,7 @@ jobs:
           }
           EOF
 
-          # 17. MediaAdapter.kt (عرض الصور، السطر المصغر للمعلومات، قائمة الثلاث نقاط، والضغط المطول)
+          # 17. MediaAdapter.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/adapter/MediaAdapter.kt
           package com.lionplayer.app.adapter
 
@@ -1891,7 +1901,6 @@ jobs:
                   private val btnMore: ImageButton? = itemView.findViewById(R.id.btnMore)
 
                   fun bind(item: MediaItem) {
-                      // إظهار أو إخفاء الامتداد بناء على إعدادات المستخدم
                       val displayTitle = if (item.isFolder || showExtensions) {
                           item.title
                       } else {
@@ -1905,10 +1914,8 @@ jobs:
                           tvDetails.text = "${item.itemCount} عناصر"
                           btnMore?.visibility = View.GONE
                       } else {
-                          // تحميل مصغر الفيديو أو الصوت
                           ThumbnailLoader.load(ivThumbnail, item)
 
-                          // سطر صغير: اسم قائمة التشغيل (المجلد) والألبوم والفنان
                           tvSubInfo.visibility = View.VISIBLE
                           val folderStr = if (item.parentFolder.isNotEmpty()) item.parentFolder else "الرئيسي"
                           val albumStr = if (item.album.isNotEmpty() && item.album != "<unknown>") item.album else "ألبوم غير محدد"
@@ -1954,7 +1961,7 @@ jobs:
           }
           EOF
 
-          # 18. MainActivity.kt (دعم التبويبات الأربعة، المشغل المصغر، خيارات المقطع، وإعداد الامتدادات)
+          # 18. MainActivity.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/MainActivity.kt
           package com.lionplayer.app.ui
 
@@ -1970,10 +1977,7 @@ jobs:
           import android.os.Build
           import android.os.Bundle
           import android.provider.MediaStore
-          import android.view.Menu
-          import android.view.MenuItem
-          import android.view.ScaleGestureDetector
-          import android.view.View
+          import android.view.*
           import android.widget.EditText
           import android.widget.ImageButton
           import android.widget.ImageView
@@ -2047,6 +2051,7 @@ jobs:
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
+                  showSystemBars()
                   setContentView(R.layout.activity_main)
 
                   prefs = getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
@@ -2064,6 +2069,21 @@ jobs:
                   setupBottomNav()
 
                   checkAndRequestPermissions()
+              }
+
+              private fun showSystemBars() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                      window.insetsController?.let { controller ->
+                          controller.show(
+                              WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
+                          )
+                          controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+                      }
+                  } else {
+                      @Suppress("DEPRECATION")
+                      window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                  }
+                  window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
               }
 
               private fun initMiniPlayer() {
@@ -2167,7 +2187,6 @@ jobs:
                   }
               }
 
-              // نافذة الإعدادات الخاصة بالمقطع (الخيارات الثمانية)
               private fun showItemActionDialog(item: MediaItem) {
                   val favoriteTitle = if (item.isFavorite) "إلغاء التفضيل" else "تفضيل"
                   val options = arrayOf(
@@ -2185,38 +2204,26 @@ jobs:
                       .setTitle(item.title)
                       .setItems(options) { _, which ->
                           when (which) {
-                              0 -> { // تحديد
-                                  Toast.makeText(this, "تم تحديد: ${item.title}", Toast.LENGTH_SHORT).show()
-                              }
-                              1 -> { // تفضيل
-                                  toggleFavorite(item)
-                              }
-                              2 -> { // نسخ
+                              0 -> Toast.makeText(this, "تم تحديد: ${item.title}", Toast.LENGTH_SHORT).show()
+                              1 -> toggleFavorite(item)
+                              2 -> {
                                   copiedMediaItem = item
                                   val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                   val clip = ClipData.newPlainText("Media Path", item.path.ifEmpty { item.uri })
                                   clipboard.setPrimaryClip(clip)
                                   Toast.makeText(this, "تم نسخ مسار المقطع إلى الحافظة", Toast.LENGTH_SHORT).show()
                               }
-                              3 -> { // لصق
+                              3 -> {
                                   if (copiedMediaItem != null) {
                                       Toast.makeText(this, "تم لصق بيانات: ${copiedMediaItem?.title}", Toast.LENGTH_SHORT).show()
                                   } else {
                                       Toast.makeText(this, "لا يوجد مقطع منسوخ حالياً", Toast.LENGTH_SHORT).show()
                                   }
                               }
-                              4 -> { // إعادة تسمية
-                                  showRenameDialog(item)
-                              }
-                              5 -> { // مشاركة
-                                  shareMediaItem(item)
-                              }
-                              6 -> { // خصائص
-                                  showPropertiesDialog(item)
-                              }
-                              7 -> { // حذف
-                                  confirmDeleteMediaItem(item)
-                              }
+                              4 -> showRenameDialog(item)
+                              5 -> shareMediaItem(item)
+                              6 -> showPropertiesDialog(item)
+                              7 -> confirmDeleteMediaItem(item)
                           }
                       }
                       .show()
@@ -2772,6 +2779,7 @@ jobs:
 
               override fun onResume() {
                   super.onResume()
+                  showSystemBars()
                   updateMiniPlayerUI()
               }
 
@@ -2786,7 +2794,7 @@ jobs:
           }
           EOF
 
-          # 19. PlayerActivity.kt (عكس سحب التقديم والتأخير + بحث وتطبيق الترجمة داخل التطبيق)
+          # 19. PlayerActivity.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
           package com.lionplayer.app.ui
 
@@ -2930,7 +2938,7 @@ jobs:
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
-                  hideSystemBars()
+                  applySystemBarsVisibility()
                   setContentView(R.layout.activity_player)
 
                   initViews()
@@ -2953,7 +2961,16 @@ jobs:
               override fun onWindowFocusChanged(hasFocus: Boolean) {
                   super.onWindowFocusChanged(hasFocus)
                   if (hasFocus) {
+                      applySystemBarsVisibility()
+                  }
+              }
+
+              private fun applySystemBarsVisibility() {
+                  val currentItem = LionPlayerManager.getCurrentItem()
+                  if (currentItem == null || currentItem.isVideo) {
                       hideSystemBars()
+                  } else {
+                      showSystemBars()
                   }
               }
 
@@ -2976,6 +2993,20 @@ jobs:
                           or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                           or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                       )
+                  }
+              }
+
+              private fun showSystemBars() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                      window.insetsController?.let { controller ->
+                          controller.show(
+                              WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
+                          )
+                          controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+                      }
+                  } else {
+                      @Suppress("DEPRECATION")
+                      window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
                   }
               }
 
@@ -3083,6 +3114,12 @@ jobs:
                   btnPip.visibility = videoControlsVis
                   btnResize.visibility = videoControlsVis
                   btnSubtitles.visibility = videoControlsVis
+
+                  if (item.isVideo) {
+                      hideSystemBars()
+                  } else {
+                      showSystemBars()
+                  }
 
                   updateScreenLock()
               }
@@ -3219,7 +3256,6 @@ jobs:
                       .show()
               }
 
-              // نافذة البحث عن الترجمة داخل التطبيق في الخلفية وتطبيقها مباشرة
               data class SubtitleResultItem(val title: String, val lang: String, val source: String, val downloadUrl: String)
 
               private fun showInAppSubtitleSearchDialog() {
@@ -3256,7 +3292,6 @@ jobs:
                       Thread {
                           try {
                               val encoded = URLEncoder.encode(query, "UTF-8")
-                              // محاولة الاستعلام من خوادم الترجمة المفتوحة SubDL / OpenSubtitles
                               val urlStr = "https://api.subdl.com/api/v1/subtitles?film_name=$encoded"
                               val url = URL(urlStr)
                               val conn = (url.openConnection() as HttpURLConnection).apply {
@@ -3277,7 +3312,6 @@ jobs:
                               }
                           } catch (e: Exception) {}
 
-                          // إضافة نتائج مطابقة فورية لضمان وجود الترجمة وتطبيقها المباشر
                           if (resultList.isEmpty()) {
                               resultList.add(SubtitleResultItem("$query - النسخة العربية الرسمية (Arabic)", "العربية", "OpenSubtitles", "mock_ar"))
                               resultList.add(SubtitleResultItem("$query - الترجمة الكاملة (Arabic SRT)", "العربية", "Subscene", "mock_ar"))
@@ -3322,7 +3356,6 @@ jobs:
                       val subDir = File(cacheDir, "subtitles").apply { mkdirs() }
                       val subFile = File(subDir, "active_sub_${System.currentTimeMillis()}.srt")
 
-                      // إنشاء محتوى SRT متوافق يتم تطبيقه فوراً على المشغل
                       val srtContent = """
                           1
                           00:00:01,000 --> 00:00:05,000
@@ -3561,7 +3594,6 @@ jobs:
                   builder.show()
               }
 
-              // ضبط الإيماءات مع عكس اتجاه التقديم والتأخير حسب الطلب
               private fun setupGestureDetection() {
                   val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
                       override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
@@ -3570,6 +3602,13 @@ jobs:
                               val visibility = if (controlsVisible) View.VISIBLE else View.GONE
                               topControls.visibility = visibility
                               bottomControls.visibility = visibility
+
+                              val current = LionPlayerManager.getCurrentItem()
+                              if (current?.isVideo == true) {
+                                  if (!controlsVisible) {
+                                      hideSystemBars()
+                                  }
+                              }
                           }
                           return true
                       }
@@ -3634,8 +3673,6 @@ jobs:
                                       updateBrightnessByPercent(deltaPercent)
                                   }
                               } else if (isDraggingHorizontal) {
-                                  // السحب لليمين: يعود للخلف (سالب)
-                                  // السحب لليسار: يتم التقديم للأمام (موجب)
                                   val deltaX = gestureStartX - event.x
                                   val seekOffsetMs = (deltaX / screenWidth) * 90000L
                                   val maxDur = LionPlayerManager.player?.duration?.coerceAtLeast(0L) ?: 0L
@@ -3759,7 +3796,7 @@ jobs:
 
               override fun onResume() {
                   super.onResume()
-                  hideSystemBars()
+                  applySystemBarsVisibility()
                   updateScreenLock()
               }
 
