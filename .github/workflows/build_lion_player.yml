@@ -39,6 +39,8 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/menu
           mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/values-night
+          mkdir -p app/src/main/res/color
 
           # 1. gradle.properties
           cat << 'EOF' > gradle.properties
@@ -158,6 +160,7 @@ jobs:
               <uses-permission android:name="android.permission.VIBRATE" />
 
               <application
+                  android:name=".LionPlayerApp"
                   android:allowBackup="true"
                   android:icon="@drawable/ic_lion_logo"
                   android:label="@string/app_name"
@@ -166,7 +169,7 @@ jobs:
                   android:requestLegacyExternalStorage="true"
                   android:theme="@style/Theme.LionPlayer">
 
-                  <!-- شاشة البداية الكبيرة والسريعة -->
+                  <!-- شاشة البداية السريعة -->
                   <activity
                       android:name=".ui.SplashActivity"
                       android:theme="@style/Theme.LionPlayer.Player"
@@ -222,34 +225,62 @@ jobs:
           </resources>
           EOF
 
-          # 8. colors.xml
+          # 8. colors.xml (الوضع الفاتح الافتراضي)
           cat << 'EOF' > app/src/main/res/values/colors.xml
           <resources>
               <color name="primary">#FF9800</color>
               <color name="primary_dark">#E65100</color>
               <color name="accent">#FFB74D</color>
-              <color name="background_dark">#121212</color>
-              <color name="surface_dark">#1A1A1A</color>
-              <color name="card_dark">#1F1F1F</color>
-              <color name="mini_player_bg">#1E222B</color>
-              <color name="text_primary">#FFFFFF</color>
-              <color name="text_secondary">#AAAAAA</color>
-              <color name="divider_color">#18FFFFFF</color>
-              <color name="settings_sheet_bg">#18191C</color>
-              <color name="settings_card_bg">#23242A</color>
+
+              <color name="app_background">#F5F5F7</color>
+              <color name="app_surface">#FFFFFF</color>
+              <color name="app_card">#FFFFFF</color>
+              <color name="card_stroke">#E2E8F0</color>
+              <color name="mini_player_bg">#EDF2F7</color>
+              <color name="text_primary">#1A202C</color>
+              <color name="text_secondary">#718096</color>
+              <color name="divider_color">#14000000</color>
+
+              <!-- توافقية -->
+              <color name="background_dark">@color/app_background</color>
+              <color name="surface_dark">@color/app_surface</color>
+              <color name="card_dark">@color/app_card</color>
           </resources>
           EOF
 
-          # 9. styles.xml
+          # 9. values-night/colors.xml (الوضع الداكن)
+          cat << 'EOF' > app/src/main/res/values-night/colors.xml
+          <resources>
+              <color name="primary">#FF9800</color>
+              <color name="primary_dark">#E65100</color>
+              <color name="accent">#FFB74D</color>
+
+              <color name="app_background">#121212</color>
+              <color name="app_surface">#1A1A1A</color>
+              <color name="app_card">#222222</color>
+              <color name="card_stroke">#333333</color>
+              <color name="mini_player_bg">#1E222B</color>
+              <color name="text_primary">#FFFFFF</color>
+              <color name="text_secondary">#A0AEC0</color>
+              <color name="divider_color">#18FFFFFF</color>
+
+              <!-- توافقية -->
+              <color name="background_dark">@color/app_background</color>
+              <color name="surface_dark">@color/app_surface</color>
+              <color name="card_dark">@color/app_card</color>
+          </resources>
+          EOF
+
+          # 10. styles.xml
           cat << 'EOF' > app/src/main/res/values/styles.xml
           <resources>
               <style name="Theme.LionPlayer" parent="Theme.MaterialComponents.DayNight.NoActionBar">
                   <item name="colorPrimary">@color/primary</item>
                   <item name="colorPrimaryDark">@color/primary_dark</item>
                   <item name="colorAccent">@color/accent</item>
-                  <item name="android:windowBackground">@color/background_dark</item>
-                  <item name="android:statusBarColor">@color/surface_dark</item>
-                  <item name="android:navigationBarColor">@color/surface_dark</item>
+                  <item name="android:windowBackground">@color/app_background</item>
+                  <item name="android:statusBarColor">@color/app_surface</item>
+                  <item name="android:navigationBarColor">@color/app_surface</item>
               </style>
 
               <style name="Theme.LionPlayer.Player" parent="Theme.LionPlayer">
@@ -258,17 +289,25 @@ jobs:
                   <item name="android:navigationBarColor">#00000000</item>
               </style>
 
-              <style name="SettingsBottomSheetTheme" parent="Theme.Design.BottomSheetDialog">
-                  <item name="bottomSheetStyle">@style/SettingsBottomSheetModal</item>
+              <style name="BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+                  <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
               </style>
 
-              <style name="SettingsBottomSheetModal" parent="Widget.Design.BottomSheet.Modal">
+              <style name="BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
                   <item name="android:background">@android:color/transparent</item>
               </style>
           </resources>
           EOF
 
-          # 10. Drawables
+          # 11. color_chip_text.xml
+          cat << 'EOF' > app/src/main/res/color/color_chip_text.xml
+          <selector xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:state_selected="true" android:color="@color/primary" />
+              <item android:color="@color/text_secondary" />
+          </selector>
+          EOF
+
+          # 12. Drawables
           cat << 'EOF' > app/src/main/res/drawable/ic_lion_logo.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="96dp"
@@ -389,6 +428,18 @@ jobs:
           </vector>
           EOF
 
+          cat << 'EOF' > app/src/main/res/drawable/ic_favorite_border.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:pathData="M16.5,3c-1.74,0 -3.41,0.81 -4.5,2.09C10.91,3.81 9.24,3 7.5,3 4.42,3 2,5.42 2,8.5c0,3.78 3.4,6.86 8.55,11.54L12,21.35l1.45,-1.32C18.6,15.36 22,12.28 22,8.5 22,5.42 19.58,3 16.5,3zm-4.4,15.55l-0.1,0.1 -0.1,-0.1C7.14,14.24 4,11.39 4,8.5 4,6.5 5.5,5 7.5,5c1.54,0 3.04,0.99 3.57,2.36h1.87C13.46,5.99 14.96,5 16.5,5c2,0 3.5,1.5 3.5,3.5 0,2.89 -3.14,5.74 -7.9,10.05z"/>
+          </vector>
+          EOF
+
           cat << 'EOF' > app/src/main/res/drawable/ic_all_files.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
@@ -456,7 +507,7 @@ jobs:
               android:viewportWidth="24"
               android:viewportHeight="24">
             <path
-                android:fillColor="#FFFFFFFF"
+                android:fillColor="#FF9800"
                 android:pathData="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94 0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87c-0.12,0.21 -0.08,0.47 0.12,0.61l2.03,1.58c-0.05,0.3 -0.09,0.63 -0.09,0.94s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61l-2.01,-1.58zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6 3.6,1.62 3.6,3.6 -1.62,3.6 -3.6,3.6z"/>
           </vector>
           EOF
@@ -495,7 +546,8 @@ jobs:
           cat << 'EOF' > app/src/main/res/drawable/bg_mini_player.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
               <solid android:color="@color/mini_player_bg" />
-              <stroke android:width="1dp" android:color="#374151" />
+              <stroke android:width="1dp" android:color="@color/card_stroke" />
+              <corners android:radius="12dp" />
           </shape>
           EOF
 
@@ -532,18 +584,6 @@ jobs:
             <path
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M19,12h-2v3h-3v2h5v-5zM7,9h3V7H5v5h2V9zm14,-6H3c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h18c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2zm0,16.01H3V4.99h18v14.02z"/>
-          </vector>
-          EOF
-
-          cat << 'EOF' > app/src/main/res/drawable/ic_subtitles.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="24dp"
-              android:height="24dp"
-              android:viewportWidth="24"
-              android:viewportHeight="24">
-            <path
-                android:fillColor="#FFFFFFFF"
-                android:pathData="M20,4H4c-1.1,0 -2,0.9 -2,2v12c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2V6c0,-1.1 -0.9,-2 -2,-2zm0,14H4V6h16v12zM6,10h2v2H6zm0,4h8v2H6zm10,0h2v2h-2zm-6,-4h8v2h-8z"/>
           </vector>
           EOF
 
@@ -691,54 +731,6 @@ jobs:
           </vector>
           EOF
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_dark_mode.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="24dp"
-              android:height="24dp"
-              android:viewportWidth="24"
-              android:viewportHeight="24">
-            <path
-                android:fillColor="#FF9800"
-                android:pathData="M12,3c-4.97,0 -9,4.03 -9,9s4.03,9 9,9c0.83,0 1.5,-0.67 1.5,-1.5 0,-0.39 -0.15,-0.74 -0.39,-1.01 -0.23,-0.26 -0.38,-0.61 -0.38,-0.99 0,-0.83 0.67,-1.5 1.5,-1.5H16c2.76,0 5,-2.24 5,-5 0,-4.42 -4.03,-8 -9,-8zm-5.5,9c-0.83,0 -1.5,-0.67 -1.5,-1.5S5.67,9 6.5,9 8,9.67 8,10.5 7.33,12 6.5,12zm3,-4C8.67,8 8,7.33 8,6.5S8.67,5 9.5,5s1.5,0.67 1.5,1.5S10.33,8 9.5,8zm5,0c-0.83,0 -1.5,-0.67 -1.5,-1.5S13.67,5 14.5,5s1.5,0.67 1.5,1.5S15.33,8 14.5,8zm3,4c-0.83,0 -1.5,-0.67 -1.5,-1.5S16.67,9 17.5,9s1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/>
-          </vector>
-          EOF
-
-          cat << 'EOF' > app/src/main/res/drawable/ic_speed.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="24dp"
-              android:height="24dp"
-              android:viewportWidth="24"
-              android:viewportHeight="24">
-            <path
-                android:fillColor="#FF9800"
-                android:pathData="M20.38,8.57l-1.23,1.85a8,8 0 0,1 -0.22,7.58H5.07A8,8 0 0,1 15.58,6.85l1.85,-1.23A10,10 0 0,0 3.35,19a2,2 0 0,0 1.72,1h13.85a2,2 0 0,0 1.74,-1 10,10 0 0,0 -0.28,-10.43zM10.59,15.41a2,2 0 1,1 2.83,0l2.3,-3.83 -3.83,2.3a2,2 0 0,1 -1.3,1.53z"/>
-          </vector>
-          EOF
-
-          cat << 'EOF' > app/src/main/res/drawable/ic_replay_arrow.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="24dp"
-              android:height="24dp"
-              android:viewportWidth="24"
-              android:viewportHeight="24">
-            <path
-                android:fillColor="#FF9800"
-                android:pathData="M12,5V1L7,6l5,5V7c3.31,0 6,2.69 6,6s-2.69,6 -6,6 -6,-2.69 -6,-6H4c0,4.42 3.58,8 8,8s8,-3.58 8,-8 -3.58,-8 -8,-8z"/>
-          </vector>
-          EOF
-
-          cat << 'EOF' > app/src/main/res/drawable/ic_bluetooth.xml
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="24dp"
-              android:height="24dp"
-              android:viewportWidth="24"
-              android:viewportHeight="24">
-            <path
-                android:fillColor="#FF9800"
-                android:pathData="M17.71,7.71L12,2h-1v7.59L6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 11,14.41V22h1l5.71,-5.71 -4.3,-4.29 4.3,-4.29zM13,5.83l1.88,1.88L13,9.59V5.83zm1.88,10.46L13,18.17v-3.76l1.88,1.88z"/>
-          </vector>
-          EOF
-
           cat << 'EOF' > app/src/main/res/drawable/bg_hud.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android"
               android:shape="rectangle">
@@ -775,21 +767,49 @@ jobs:
           </layer-list>
           EOF
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_settings_sheet.xml
+          # تصاميم القائمة السفلية الأنيقة للإعدادات
+          cat << 'EOF' > app/src/main/res/drawable/bg_bottom_sheet.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
-              <solid android:color="@color/settings_sheet_bg" />
+              <solid android:color="@color/app_surface" />
               <corners android:topLeftRadius="24dp" android:topRightRadius="24dp" />
+          </shape>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/bg_sheet_handle.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="@color/divider_color" />
+              <corners android:radius="3dp" />
           </shape>
           EOF
 
           cat << 'EOF' > app/src/main/res/drawable/bg_settings_card.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
-              <solid android:color="@color/settings_card_bg" />
+              <solid android:color="@color/app_card" />
               <corners android:radius="14dp" />
+              <stroke android:width="1dp" android:color="@color/card_stroke" />
           </shape>
           EOF
 
-          # 11. Menus
+          cat << 'EOF' > app/src/main/res/drawable/bg_chip_selector.xml
+          <selector xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:state_selected="true">
+                  <shape>
+                      <solid android:color="#28FF9800" />
+                      <corners android:radius="10dp" />
+                      <stroke android:width="1.5dp" android:color="@color/primary" />
+                  </shape>
+              </item>
+              <item>
+                  <shape>
+                      <solid android:color="@android:color/transparent" />
+                      <corners android:radius="10dp" />
+                      <stroke android:width="1dp" android:color="@color/card_stroke" />
+                  </shape>
+              </item>
+          </selector>
+          EOF
+
+          # 13. Menus
           cat << 'EOF' > app/src/main/res/menu/top_main_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
           <menu xmlns:android="http://schemas.android.com/apk/res/android"
@@ -831,9 +851,8 @@ jobs:
                   app:showAsAction="never" />
               <item
                   android:id="@+id/action_settings"
-                  android:icon="@drawable/ic_more_vert"
                   android:title="@string/action_settings"
-                  app:showAsAction="always" />
+                  app:showAsAction="never" />
           </menu>
           EOF
 
@@ -859,15 +878,14 @@ jobs:
           </menu>
           EOF
 
-          # 12. Layouts
-          # واجهة شاشة البداية (Splash Screen) كبيرة وسريعة تملأ الشاشة
+          # 14. Layouts
           cat << 'EOF' > app/src/main/res/layout/activity_splash.xml
           <?xml version="1.0" encoding="utf-8"?>
           <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="@color/background_dark">
+              android:background="@color/app_background">
 
               <LinearLayout
                   android:layout_width="match_parent"
@@ -909,13 +927,13 @@ jobs:
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:fitsSystemWindows="true"
-              android:background="@color/background_dark">
+              android:background="@color/app_background">
 
               <com.google.android.material.appbar.MaterialToolbar
                   android:id="@+id/topToolbar"
                   android:layout_width="match_parent"
                   android:layout_height="?attr/actionBarSize"
-                  android:background="@color/surface_dark"
+                  android:background="@color/app_surface"
                   app:title="@string/app_name"
                   app:titleTextColor="@color/text_primary"
                   app:layout_constraintTop_toTopOf="parent" />
@@ -924,7 +942,7 @@ jobs:
                   android:id="@+id/selectionBar"
                   android:layout_width="match_parent"
                   android:layout_height="?attr/actionBarSize"
-                  android:background="@color/surface_dark"
+                  android:background="@color/app_surface"
                   android:gravity="center_vertical"
                   android:paddingStart="8dp"
                   android:paddingEnd="8dp"
@@ -949,6 +967,15 @@ jobs:
                       android:textColor="@color/text_primary"
                       android:textSize="15sp"
                       android:textStyle="bold" />
+
+                  <ImageButton
+                      android:id="@+id/btnFavoriteSelected"
+                      android:layout_width="40dp"
+                      android:layout_height="40dp"
+                      android:background="?attr/selectableItemBackgroundBorderless"
+                      android:src="@drawable/ic_favorite"
+                      app:tint="@color/primary"
+                      android:contentDescription="تفضيل" />
 
                   <ImageButton
                       android:id="@+id/btnSelectAll"
@@ -1008,7 +1035,7 @@ jobs:
                   android:id="@+id/pasteBar"
                   android:layout_width="match_parent"
                   android:layout_height="52dp"
-                  android:background="#1E2836"
+                  android:background="@color/app_surface"
                   android:gravity="center_vertical"
                   android:orientation="horizontal"
                   android:paddingStart="12dp"
@@ -1033,7 +1060,7 @@ jobs:
                       android:ellipsize="end"
                       android:maxLines="1"
                       android:text="جاهز للصق"
-                      android:textColor="#FFFFFF"
+                      android:textColor="@color/text_primary"
                       android:textSize="13sp" />
 
                   <Button
@@ -1059,6 +1086,9 @@ jobs:
                   android:id="@+id/miniPlayerLayout"
                   android:layout_width="match_parent"
                   android:layout_height="64dp"
+                  android:layout_marginStart="8dp"
+                  android:layout_marginEnd="8dp"
+                  android:layout_marginBottom="4dp"
                   android:background="@drawable/bg_mini_player"
                   android:gravity="center_vertical"
                   android:orientation="horizontal"
@@ -1102,7 +1132,7 @@ jobs:
                           android:layout_marginTop="2dp"
                           android:ellipsize="end"
                           android:maxLines="1"
-                          android:textColor="@color/accent"
+                          android:textColor="@color/primary"
                           android:textSize="11sp" />
                   </LinearLayout>
 
@@ -1143,7 +1173,7 @@ jobs:
                   android:id="@+id/bottomNavigation"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:background="@color/surface_dark"
+                  android:background="@color/app_surface"
                   app:itemIconTint="@color/primary"
                   app:itemTextColor="@color/text_primary"
                   app:menu="@menu/bottom_nav_menu"
@@ -1214,7 +1244,7 @@ jobs:
                           android:layout_marginTop="2dp"
                           android:ellipsize="end"
                           android:maxLines="1"
-                          android:textColor="@color/accent"
+                          android:textColor="@color/primary"
                           android:textSize="10sp" />
 
                       <TextView
@@ -1309,7 +1339,7 @@ jobs:
                   android:gravity="center"
                   android:ellipsize="end"
                   android:maxLines="1"
-                  android:textColor="@color/accent"
+                  android:textColor="@color/primary"
                   android:textSize="10sp" />
 
               <TextView
@@ -1320,6 +1350,481 @@ jobs:
                   android:gravity="center"
                   android:textColor="@color/text_secondary"
                   android:textSize="10sp" />
+          </LinearLayout>
+          EOF
+
+          # تصميم قائمة الإعدادات العصرية (Bottom Sheet Dialog)
+          cat << 'EOF' > app/src/main/res/layout/bottom_sheet_settings.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/bg_bottom_sheet"
+              android:orientation="vertical"
+              android:paddingStart="20dp"
+              android:paddingEnd="20dp"
+              android:paddingBottom="24dp">
+
+              <View
+                  android:layout_width="48dp"
+                  android:layout_height="4dp"
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginTop="12dp"
+                  android:layout_marginBottom="14dp"
+                  android:background="@drawable/bg_sheet_handle" />
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:gravity="center_vertical"
+                  android:orientation="horizontal"
+                  android:paddingBottom="12dp">
+
+                  <ImageView
+                      android:layout_width="28dp"
+                      android:layout_height="28dp"
+                      android:src="@drawable/ic_settings"
+                      app:tint="@color/primary" />
+
+                  <LinearLayout
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:layout_marginStart="12dp"
+                      android:orientation="vertical">
+
+                      <TextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:text="إعدادات المشغل والتطبيق"
+                          android:textColor="@color/text_primary"
+                          android:textSize="18sp"
+                          android:textStyle="bold" />
+
+                      <TextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_marginTop="2dp"
+                          android:text="تخصيص العرض، الصوت والمؤثرات"
+                          android:textColor="@color/text_secondary"
+                          android:textSize="12sp" />
+                  </LinearLayout>
+
+                  <ImageButton
+                      android:id="@+id/btnCloseSettings"
+                      android:layout_width="36dp"
+                      android:layout_height="36dp"
+                      android:background="?attr/selectableItemBackgroundBorderless"
+                      android:src="@drawable/ic_close"
+                      app:tint="@color/text_secondary" />
+              </LinearLayout>
+
+              <androidx.core.widget.NestedScrollView
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:overScrollMode="never">
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical">
+
+                      <!-- قسم مظهر التطبيق (فاتح / داكن) -->
+                      <TextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_marginTop="8dp"
+                          android:layout_marginBottom="8dp"
+                          android:text="مظهر التطبيق (السمة)"
+                          android:textColor="@color/primary"
+                          android:textSize="13sp"
+                          android:textStyle="bold" />
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="horizontal">
+
+                          <TextView
+                              android:id="@+id/btnThemeDark"
+                              android:layout_width="0dp"
+                              android:layout_height="42dp"
+                              android:layout_weight="1"
+                              android:layout_marginEnd="6dp"
+                              android:background="@drawable/bg_chip_selector"
+                              android:gravity="center"
+                              android:text="🌙 داكن"
+                              android:textColor="@color/color_chip_text"
+                              android:textSize="13sp"
+                              android:textStyle="bold" />
+
+                          <TextView
+                              android:id="@+id/btnThemeLight"
+                              android:layout_width="0dp"
+                              android:layout_height="42dp"
+                              android:layout_weight="1"
+                              android:layout_marginStart="3dp"
+                              android:layout_marginEnd="3dp"
+                              android:background="@drawable/bg_chip_selector"
+                              android:gravity="center"
+                              android:text="☀️ فاتح"
+                              android:textColor="@color/color_chip_text"
+                              android:textSize="13sp"
+                              android:textStyle="bold" />
+
+                          <TextView
+                              android:id="@+id/btnThemeSystem"
+                              android:layout_width="0dp"
+                              android:layout_height="42dp"
+                              android:layout_weight="1"
+                              android:layout_marginStart="6dp"
+                              android:background="@drawable/bg_chip_selector"
+                              android:gravity="center"
+                              android:text="⚙️ النظام"
+                              android:textColor="@color/color_chip_text"
+                              android:textSize="13sp"
+                              android:textStyle="bold" />
+                      </LinearLayout>
+
+                      <!-- قسم الصوت والمؤثرات -->
+                      <TextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_marginTop="16dp"
+                          android:layout_marginBottom="8dp"
+                          android:text="الصوت والمؤثرات"
+                          android:textColor="@color/primary"
+                          android:textSize="13sp"
+                          android:textStyle="bold" />
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:background="@drawable/bg_settings_card"
+                          android:orientation="vertical"
+                          android:padding="12dp">
+
+                          <LinearLayout
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:gravity="center_vertical"
+                              android:orientation="horizontal">
+
+                              <LinearLayout
+                                  android:layout_width="0dp"
+                                  android:layout_height="wrap_content"
+                                  android:layout_weight="1"
+                                  android:orientation="vertical">
+
+                                  <TextView
+                                      android:layout_width="wrap_content"
+                                      android:layout_height="wrap_content"
+                                      android:text="مضاعفة الصوت حتى 200%"
+                                      android:textColor="@color/text_primary"
+                                      android:textSize="14sp"
+                                      android:textStyle="bold" />
+
+                                  <TextView
+                                      android:layout_width="wrap_content"
+                                      android:layout_height="wrap_content"
+                                      android:layout_marginTop="2dp"
+                                      android:text="تعزيز نقي لرفع مستوى الصوت فوق أقصى حد للجهاز"
+                                      android:textColor="@color/text_secondary"
+                                      android:textSize="11sp" />
+                              </LinearLayout>
+
+                              <Switch
+                                  android:id="@+id/switchVolumeBoost"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content" />
+                          </LinearLayout>
+
+                          <View
+                              android:layout_width="match_parent"
+                              android:layout_height="1dp"
+                              android:layout_marginTop="10dp"
+                              android:layout_marginBottom="10dp"
+                              android:background="@color/divider_color" />
+
+                          <LinearLayout
+                              android:id="@+id/layoutEqualizerSetting"
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:background="?attr/selectableItemBackground"
+                              android:gravity="center_vertical"
+                              android:orientation="horizontal">
+
+                              <ImageView
+                                  android:layout_width="22dp"
+                                  android:layout_height="22dp"
+                                  android:src="@drawable/ic_equalizer"
+                                  app:tint="@color/primary" />
+
+                              <LinearLayout
+                                  android:layout_width="0dp"
+                                  android:layout_height="wrap_content"
+                                  android:layout_weight="1"
+                                  android:layout_marginStart="10dp"
+                                  android:orientation="vertical">
+
+                                  <TextView
+                                      android:layout_width="wrap_content"
+                                      android:layout_height="wrap_content"
+                                      android:text="معادل الصوت والمؤثرات (Equalizer)"
+                                      android:textColor="@color/text_primary"
+                                      android:textSize="14sp"
+                                      android:textStyle="bold" />
+
+                                  <TextView
+                                      android:layout_width="wrap_content"
+                                      android:layout_height="wrap_content"
+                                      android:layout_marginTop="2dp"
+                                      android:text="الأنماط الجاهزة، تضخيم الباس، وصدى الصوت (Reverb)"
+                                      android:textColor="@color/text_secondary"
+                                      android:textSize="11sp" />
+                              </LinearLayout>
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="ضبط ❯"
+                                  android:textColor="@color/primary"
+                                  android:textSize="12sp"
+                                  android:textStyle="bold" />
+                          </LinearLayout>
+                      </LinearLayout>
+
+                      <!-- قسم المشغل والتحكم -->
+                      <TextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_marginTop="16dp"
+                          android:layout_marginBottom="8dp"
+                          android:text="المشغل وسرعة التسريع"
+                          android:textColor="@color/primary"
+                          android:textSize="13sp"
+                          android:textStyle="bold" />
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:background="@drawable/bg_settings_card"
+                          android:orientation="vertical"
+                          android:padding="12dp">
+
+                          <TextView
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:text="سرعة الضغط المطول للتسريع:"
+                              android:textColor="@color/text_primary"
+                              android:textSize="13sp"
+                              android:textStyle="bold" />
+
+                          <LinearLayout
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:layout_marginTop="8dp"
+                              android:orientation="horizontal">
+
+                              <TextView
+                                  android:id="@+id/btnSpeed125"
+                                  android:layout_width="0dp"
+                                  android:layout_height="36dp"
+                                  android:layout_weight="1"
+                                  android:layout_marginEnd="4dp"
+                                  android:background="@drawable/bg_chip_selector"
+                                  android:gravity="center"
+                                  android:text="1.25x"
+                                  android:textColor="@color/color_chip_text"
+                                  android:textSize="12sp"
+                                  android:textStyle="bold" />
+
+                              <TextView
+                                  android:id="@+id/btnSpeed150"
+                                  android:layout_width="0dp"
+                                  android:layout_height="36dp"
+                                  android:layout_weight="1"
+                                  android:layout_marginStart="2dp"
+                                  android:layout_marginEnd="2dp"
+                                  android:background="@drawable/bg_chip_selector"
+                                  android:gravity="center"
+                                  android:text="1.5x"
+                                  android:textColor="@color/color_chip_text"
+                                  android:textSize="12sp"
+                                  android:textStyle="bold" />
+
+                              <TextView
+                                  android:id="@+id/btnSpeed175"
+                                  android:layout_width="0dp"
+                                  android:layout_height="36dp"
+                                  android:layout_weight="1"
+                                  android:layout_marginStart="2dp"
+                                  android:layout_marginEnd="2dp"
+                                  android:background="@drawable/bg_chip_selector"
+                                  android:gravity="center"
+                                  android:text="1.75x"
+                                  android:textColor="@color/color_chip_text"
+                                  android:textSize="12sp"
+                                  android:textStyle="bold" />
+
+                              <TextView
+                                  android:id="@+id/btnSpeed200"
+                                  android:layout_width="0dp"
+                                  android:layout_height="36dp"
+                                  android:layout_weight="1"
+                                  android:layout_marginStart="4dp"
+                                  android:background="@drawable/bg_chip_selector"
+                                  android:gravity="center"
+                                  android:text="2.0x"
+                                  android:textColor="@color/color_chip_text"
+                                  android:textSize="12sp"
+                                  android:textStyle="bold" />
+                          </LinearLayout>
+
+                          <View
+                              android:layout_width="match_parent"
+                              android:layout_height="1dp"
+                              android:layout_marginTop="12dp"
+                              android:layout_marginBottom="10dp"
+                              android:background="@color/divider_color" />
+
+                          <TextView
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:text="استئناف تشغيل الفيديو:"
+                              android:textColor="@color/text_primary"
+                              android:textSize="13sp"
+                              android:textStyle="bold" />
+
+                          <RadioGroup
+                              android:id="@+id/radioGroupResume"
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:layout_marginTop="4dp">
+
+                              <RadioButton
+                                  android:id="@+id/radioResumeAuto"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="الاستئناف من حيث توقف المقطع تلقائياً"
+                                  android:textColor="@color/text_primary"
+                                  android:textSize="12sp" />
+
+                              <RadioButton
+                                  android:id="@+id/radioResumeStart"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="البدء من بداية المقطع دائماً"
+                                  android:textColor="@color/text_primary"
+                                  android:textSize="12sp" />
+
+                              <RadioButton
+                                  android:id="@+id/radioResumeAsk"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="السؤال قبل اتخاذ القرار عند كل تشغيل"
+                                  android:textColor="@color/text_primary"
+                                  android:textSize="12sp" />
+                          </RadioGroup>
+                      </LinearLayout>
+
+                      <!-- قسم الميزات الإضافية -->
+                      <TextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_marginTop="16dp"
+                          android:layout_marginBottom="8dp"
+                          android:text="تفضيلات إضافية"
+                          android:textColor="@color/primary"
+                          android:textSize="13sp"
+                          android:textStyle="bold" />
+
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:background="@drawable/bg_settings_card"
+                          android:orientation="vertical"
+                          android:padding="12dp">
+
+                          <LinearLayout
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:gravity="center_vertical"
+                              android:orientation="horizontal">
+
+                              <TextView
+                                  android:layout_width="0dp"
+                                  android:layout_height="wrap_content"
+                                  android:layout_weight="1"
+                                  android:text="التحكم عبر سماعة البلوتوث"
+                                  android:textColor="@color/text_primary"
+                                  android:textSize="13sp" />
+
+                              <Switch
+                                  android:id="@+id/switchBluetooth"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content" />
+                          </LinearLayout>
+
+                          <View
+                              android:layout_width="match_parent"
+                              android:layout_height="1dp"
+                              android:layout_marginTop="8dp"
+                              android:layout_marginBottom="8dp"
+                              android:background="@color/divider_color" />
+
+                          <LinearLayout
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:gravity="center_vertical"
+                              android:orientation="horizontal">
+
+                              <TextView
+                                  android:layout_width="0dp"
+                                  android:layout_height="wrap_content"
+                                  android:layout_weight="1"
+                                  android:text="إظهار كلمات الأغاني في الصوتيات"
+                                  android:textColor="@color/text_primary"
+                                  android:textSize="13sp" />
+
+                              <Switch
+                                  android:id="@+id/switchLyrics"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content" />
+                          </LinearLayout>
+
+                          <View
+                              android:layout_width="match_parent"
+                              android:layout_height="1dp"
+                              android:layout_marginTop="8dp"
+                              android:layout_marginBottom="8dp"
+                              android:background="@color/divider_color" />
+
+                          <LinearLayout
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:gravity="center_vertical"
+                              android:orientation="horizontal">
+
+                              <TextView
+                                  android:layout_width="0dp"
+                                  android:layout_height="wrap_content"
+                                  android:layout_weight="1"
+                                  android:text="إظهار امتداد الملفات في الأسماء"
+                                  android:textColor="@color/text_primary"
+                                  android:textSize="13sp" />
+
+                              <Switch
+                                  android:id="@+id/switchExtensions"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content" />
+                          </LinearLayout>
+                      </LinearLayout>
+
+                  </LinearLayout>
+              </androidx.core.widget.NestedScrollView>
+
           </LinearLayout>
           EOF
 
@@ -1384,13 +1889,13 @@ jobs:
                   android:background="@drawable/bg_controls_gradient"
                   android:orientation="horizontal"
                   android:gravity="center_vertical"
-                  android:padding="12dp"
+                  android:padding="10dp"
                   app:layout_constraintTop_toTopOf="parent">
 
                   <ImageButton
                       android:id="@+id/btnBack"
-                      android:layout_width="40dp"
-                      android:layout_height="40dp"
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
                       android:background="?attr/selectableItemBackgroundBorderless"
                       android:src="@drawable/ic_back"
                       app:tint="#FFFFFF" />
@@ -1405,37 +1910,47 @@ jobs:
                       android:ellipsize="end"
                       android:maxLines="1"
                       android:textColor="#FFFFFF"
-                      android:textSize="15sp"
+                      android:textSize="14sp"
                       android:textStyle="bold" />
+
+                  <!-- زر التفضيل داخل المشغل -->
+                  <ImageButton
+                      android:id="@+id/btnFavorite"
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
+                      android:background="?attr/selectableItemBackgroundBorderless"
+                      android:src="@drawable/ic_favorite_border"
+                      app:tint="#FFFFFF"
+                      android:contentDescription="تفضيل" />
 
                   <ImageButton
                       android:id="@+id/btnLyricsToggle"
-                      android:layout_width="40dp"
-                      android:layout_height="40dp"
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
                       android:background="?attr/selectableItemBackgroundBorderless"
                       android:src="@drawable/ic_lyrics"
                       app:tint="#FFFFFF" />
 
                   <ImageButton
                       android:id="@+id/btnToggleNav"
-                      android:layout_width="40dp"
-                      android:layout_height="40dp"
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
                       android:background="?attr/selectableItemBackgroundBorderless"
                       android:src="@drawable/ic_fullscreen"
                       app:tint="#FFFFFF" />
 
                   <ImageButton
                       android:id="@+id/btnEqualizer"
-                      android:layout_width="40dp"
-                      android:layout_height="40dp"
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
                       android:background="?attr/selectableItemBackgroundBorderless"
                       android:src="@drawable/ic_equalizer"
                       app:tint="#FFFFFF" />
 
                   <ImageButton
                       android:id="@+id/btnRotate"
-                      android:layout_width="40dp"
-                      android:layout_height="40dp"
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
                       android:background="?attr/selectableItemBackgroundBorderless"
                       android:src="@drawable/ic_screen_rotation"
                       app:tint="#FFFFFF" />
@@ -1443,35 +1958,37 @@ jobs:
                   <Button
                       android:id="@+id/btnDecoder"
                       android:layout_width="wrap_content"
-                      android:layout_height="36dp"
+                      android:layout_height="34dp"
                       android:backgroundTint="#FF9800"
                       android:text="HW"
                       android:textColor="#FFFFFF"
-                      android:textSize="12sp" />
+                      android:textSize="11sp" />
 
                   <ImageButton
                       android:id="@+id/btnPip"
-                      android:layout_width="40dp"
-                      android:layout_height="40dp"
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
                       android:background="?attr/selectableItemBackgroundBorderless"
                       android:src="@drawable/ic_pip"
                       app:tint="#FFFFFF" />
 
                   <ImageButton
-                      android:id="@+id/btnPlayerSettings"
-                      android:layout_width="40dp"
-                      android:layout_height="40dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_more_vert"
-                      app:tint="#FFFFFF" />
-
-                  <ImageButton
                       android:id="@+id/btnLock"
-                      android:layout_width="40dp"
-                      android:layout_height="40dp"
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
                       android:background="?attr/selectableItemBackgroundBorderless"
                       android:src="@drawable/ic_lock"
                       app:tint="#FFFFFF" />
+
+                  <!-- زر النقاط الثلاث للإعدادات داخل المشغل -->
+                  <ImageButton
+                      android:id="@+id/btnMore"
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
+                      android:background="?attr/selectableItemBackgroundBorderless"
+                      android:src="@drawable/ic_more_vert"
+                      app:tint="#FFFFFF"
+                      android:contentDescription="الإعدادات" />
               </LinearLayout>
 
               <ImageButton
@@ -1613,7 +2130,6 @@ jobs:
                       android:textStyle="bold" />
               </LinearLayout>
 
-              <!-- مؤشر التسريع بالضغط المطول -->
               <LinearLayout
                   android:id="@+id/hudFastForward"
                   android:layout_width="wrap_content"
@@ -1641,7 +2157,6 @@ jobs:
                       android:textStyle="bold" />
               </LinearLayout>
 
-              <!-- مؤشر نسبة التكبير والتصغير حتى 500% -->
               <LinearLayout
                   android:id="@+id/hudZoom"
                   android:layout_width="wrap_content"
@@ -1793,370 +2308,37 @@ jobs:
           </androidx.constraintlayout.widget.ConstraintLayout>
           EOF
 
-          # واجهة ورقة الإعدادات الاحترافية (Bottom Sheet Layout)
-          cat << 'EOF' > app/src/main/res/layout/dialog_app_settings.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:background="@drawable/bg_settings_sheet"
-              android:orientation="vertical"
-              android:paddingBottom="24dp">
+          # 15. LionPlayerApp.kt (تطبيق السمة الفاتحة/الداكنة عند بداية التشغيل)
+          cat << 'EOF' > app/src/main/java/com/lionplayer/app/LionPlayerApp.kt
+          package com.lionplayer.app
 
-              <View
-                  android:layout_width="48dp"
-                  android:layout_height="5dp"
-                  android:layout_gravity="center_horizontal"
-                  android:layout_marginTop="12dp"
-                  android:layout_marginBottom="12dp"
-                  android:background="#44FFFFFF" />
+          import android.app.Application
+          import android.content.Context
+          import androidx.appcompat.app.AppCompatDelegate
 
-              <LinearLayout
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:gravity="center_vertical"
-                  android:paddingStart="20dp"
-                  android:paddingEnd="20dp"
-                  android:paddingBottom="12dp">
+          class LionPlayerApp : Application() {
 
-                  <ImageView
-                      android:layout_width="26dp"
-                      android:layout_height="26dp"
-                      android:src="@drawable/ic_settings"
-                      app:tint="@color/primary" />
+              override fun onCreate() {
+                  super.onCreate()
+                  val prefs = getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
+                  val mode = prefs.getString("theme_mode", "dark") ?: "dark"
+                  applyTheme(mode)
+              }
 
-                  <TextView
-                      android:layout_width="0dp"
-                      android:layout_height="wrap_content"
-                      android:layout_weight="1"
-                      android:layout_marginStart="10dp"
-                      android:text="إعدادات التطبيق والمشغل"
-                      android:textColor="#FFFFFF"
-                      android:textSize="18sp"
-                      android:textStyle="bold" />
-
-                  <ImageButton
-                      android:id="@+id/btnCloseSettings"
-                      android:layout_width="36dp"
-                      android:layout_height="36dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_close"
-                      app:tint="#88FFFFFF" />
-              </LinearLayout>
-
-              <ScrollView
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:paddingStart="16dp"
-                  android:paddingEnd="16dp">
-
-                  <LinearLayout
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:orientation="vertical">
-
-                      <!-- كارت المظهر الداكن والغامق -->
-                      <LinearLayout
-                          android:id="@+id/rowDarkTheme"
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:layout_marginBottom="10dp"
-                          android:background="@drawable/bg_settings_card"
-                          android:gravity="center_vertical"
-                          android:padding="14dp">
-
-                          <ImageView
-                              android:layout_width="28dp"
-                              android:layout_height="28dp"
-                              android:src="@drawable/ic_dark_mode"
-                              app:tint="@color/primary" />
-
-                          <LinearLayout
-                              android:layout_width="0dp"
-                              android:layout_height="wrap_content"
-                              android:layout_weight="1"
-                              android:layout_marginStart="12dp"
-                              android:layout_marginEnd="8dp"
-                              android:orientation="vertical">
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:text="مظهر التطبيق (داكن وغامق)"
-                                  android:textColor="#FFFFFF"
-                                  android:textSize="15sp"
-                                  android:textStyle="bold" />
-
-                              <TextView
-                                  android:id="@+id/tvDarkThemeSubtitle"
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:layout_marginTop="2dp"
-                                  android:text="الوضع الداكن الاحترافي مفعل"
-                                  android:textColor="#9E9E9E"
-                                  android:textSize="12sp" />
-                          </LinearLayout>
-
-                          <TextView
-                              android:id="@+id/tvDarkThemeStatus"
-                              android:layout_width="wrap_content"
-                              android:layout_height="wrap_content"
-                              android:text="غامق"
-                              android:textColor="@color/primary"
-                              android:textSize="13sp"
-                              android:textStyle="bold" />
-                      </LinearLayout>
-
-                      <!-- كارت مضاعفة الصوت حتى 200% -->
-                      <LinearLayout
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:layout_marginBottom="10dp"
-                          android:background="@drawable/bg_settings_card"
-                          android:gravity="center_vertical"
-                          android:padding="14dp">
-
-                          <ImageView
-                              android:layout_width="28dp"
-                              android:layout_height="28dp"
-                              android:src="@drawable/ic_audiotrack"
-                              app:tint="@color/primary" />
-
-                          <LinearLayout
-                              android:layout_width="0dp"
-                              android:layout_height="wrap_content"
-                              android:layout_weight="1"
-                              android:layout_marginStart="12dp"
-                              android:layout_marginEnd="8dp"
-                              android:orientation="vertical">
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:text="مضاعفة الصوت حتى 200%"
-                                  android:textColor="#FFFFFF"
-                                  android:textSize="15sp"
-                                  android:textStyle="bold" />
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:layout_marginTop="2dp"
-                                  android:text="تعزيز ذكي فائق النقاء يمنع التشويش"
-                                  android:textColor="#9E9E9E"
-                                  android:textSize="12sp" />
-                          </LinearLayout>
-
-                          <com.google.android.material.switchmaterial.SwitchMaterial
-                              android:id="@+id/switchVolumeBoost"
-                              android:layout_width="wrap_content"
-                              android:layout_height="wrap_content"
-                              app:useMaterialThemeColors="true" />
-                      </LinearLayout>
-
-                      <!-- كارت سرعة الضغط المطول -->
-                      <LinearLayout
-                          android:id="@+id/rowLongPressSpeed"
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:layout_marginBottom="10dp"
-                          android:background="@drawable/bg_settings_card"
-                          android:gravity="center_vertical"
-                          android:padding="14dp">
-
-                          <ImageView
-                              android:layout_width="28dp"
-                              android:layout_height="28dp"
-                              android:src="@drawable/ic_speed"
-                              app:tint="@color/primary" />
-
-                          <LinearLayout
-                              android:layout_width="0dp"
-                              android:layout_height="wrap_content"
-                              android:layout_weight="1"
-                              android:layout_marginStart="12dp"
-                              android:layout_marginEnd="8dp"
-                              android:orientation="vertical">
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:text="سرعة الضغط المطول للتسريع"
-                                  android:textColor="#FFFFFF"
-                                  android:textSize="15sp"
-                                  android:textStyle="bold" />
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:layout_marginTop="2dp"
-                                  android:text="تسريع المقطع مؤقتاً أثناء الضغط على الشاشة"
-                                  android:textColor="#9E9E9E"
-                                  android:textSize="12sp" />
-                          </LinearLayout>
-
-                          <TextView
-                              android:id="@+id/tvLongPressSpeedValue"
-                              android:layout_width="wrap_content"
-                              android:layout_height="wrap_content"
-                              android:text="2x"
-                              android:textColor="@color/primary"
-                              android:textSize="14sp"
-                              android:textStyle="bold" />
-                      </LinearLayout>
-
-                      <!-- كارت استئناف تشغيل الفيديو -->
-                      <LinearLayout
-                          android:id="@+id/rowResumeMode"
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:layout_marginBottom="10dp"
-                          android:background="@drawable/bg_settings_card"
-                          android:gravity="center_vertical"
-                          android:padding="14dp">
-
-                          <ImageView
-                              android:layout_width="28dp"
-                              android:layout_height="28dp"
-                              android:src="@drawable/ic_replay_arrow"
-                              app:tint="@color/primary" />
-
-                          <LinearLayout
-                              android:layout_width="0dp"
-                              android:layout_height="wrap_content"
-                              android:layout_weight="1"
-                              android:layout_marginStart="12dp"
-                              android:layout_marginEnd="8dp"
-                              android:orientation="vertical">
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:text="استئناف تشغيل الفيديو"
-                                  android:textColor="#FFFFFF"
-                                  android:textSize="15sp"
-                                  android:textStyle="bold" />
-
-                              <TextView
-                                  android:id="@+id/tvResumeModeSubtitle"
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:layout_marginTop="2dp"
-                                  android:text="الاستئناف من حيث توقف"
-                                  android:textColor="#9E9E9E"
-                                  android:textSize="12sp" />
-                          </LinearLayout>
-
-                          <TextView
-                              android:id="@+id/tvResumeModeArrow"
-                              android:layout_width="wrap_content"
-                              android:layout_height="wrap_content"
-                              android:text="تغيير"
-                              android:textColor="@color/primary"
-                              android:textSize="13sp"
-                              android:textStyle="bold" />
-                      </LinearLayout>
-
-                      <!-- كارت سماعة البلوتوث -->
-                      <LinearLayout
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:layout_marginBottom="10dp"
-                          android:background="@drawable/bg_settings_card"
-                          android:gravity="center_vertical"
-                          android:padding="14dp">
-
-                          <ImageView
-                              android:layout_width="28dp"
-                              android:layout_height="28dp"
-                              android:src="@drawable/ic_bluetooth"
-                              app:tint="@color/primary" />
-
-                          <LinearLayout
-                              android:layout_width="0dp"
-                              android:layout_height="wrap_content"
-                              android:layout_weight="1"
-                              android:layout_marginStart="12dp"
-                              android:layout_marginEnd="8dp"
-                              android:orientation="vertical">
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:text="التحكم بسماعة البلوتوث"
-                                  android:textColor="#FFFFFF"
-                                  android:textSize="15sp"
-                                  android:textStyle="bold" />
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:layout_marginTop="2dp"
-                                  android:text="الاستجابة لأزرار التشغيل والتنقل في السماعة"
-                                  android:textColor="#9E9E9E"
-                                  android:textSize="12sp" />
-                          </LinearLayout>
-
-                          <com.google.android.material.switchmaterial.SwitchMaterial
-                              android:id="@+id/switchBluetooth"
-                              android:layout_width="wrap_content"
-                              android:layout_height="wrap_content"
-                              app:useMaterialThemeColors="true" />
-                      </LinearLayout>
-
-                      <!-- كارت كلمات الأغاني -->
-                      <LinearLayout
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:background="@drawable/bg_settings_card"
-                          android:gravity="center_vertical"
-                          android:padding="14dp">
-
-                          <ImageView
-                              android:layout_width="28dp"
-                              android:layout_height="28dp"
-                              android:src="@drawable/ic_lyrics"
-                              app:tint="@color/primary" />
-
-                          <LinearLayout
-                              android:layout_width="0dp"
-                              android:layout_height="wrap_content"
-                              android:layout_weight="1"
-                              android:layout_marginStart="12dp"
-                              android:layout_marginEnd="8dp"
-                              android:orientation="vertical">
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:text="كلمات الأغاني الصوتية"
-                                  android:textColor="#FFFFFF"
-                                  android:textSize="15sp"
-                                  android:textStyle="bold" />
-
-                              <TextView
-                                  android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content"
-                                  android:layout_marginTop="2dp"
-                                  android:text="عرض كلمات الأغاني المتزامنة تلقائياً"
-                                  android:textColor="#9E9E9E"
-                                  android:textSize="12sp" />
-                          </LinearLayout>
-
-                          <com.google.android.material.switchmaterial.SwitchMaterial
-                              android:id="@+id/switchLyrics"
-                              android:layout_width="wrap_content"
-                              android:layout_height="wrap_content"
-                              app:useMaterialThemeColors="true" />
-                      </LinearLayout>
-
-                  </LinearLayout>
-              </ScrollView>
-          </LinearLayout>
+              companion object {
+                  fun applyTheme(mode: String) {
+                      when (mode) {
+                          "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                          "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                          "system" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                          else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                      }
+                  }
+              }
+          }
           EOF
 
-          # 13. MediaItem.kt
+          # 16. MediaItem.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/model/MediaItem.kt
           package com.lionplayer.app.model
 
@@ -2181,7 +2363,7 @@ jobs:
           ) : Serializable
           EOF
 
-          # 14. ThumbnailLoader.kt
+          # 17. ThumbnailLoader.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/adapter/ThumbnailLoader.kt
           package com.lionplayer.app.adapter
 
@@ -2331,7 +2513,7 @@ jobs:
           }
           EOF
 
-          # 15. LionPlayerManager.kt
+          # 18. LionPlayerManager.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/player/LionPlayerManager.kt
           package com.lionplayer.app.player
 
@@ -2657,7 +2839,7 @@ jobs:
           }
           EOF
 
-          # 16. NotificationReceiver.kt
+          # 19. NotificationReceiver.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/receiver/NotificationReceiver.kt
           package com.lionplayer.app.receiver
 
@@ -2686,7 +2868,7 @@ jobs:
           }
           EOF
 
-          # 17. MediaAdapter.kt
+          # 20. MediaAdapter.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/adapter/MediaAdapter.kt
           package com.lionplayer.app.adapter
 
@@ -2830,12 +3012,11 @@ jobs:
           }
           EOF
 
-          # 18. SplashActivity.kt (شاشة البداية السريعة والحديثة)
+          # 21. SplashActivity.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/SplashActivity.kt
           package com.lionplayer.app.ui
 
           import android.annotation.SuppressLint
-          import android.content.Context
           import android.content.Intent
           import android.os.Build
           import android.os.Bundle
@@ -2847,7 +3028,6 @@ jobs:
           import android.widget.ImageView
           import android.widget.TextView
           import androidx.appcompat.app.AppCompatActivity
-          import androidx.appcompat.app.AppCompatDelegate
           import com.lionplayer.app.R
 
           @SuppressLint("CustomSplashScreen")
@@ -2855,7 +3035,6 @@ jobs:
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
-                  applyAppTheme()
                   hideSystemBars()
                   setContentView(R.layout.activity_splash)
 
@@ -2894,15 +3073,6 @@ jobs:
                   }, 850)
               }
 
-              private fun applyAppTheme() {
-                  val prefs = getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
-                  val themeMode = prefs.getInt("theme_mode", 0) // 0: Dark (غامق وداكن), 1: AMOLED Black
-                  when (themeMode) {
-                      0, 1 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                      else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                  }
-              }
-
               private fun hideSystemBars() {
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                       window.insetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
@@ -2918,7 +3088,171 @@ jobs:
           }
           EOF
 
-          # 19. MainActivity.kt
+          # 22. PlayerSettingsBottomSheet.kt (الواجهة الأنيقة الجديدة للإعدادات)
+          cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/PlayerSettingsBottomSheet.kt
+          package com.lionplayer.app.ui
+
+          import android.app.Activity
+          import android.content.Context
+          import android.view.LayoutInflater
+          import android.view.View
+          import android.widget.*
+          import com.google.android.material.bottomsheet.BottomSheetDialog
+          import com.lionplayer.app.LionPlayerApp
+          import com.lionplayer.app.R
+          import com.lionplayer.app.player.LionPlayerManager
+
+          object PlayerSettingsBottomSheet {
+
+              fun show(
+                  activity: Activity,
+                  onEqualizerClick: (() -> Unit)? = null,
+                  onVolumeBoostChanged: ((Boolean) -> Unit)? = null,
+                  onSettingChanged: (() -> Unit)? = null
+              ) {
+                  val prefs = activity.getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
+                  val dialog = BottomSheetDialog(activity, R.style.BottomSheetDialogTheme)
+                  val view = LayoutInflater.from(activity).inflate(R.layout.bottom_sheet_settings, null)
+                  dialog.setContentView(view)
+
+                  // 1. أزرار السمة والمظهر
+                  val btnThemeDark = view.findViewById<TextView>(R.id.btnThemeDark)
+                  val btnThemeLight = view.findViewById<TextView>(R.id.btnThemeLight)
+                  val btnThemeSystem = view.findViewById<TextView>(R.id.btnThemeSystem)
+
+                  var currentTheme = prefs.getString("theme_mode", "dark") ?: "dark"
+
+                  fun updateThemeUI() {
+                      btnThemeDark.isSelected = (currentTheme == "dark")
+                      btnThemeLight.isSelected = (currentTheme == "light")
+                      btnThemeSystem.isSelected = (currentTheme == "system")
+                  }
+                  updateThemeUI()
+
+                  fun applyNewTheme(newTheme: String) {
+                      if (currentTheme != newTheme) {
+                          currentTheme = newTheme
+                          prefs.edit().putString("theme_mode", newTheme).apply()
+                          updateThemeUI()
+                          dialog.dismiss()
+                          LionPlayerApp.applyTheme(newTheme)
+                      }
+                  }
+
+                  btnThemeDark.setOnClickListener { applyNewTheme("dark") }
+                  btnThemeLight.setOnClickListener { applyNewTheme("light") }
+                  btnThemeSystem.setOnClickListener { applyNewTheme("system") }
+
+                  // 2. مضاعفة الصوت
+                  val switchBoost = view.findViewById<Switch>(R.id.switchVolumeBoost)
+                  val isBoost = prefs.getBoolean("volume_boost_enabled", false)
+                  switchBoost.isChecked = isBoost
+                  switchBoost.setOnCheckedChangeListener { _, isChecked ->
+                      prefs.edit().putBoolean("volume_boost_enabled", isChecked).apply()
+                      onVolumeBoostChanged?.invoke(isChecked)
+                      onSettingChanged?.invoke()
+                      val msg = if (isChecked) "تم تفعيل مضاعفة الصوت حتى 200%" else "تم إيقاف مضاعفة الصوت"
+                      Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                  }
+
+                  // 3. فتح معادل الصوت والمؤثرات
+                  val layoutEqualizer = view.findViewById<View>(R.id.layoutEqualizerSetting)
+                  layoutEqualizer.setOnClickListener {
+                      dialog.dismiss()
+                      onEqualizerClick?.invoke()
+                  }
+
+                  // 4. سرعة الضغط المطول
+                  val speedIdx = prefs.getInt("long_press_speed_idx", 3).coerceIn(0, 3)
+                  val speedBtns = listOf(
+                      view.findViewById<TextView>(R.id.btnSpeed125),
+                      view.findViewById<TextView>(R.id.btnSpeed150),
+                      view.findViewById<TextView>(R.id.btnSpeed175),
+                      view.findViewById<TextView>(R.id.btnSpeed200)
+                  )
+                  val speedValues = floatArrayOf(1.25f, 1.5f, 1.75f, 2.0f)
+                  val speedLabels = arrayOf("1.25x", "1.5x", "1.75x", "2x")
+
+                  fun updateSpeedUI(selected: Int) {
+                      speedBtns.forEachIndexed { idx, btn ->
+                          btn.isSelected = (idx == selected)
+                      }
+                  }
+                  updateSpeedUI(speedIdx)
+
+                  speedBtns.forEachIndexed { idx, btn ->
+                      btn.setOnClickListener {
+                          prefs.edit()
+                              .putInt("long_press_speed_idx", idx)
+                              .putFloat("long_press_speed", speedValues[idx])
+                              .putString("long_press_speed_str", speedLabels[idx])
+                              .apply()
+                          updateSpeedUI(idx)
+                          onSettingChanged?.invoke()
+                          Toast.makeText(activity, "سرعة التسريع بالضغط: ${speedLabels[idx]}", Toast.LENGTH_SHORT).show()
+                      }
+                  }
+
+                  // 5. استئناف تشغيل الفيديو
+                  val resumeMode = prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)
+                  val radioResumeAuto = view.findViewById<RadioButton>(R.id.radioResumeAuto)
+                  val radioResumeStart = view.findViewById<RadioButton>(R.id.radioResumeStart)
+                  val radioResumeAsk = view.findViewById<RadioButton>(R.id.radioResumeAsk)
+
+                  when (resumeMode) {
+                      0 -> radioResumeAuto.isChecked = true
+                      1 -> radioResumeStart.isChecked = true
+                      2 -> radioResumeAsk.isChecked = true
+                  }
+
+                  val radioGroupResume = view.findViewById<RadioGroup>(R.id.radioGroupResume)
+                  radioGroupResume.setOnCheckedChangeListener { _, checkedId ->
+                      val mode = when (checkedId) {
+                          R.id.radioResumeAuto -> 0
+                          R.id.radioResumeStart -> 1
+                          R.id.radioResumeAsk -> 2
+                          else -> 0
+                      }
+                      prefs.edit().putInt("resume_playback_mode", mode).apply()
+                      onSettingChanged?.invoke()
+                  }
+
+                  // 6. التحكم بسماعة البلوتوث
+                  val switchBt = view.findViewById<Switch>(R.id.switchBluetooth)
+                  switchBt.isChecked = prefs.getBoolean("bluetooth_headset_control", true)
+                  switchBt.setOnCheckedChangeListener { _, isChecked ->
+                      LionPlayerManager.bluetoothControlEnabled = isChecked
+                      prefs.edit().putBoolean("bluetooth_headset_control", isChecked).apply()
+                      onSettingChanged?.invoke()
+                  }
+
+                  // 7. إظهار كلمات الأغاني
+                  val switchLyrics = view.findViewById<Switch>(R.id.switchLyrics)
+                  switchLyrics.isChecked = prefs.getBoolean("show_lyrics", true)
+                  switchLyrics.setOnCheckedChangeListener { _, isChecked ->
+                      prefs.edit().putBoolean("show_lyrics", isChecked).apply()
+                      onSettingChanged?.invoke()
+                  }
+
+                  // 8. إظهار امتدادات الملفات
+                  val switchExtensions = view.findViewById<Switch>(R.id.switchExtensions)
+                  switchExtensions.isChecked = prefs.getBoolean("show_extensions", false)
+                  switchExtensions.setOnCheckedChangeListener { _, isChecked ->
+                      prefs.edit().putBoolean("show_extensions", isChecked).apply()
+                      onSettingChanged?.invoke()
+                  }
+
+                  // زر الإغلاق
+                  view.findViewById<View>(R.id.btnCloseSettings).setOnClickListener {
+                      dialog.dismiss()
+                  }
+
+                  dialog.show()
+              }
+          }
+          EOF
+
+          # 23. MainActivity.kt (مع زر التفضيل عند التحديد/الضغط المطول ومزامنة المفضلة وقائمة الإعدادات)
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/MainActivity.kt
           package com.lionplayer.app.ui
 
@@ -2938,7 +3272,6 @@ jobs:
           import android.widget.*
           import androidx.appcompat.app.AlertDialog
           import androidx.appcompat.app.AppCompatActivity
-          import androidx.appcompat.app.AppCompatDelegate
           import androidx.appcompat.widget.SearchView
           import androidx.core.app.ActivityCompat
           import androidx.core.content.ContextCompat
@@ -2947,8 +3280,6 @@ jobs:
           import androidx.recyclerview.widget.RecyclerView
           import com.google.android.material.appbar.MaterialToolbar
           import com.google.android.material.bottomnavigation.BottomNavigationView
-          import com.google.android.material.bottomsheet.BottomSheetDialog
-          import com.google.android.material.switchmaterial.SwitchMaterial
           import com.lionplayer.app.R
           import com.lionplayer.app.adapter.MediaAdapter
           import com.lionplayer.app.adapter.ThumbnailLoader
@@ -2977,6 +3308,7 @@ jobs:
               private lateinit var selectionBar: LinearLayout
               private lateinit var tvSelectionCount: TextView
               private lateinit var btnCancelSelection: ImageButton
+              private lateinit var btnFavoriteSelected: ImageButton
               private lateinit var btnSelectAll: ImageButton
               private lateinit var btnCopySelected: ImageButton
               private lateinit var btnMoveSelected: ImageButton
@@ -3076,12 +3408,22 @@ jobs:
                   selectionBar = findViewById(R.id.selectionBar)
                   tvSelectionCount = findViewById(R.id.tvSelectionCount)
                   btnCancelSelection = findViewById(R.id.btnCancelSelection)
+                  btnFavoriteSelected = findViewById(R.id.btnFavoriteSelected)
                   btnSelectAll = findViewById(R.id.btnSelectAll)
                   btnCopySelected = findViewById(R.id.btnCopySelected)
                   btnMoveSelected = findViewById(R.id.btnMoveSelected)
                   btnDeleteSelected = findViewById(R.id.btnDeleteSelected)
 
                   btnCancelSelection.setOnClickListener { exitSelectionMode() }
+
+                  // زر التفضيل للمقاطع المحددة أثناء الضغط المطول
+                  btnFavoriteSelected.setOnClickListener {
+                      val selected = displayedList.filter { it.isSelected && !it.isFolder }
+                      if (selected.isNotEmpty()) {
+                          toggleFavoriteMultiple(selected)
+                      }
+                  }
+
                   btnSelectAll.setOnClickListener {
                       val allSelected = displayedList.filter { !it.isFolder }.all { it.isSelected }
                       displayedList.forEach { if (!it.isFolder) it.isSelected = !allSelected }
@@ -3099,6 +3441,33 @@ jobs:
                           confirmDeleteMultiple(selected)
                       }
                   }
+              }
+
+              private fun toggleFavoriteMultiple(items: List<MediaItem>) {
+                  val favSet = prefs.getStringSet("favorite_ids", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+                  val allAlreadyFav = items.all { it.isFavorite }
+
+                  for (item in items) {
+                      val idStr = item.id.toString()
+                      if (allAlreadyFav) {
+                          favSet.remove(idStr)
+                          item.isFavorite = false
+                      } else {
+                          favSet.add(idStr)
+                          item.isFavorite = true
+                      }
+                  }
+
+                  prefs.edit().putStringSet("favorite_ids", favSet).apply()
+                  refreshListDisplay()
+                  exitSelectionMode()
+
+                  val msg = if (allAlreadyFav) {
+                      "تمت إزالة (${items.size}) مقاطع من المفضلة"
+                  } else {
+                      "تمت إضافة (${items.size}) مقاطع إلى المفضلة ❤️"
+                  }
+                  Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
               }
 
               private fun initPasteBar() {
@@ -3452,7 +3821,16 @@ jobs:
                   val sizeMb = String.format(Locale.US, "%.2f MB", item.size / (1024.0 * 1024.0))
                   val durStr = LionPlayerManager.formatDuration(item.duration)
 
-                  val message = "الاسم: ${item.title}\nالمسار: ${item.path.ifEmpty { item.uri }}\nالنوع: ${if (item.isVideo) "فيديو" else "صوتيات"}\nالألبوم: ${item.album}\nالفنان: ${item.artist}\nالحجم: $sizeMb\nالمدة: $durStr\nتاريخ الإضافة: $dateStr"
+                  val message = """
+                      الاسم: ${item.title}
+                      المسار: ${item.path.ifEmpty { item.uri }}
+                      النوع: ${if (item.isVideo) "فيديو" else "صوتيات"}
+                      الألبوم: ${item.album}
+                      الفنان: ${item.artist}
+                      الحجم: $sizeMb
+                      المدة: $durStr
+                      تاريخ الإضافة: $dateStr
+                  """.trimIndent()
 
                   AlertDialog.Builder(this)
                       .setTitle("خصائص المقطع")
@@ -3603,6 +3981,28 @@ jobs:
                   loadAudio()
                   refreshListDisplay()
                   updatePasteBarUI()
+              }
+
+              private fun syncFavoritesFromPrefs() {
+                  val favSet = prefs.getStringSet("favorite_ids", setOf()) ?: setOf()
+                  var changed = false
+                  for (item in rawVideosList) {
+                      val isFav = favSet.contains(item.id.toString())
+                      if (item.isFavorite != isFav) {
+                          item.isFavorite = isFav
+                          changed = true
+                      }
+                  }
+                  for (item in rawAudioList) {
+                      val isFav = favSet.contains(item.id.toString())
+                      if (item.isFavorite != isFav) {
+                          item.isFavorite = isFav
+                          changed = true
+                      }
+                  }
+                  if (changed) {
+                      refreshListDisplay()
+                  }
               }
 
               private fun loadVideos() {
@@ -3881,123 +4281,18 @@ jobs:
                           return true
                       }
                       R.id.action_settings -> {
-                          showProfessionalSettingsBottomSheet()
+                          // فتح القائمة الأنيقة للإعدادات
+                          PlayerSettingsBottomSheet.show(
+                              activity = this,
+                              onSettingChanged = {
+                                  showExtensions = prefs.getBoolean("show_extensions", false)
+                                  refreshListDisplay()
+                              }
+                          )
                           return true
                       }
                   }
                   return super.onOptionsItemSelected(item)
-              }
-
-              fun showProfessionalSettingsBottomSheet() {
-                  val bottomSheet = BottomSheetDialog(this, R.style.SettingsBottomSheetTheme)
-                  val view = layoutInflater.inflate(R.layout.dialog_app_settings, null)
-                  bottomSheet.setContentView(view)
-
-                  val btnClose = view.findViewById<ImageButton>(R.id.btnCloseSettings)
-                  val rowDarkTheme = view.findViewById<LinearLayout>(R.id.rowDarkTheme)
-                  val tvDarkThemeSubtitle = view.findViewById<TextView>(R.id.tvDarkThemeSubtitle)
-                  val tvDarkThemeStatus = view.findViewById<TextView>(R.id.tvDarkThemeStatus)
-
-                  val switchVolumeBoost = view.findViewById<SwitchMaterial>(R.id.switchVolumeBoost)
-                  val rowLongPressSpeed = view.findViewById<LinearLayout>(R.id.rowLongPressSpeed)
-                  val tvLongPressSpeedValue = view.findViewById<TextView>(R.id.tvLongPressSpeedValue)
-
-                  val rowResumeMode = view.findViewById<LinearLayout>(R.id.rowResumeMode)
-                  val tvResumeModeSubtitle = view.findViewById<TextView>(R.id.tvResumeModeSubtitle)
-
-                  val switchBluetooth = view.findViewById<SwitchMaterial>(R.id.switchBluetooth)
-                  val switchLyrics = view.findViewById<SwitchMaterial>(R.id.switchLyrics)
-
-                  val themeMode = prefs.getInt("theme_mode", 0)
-                  val themeNames = arrayOf("الوضع الداكن (Dark)", "أسود غامق خالص (AMOLED Black)")
-                  tvDarkThemeStatus.text = if (themeMode == 1) "AMOLED" else "داكن"
-                  tvDarkThemeSubtitle.text = themeNames[themeMode.coerceIn(0, 1)]
-
-                  rowDarkTheme.setOnClickListener {
-                      val options = arrayOf("الوضع الداكن (Dark Grey)", "أسود غامق خالص (AMOLED Black)")
-                      AlertDialog.Builder(this)
-                          .setTitle("اختر درجة المظهر الداكن والغامق")
-                          .setSingleChoiceItems(options, themeMode) { d, which ->
-                              prefs.edit().putInt("theme_mode", which).apply()
-                              tvDarkThemeStatus.text = if (which == 1) "AMOLED" else "داكن"
-                              tvDarkThemeSubtitle.text = options[which]
-                              val msg = if (which == 1) "تم تفعيل الأسود الغامق (AMOLED)" else "تم تفعيل الوضع الداكن"
-                              Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                              d.dismiss()
-                          }
-                          .setNegativeButton("إلغاء", null)
-                          .show()
-                  }
-
-                  switchVolumeBoost.isChecked = prefs.getBoolean("volume_boost_enabled", false)
-                  switchVolumeBoost.setOnCheckedChangeListener { _, isChecked ->
-                      prefs.edit().putBoolean("volume_boost_enabled", isChecked).apply()
-                      val msg = if (isChecked) "تم تفعيل مضاعفة الصوت حتى 200%" else "تم إيقاف مضاعفة الصوت"
-                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                  }
-
-                  val currentSpeedStr = prefs.getString("long_press_speed_str", "2x") ?: "2x"
-                  tvLongPressSpeedValue.text = currentSpeedStr
-
-                  rowLongPressSpeed.setOnClickListener {
-                      val speedOptions = arrayOf("1.25x", "1.5x", "1.75x", "2x")
-                      val speedValues = floatArrayOf(1.25f, 1.5f, 1.75f, 2.0f)
-                      val currentIndex = prefs.getInt("long_press_speed_idx", 3).coerceIn(0, 3)
-
-                      AlertDialog.Builder(this)
-                          .setTitle("سرعة الضغط المطول للتسريع")
-                          .setSingleChoiceItems(speedOptions, currentIndex) { d, which ->
-                              prefs.edit()
-                                  .putInt("long_press_speed_idx", which)
-                                  .putFloat("long_press_speed", speedValues[which])
-                                  .putString("long_press_speed_str", speedOptions[which])
-                                  .apply()
-                              tvLongPressSpeedValue.text = speedOptions[which]
-                              Toast.makeText(this, "تم اختيار السرعة: ${speedOptions[which]}", Toast.LENGTH_SHORT).show()
-                              d.dismiss()
-                          }
-                          .setNegativeButton("إلغاء", null)
-                          .show()
-                  }
-
-                  val resumeModes = arrayOf(
-                      "الاستئناف من حيث توقف المقطع",
-                      "البدء من بداية المقطع دائماً",
-                      "السؤال قبل اتخاذ القرار عند كل تشغيل"
-                  )
-                  val currentResumeMode = prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)
-                  tvResumeModeSubtitle.text = resumeModes[currentResumeMode]
-
-                  rowResumeMode.setOnClickListener {
-                      AlertDialog.Builder(this)
-                          .setTitle("إعدادات استئناف تشغيل الفيديو")
-                          .setSingleChoiceItems(resumeModes, prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)) { d, which ->
-                              prefs.edit().putInt("resume_playback_mode", which).apply()
-                              tvResumeModeSubtitle.text = resumeModes[which]
-                              Toast.makeText(this, "تم اختيار: ${resumeModes[which]}", Toast.LENGTH_SHORT).show()
-                              d.dismiss()
-                          }
-                          .setNegativeButton("إلغاء", null)
-                          .show()
-                  }
-
-                  switchBluetooth.isChecked = LionPlayerManager.bluetoothControlEnabled
-                  switchBluetooth.setOnCheckedChangeListener { _, isChecked ->
-                      LionPlayerManager.bluetoothControlEnabled = isChecked
-                      prefs.edit().putBoolean("bluetooth_headset_control", isChecked).apply()
-                      val msg = if (isChecked) "تم تفعيل التحكم بسماعة البلوتوث" else "تم إيقاف التحكم بسماعة البلوتوث"
-                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                  }
-
-                  switchLyrics.isChecked = prefs.getBoolean("show_lyrics", true)
-                  switchLyrics.setOnCheckedChangeListener { _, isChecked ->
-                      prefs.edit().putBoolean("show_lyrics", isChecked).apply()
-                      val msg = if (isChecked) "تم تفعيل كلمات الأغاني" else "تم إخفاء كلمات الأغاني"
-                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                  }
-
-                  btnClose.setOnClickListener { bottomSheet.dismiss() }
-                  bottomSheet.show()
               }
 
               private fun showViewStyleDialog() {
@@ -4089,6 +4384,7 @@ jobs:
                   super.onResume()
                   showSystemBars()
                   updateMiniPlayerUI()
+                  syncFavoritesFromPrefs()
               }
 
               override fun onBackPressed() {
@@ -4106,7 +4402,7 @@ jobs:
           }
           EOF
 
-          # 20. PlayerActivity.kt
+          # 24. PlayerActivity.kt (مع النقاط الثلاث وزر التفضيل داخل المشغل)
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
           package com.lionplayer.app.ui
 
@@ -4136,8 +4432,6 @@ jobs:
           import androidx.media3.common.PlaybackParameters
           import androidx.media3.ui.AspectRatioFrameLayout
           import androidx.media3.ui.PlayerView
-          import com.google.android.material.bottomsheet.BottomSheetDialog
-          import com.google.android.material.switchmaterial.SwitchMaterial
           import com.lionplayer.app.R
           import com.lionplayer.app.model.MediaItem as LionMediaItem
           import com.lionplayer.app.player.LionPlayerManager
@@ -4153,11 +4447,12 @@ jobs:
               private lateinit var bottomControls: View
               private lateinit var tvVideoTitle: TextView
               private lateinit var btnBack: ImageButton
+              private lateinit var btnFavorite: ImageButton
+              private lateinit var btnMore: ImageButton
               private lateinit var btnRotate: ImageButton
               private lateinit var btnDecoder: Button
               private lateinit var btnEqualizer: ImageButton
               private lateinit var btnPip: ImageButton
-              private lateinit var btnPlayerSettings: ImageButton
               private lateinit var btnLock: ImageButton
               private lateinit var btnUnlock: ImageButton
               private lateinit var btnToggleNav: ImageButton
@@ -4442,11 +4737,12 @@ jobs:
                   bottomControls = findViewById(R.id.bottomControls)
                   tvVideoTitle = findViewById(R.id.tvVideoTitle)
                   btnBack = findViewById(R.id.btnBack)
+                  btnFavorite = findViewById(R.id.btnFavorite)
+                  btnMore = findViewById(R.id.btnMore)
                   btnRotate = findViewById(R.id.btnRotate)
                   btnDecoder = findViewById(R.id.btnDecoder)
                   btnEqualizer = findViewById(R.id.btnEqualizer)
                   btnPip = findViewById(R.id.btnPip)
-                  btnPlayerSettings = findViewById(R.id.btnPlayerSettings)
                   btnLock = findViewById(R.id.btnLock)
                   btnUnlock = findViewById(R.id.btnUnlock)
                   btnToggleNav = findViewById(R.id.btnToggleNav)
@@ -4666,6 +4962,16 @@ jobs:
                   }
               }
 
+              private fun updateFavoriteIcon(isFav: Boolean) {
+                  if (isFav) {
+                      btnFavorite.setImageResource(R.drawable.ic_favorite)
+                      btnFavorite.setColorFilter(Color.parseColor("#FF9800"))
+                  } else {
+                      btnFavorite.setImageResource(R.drawable.ic_favorite_border)
+                      btnFavorite.setColorFilter(Color.WHITE)
+                  }
+              }
+
               private fun updateUIForItem(item: LionMediaItem) {
                   tvVideoTitle.text = item.title
                   val dur = item.duration.coerceAtLeast(0L)
@@ -4675,6 +4981,11 @@ jobs:
                   playerSeekBar.progress = curr.toInt()
                   tvCurrentTime.text = formatDuration(curr)
 
+                  // تحديث حالة زر التفضيل
+                  val favSet = prefs.getStringSet("favorite_ids", setOf()) ?: setOf()
+                  item.isFavorite = favSet.contains(item.id.toString())
+                  updateFavoriteIcon(item.isFavorite)
+
                   val videoControlsVis = if (item.isVideo) View.VISIBLE else View.GONE
                   btnRotate.visibility = videoControlsVis
                   btnDecoder.visibility = videoControlsVis
@@ -4683,6 +4994,10 @@ jobs:
                   btnToggleNav.visibility = videoControlsVis
 
                   btnLyricsToggle.visibility = if (!item.isVideo) View.VISIBLE else View.GONE
+
+                  // النقاط الثلاث وزر التفضيل يظهران دائماً للفيديو والصوت
+                  btnFavorite.visibility = View.VISIBLE
+                  btnMore.visibility = View.VISIBLE
 
                   videoScale = 1.0f
                   videoTranslationX = 0f
@@ -4751,6 +5066,44 @@ jobs:
               private fun setupListeners() {
                   btnBack.setOnClickListener { handleBackAction() }
 
+                  // زر التفضيل داخل المشغل مع حركة نبض جميلة
+                  btnFavorite.setOnClickListener {
+                      val currentItem = LionPlayerManager.getCurrentItem() ?: return@setOnClickListener
+                      val favSet = prefs.getStringSet("favorite_ids", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+                      val idStr = currentItem.id.toString()
+                      if (currentItem.isFavorite) {
+                          favSet.remove(idStr)
+                          currentItem.isFavorite = false
+                          Toast.makeText(this, "تمت الإزالة من المفضلة", Toast.LENGTH_SHORT).show()
+                      } else {
+                          favSet.add(idStr)
+                          currentItem.isFavorite = true
+                          Toast.makeText(this, "تمت الإضافة إلى المفضلة ❤️", Toast.LENGTH_SHORT).show()
+                      }
+                      prefs.edit().putStringSet("favorite_ids", favSet).apply()
+                      updateFavoriteIcon(currentItem.isFavorite)
+
+                      btnFavorite.animate().scaleX(1.35f).scaleY(1.35f).setDuration(120).withEndAction {
+                          btnFavorite.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
+                      }.start()
+                  }
+
+                  // زر النقاط الثلاث داخل المشغل لفتح الإعدادات الأنيقة
+                  btnMore.setOnClickListener {
+                      PlayerSettingsBottomSheet.show(
+                          activity = this,
+                          onEqualizerClick = { showAudioSettingsDialog() },
+                          onVolumeBoostChanged = { isBoosted ->
+                              if (!isBoosted && currentTotalVolumePercent > 100f) {
+                                  applyVolumePercent(100f)
+                              }
+                          },
+                          onSettingChanged = {
+                              LionPlayerManager.getCurrentItem()?.let { updateUIForItem(it) }
+                          }
+                      )
+                  }
+
                   btnRotate.setOnClickListener {
                       rotationState = (rotationState + 1) % 3
                       when (rotationState) {
@@ -4811,8 +5164,6 @@ jobs:
                   }
 
                   btnEqualizer.setOnClickListener { showAudioSettingsDialog() }
-
-                  btnPlayerSettings.setOnClickListener { showPlayerProfessionalSettings() }
 
                   btnLock.setOnClickListener {
                       isLocked = true
@@ -4886,121 +5237,6 @@ jobs:
                           LionPlayerManager.updateNotification(this@PlayerActivity)
                       }
                   })
-              }
-
-              private fun showPlayerProfessionalSettings() {
-                  val bottomSheet = BottomSheetDialog(this, R.style.SettingsBottomSheetTheme)
-                  val view = layoutInflater.inflate(R.layout.dialog_app_settings, null)
-                  bottomSheet.setContentView(view)
-
-                  val btnClose = view.findViewById<ImageButton>(R.id.btnCloseSettings)
-                  val rowDarkTheme = view.findViewById<LinearLayout>(R.id.rowDarkTheme)
-                  val tvDarkThemeSubtitle = view.findViewById<TextView>(R.id.tvDarkThemeSubtitle)
-                  val tvDarkThemeStatus = view.findViewById<TextView>(R.id.tvDarkThemeStatus)
-
-                  val switchVolumeBoost = view.findViewById<SwitchMaterial>(R.id.switchVolumeBoost)
-                  val rowLongPressSpeed = view.findViewById<LinearLayout>(R.id.rowLongPressSpeed)
-                  val tvLongPressSpeedValue = view.findViewById<TextView>(R.id.tvLongPressSpeedValue)
-
-                  val rowResumeMode = view.findViewById<LinearLayout>(R.id.rowResumeMode)
-                  val tvResumeModeSubtitle = view.findViewById<TextView>(R.id.tvResumeModeSubtitle)
-
-                  val switchBluetooth = view.findViewById<SwitchMaterial>(R.id.switchBluetooth)
-                  val switchLyrics = view.findViewById<SwitchMaterial>(R.id.switchLyrics)
-
-                  val themeMode = prefs.getInt("theme_mode", 0)
-                  val themeNames = arrayOf("الوضع الداكن (Dark)", "أسود غامق خالص (AMOLED Black)")
-                  tvDarkThemeStatus.text = if (themeMode == 1) "AMOLED" else "داكن"
-                  tvDarkThemeSubtitle.text = themeNames[themeMode.coerceIn(0, 1)]
-
-                  rowDarkTheme.setOnClickListener {
-                      val options = arrayOf("الوضع الداكن (Dark Grey)", "أسود غامق خالص (AMOLED Black)")
-                      AlertDialog.Builder(this)
-                          .setTitle("اختر درجة المظهر الداكن والغامق")
-                          .setSingleChoiceItems(options, themeMode) { d, which ->
-                              prefs.edit().putInt("theme_mode", which).apply()
-                              tvDarkThemeStatus.text = if (which == 1) "AMOLED" else "داكن"
-                              tvDarkThemeSubtitle.text = options[which]
-                              val msg = if (which == 1) "تم تفعيل الأسود الغامق (AMOLED)" else "تم تفعيل الوضع الداكن"
-                              Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                              d.dismiss()
-                          }
-                          .setNegativeButton("إلغاء", null)
-                          .show()
-                  }
-
-                  switchVolumeBoost.isChecked = prefs.getBoolean("volume_boost_enabled", false)
-                  switchVolumeBoost.setOnCheckedChangeListener { _, isChecked ->
-                      prefs.edit().putBoolean("volume_boost_enabled", isChecked).apply()
-                      val msg = if (isChecked) "تم تفعيل مضاعفة الصوت حتى 200%" else "تم إيقاف مضاعفة الصوت"
-                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                      if (!isChecked && currentTotalVolumePercent > 100f) {
-                          applyVolumePercent(100f)
-                      }
-                  }
-
-                  val currentSpeedStr = prefs.getString("long_press_speed_str", "2x") ?: "2x"
-                  tvLongPressSpeedValue.text = currentSpeedStr
-
-                  rowLongPressSpeed.setOnClickListener {
-                      val speedOptions = arrayOf("1.25x", "1.5x", "1.75x", "2x")
-                      val speedValues = floatArrayOf(1.25f, 1.5f, 1.75f, 2.0f)
-                      val currentIndex = prefs.getInt("long_press_speed_idx", 3).coerceIn(0, 3)
-
-                      AlertDialog.Builder(this)
-                          .setTitle("سرعة الضغط المطول للتسريع")
-                          .setSingleChoiceItems(speedOptions, currentIndex) { d, which ->
-                              prefs.edit()
-                                  .putInt("long_press_speed_idx", which)
-                                  .putFloat("long_press_speed", speedValues[which])
-                                  .putString("long_press_speed_str", speedOptions[which])
-                                  .apply()
-                              tvLongPressSpeedValue.text = speedOptions[which]
-                              Toast.makeText(this, "تم اختيار السرعة: ${speedOptions[which]}", Toast.LENGTH_SHORT).show()
-                              d.dismiss()
-                          }
-                          .setNegativeButton("إلغاء", null)
-                          .show()
-                  }
-
-                  val resumeModes = arrayOf(
-                      "الاستئناف من حيث توقف المقطع",
-                      "البدء من بداية المقطع دائماً",
-                      "السؤال قبل اتخاذ القرار عند كل تشغيل"
-                  )
-                  val currentResumeMode = prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)
-                  tvResumeModeSubtitle.text = resumeModes[currentResumeMode]
-
-                  rowResumeMode.setOnClickListener {
-                      AlertDialog.Builder(this)
-                          .setTitle("إعدادات استئناف تشغيل الفيديو")
-                          .setSingleChoiceItems(resumeModes, prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)) { d, which ->
-                              prefs.edit().putInt("resume_playback_mode", which).apply()
-                              tvResumeModeSubtitle.text = resumeModes[which]
-                              Toast.makeText(this, "تم اختيار: ${resumeModes[which]}", Toast.LENGTH_SHORT).show()
-                              d.dismiss()
-                          }
-                          .setNegativeButton("إلغاء", null)
-                          .show()
-                  }
-
-                  switchBluetooth.isChecked = LionPlayerManager.bluetoothControlEnabled
-                  switchBluetooth.setOnCheckedChangeListener { _, isChecked ->
-                      LionPlayerManager.bluetoothControlEnabled = isChecked
-                      prefs.edit().putBoolean("bluetooth_headset_control", isChecked).apply()
-                      val msg = if (isChecked) "تم تفعيل التحكم بسماعة البلوتوث" else "تم إيقاف التحكم بسماعة البلوتوث"
-                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                  }
-
-                  switchLyrics.isChecked = prefs.getBoolean("show_lyrics", true)
-                  switchLyrics.setOnCheckedChangeListener { _, isChecked ->
-                      prefs.edit().putBoolean("show_lyrics", isChecked).apply()
-                      val msg = if (isChecked) "تم تفعيل كلمات الأغاني" else "تم إخفاء كلمات الأغاني"
-                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                  }
-
-                  btnClose.setOnClickListener { bottomSheet.dismiss() }
-                  bottomSheet.show()
               }
 
               private fun showAudioSettingsDialog() {
