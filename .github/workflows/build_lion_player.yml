@@ -93,8 +93,8 @@ jobs:
                   applicationId "com.lionplayer.app"
                   minSdk 21
                   targetSdk 34
-                  versionCode 4
-                  versionName "1.3.0"
+                  versionCode 5
+                  versionName "1.4.0"
 
                   testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
               }
@@ -235,6 +235,8 @@ jobs:
               <color name="text_primary">#FFFFFF</color>
               <color name="text_secondary">#AAAAAA</color>
               <color name="divider_color">#18FFFFFF</color>
+              <color name="settings_sheet_bg">#18191C</color>
+              <color name="settings_card_bg">#23242A</color>
           </resources>
           EOF
 
@@ -254,6 +256,14 @@ jobs:
                   <item name="android:windowFullscreen">true</item>
                   <item name="android:statusBarColor">#00000000</item>
                   <item name="android:navigationBarColor">#00000000</item>
+              </style>
+
+              <style name="SettingsBottomSheetTheme" parent="Theme.Design.BottomSheetDialog">
+                  <item name="bottomSheetStyle">@style/SettingsBottomSheetModal</item>
+              </style>
+
+              <style name="SettingsBottomSheetModal" parent="Widget.Design.BottomSheet.Modal">
+                  <item name="android:background">@android:color/transparent</item>
               </style>
           </resources>
           EOF
@@ -681,6 +691,54 @@ jobs:
           </vector>
           EOF
 
+          cat << 'EOF' > app/src/main/res/drawable/ic_dark_mode.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FF9800"
+                android:pathData="M12,3c-4.97,0 -9,4.03 -9,9s4.03,9 9,9c0.83,0 1.5,-0.67 1.5,-1.5 0,-0.39 -0.15,-0.74 -0.39,-1.01 -0.23,-0.26 -0.38,-0.61 -0.38,-0.99 0,-0.83 0.67,-1.5 1.5,-1.5H16c2.76,0 5,-2.24 5,-5 0,-4.42 -4.03,-8 -9,-8zm-5.5,9c-0.83,0 -1.5,-0.67 -1.5,-1.5S5.67,9 6.5,9 8,9.67 8,10.5 7.33,12 6.5,12zm3,-4C8.67,8 8,7.33 8,6.5S8.67,5 9.5,5s1.5,0.67 1.5,1.5S10.33,8 9.5,8zm5,0c-0.83,0 -1.5,-0.67 -1.5,-1.5S13.67,5 14.5,5s1.5,0.67 1.5,1.5S15.33,8 14.5,8zm3,4c-0.83,0 -1.5,-0.67 -1.5,-1.5S16.67,9 17.5,9s1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_speed.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FF9800"
+                android:pathData="M20.38,8.57l-1.23,1.85a8,8 0 0,1 -0.22,7.58H5.07A8,8 0 0,1 15.58,6.85l1.85,-1.23A10,10 0 0,0 3.35,19a2,2 0 0,0 1.72,1h13.85a2,2 0 0,0 1.74,-1 10,10 0 0,0 -0.28,-10.43zM10.59,15.41a2,2 0 1,1 2.83,0l2.3,-3.83 -3.83,2.3a2,2 0 0,1 -1.3,1.53z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_replay_arrow.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FF9800"
+                android:pathData="M12,5V1L7,6l5,5V7c3.31,0 6,2.69 6,6s-2.69,6 -6,6 -6,-2.69 -6,-6H4c0,4.42 3.58,8 8,8s8,-3.58 8,-8 -3.58,-8 -8,-8z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/ic_bluetooth.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FF9800"
+                android:pathData="M17.71,7.71L12,2h-1v7.59L6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 11,14.41V22h1l5.71,-5.71 -4.3,-4.29 4.3,-4.29zM13,5.83l1.88,1.88L13,9.59V5.83zm1.88,10.46L13,18.17v-3.76l1.88,1.88z"/>
+          </vector>
+          EOF
+
           cat << 'EOF' > app/src/main/res/drawable/bg_hud.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android"
               android:shape="rectangle">
@@ -715,6 +773,20 @@ jobs:
                   </clip>
               </item>
           </layer-list>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/bg_settings_sheet.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="@color/settings_sheet_bg" />
+              <corners android:topLeftRadius="24dp" android:topRightRadius="24dp" />
+          </shape>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/bg_settings_card.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="@color/settings_card_bg" />
+              <corners android:radius="14dp" />
+          </shape>
           EOF
 
           # 11. Menus
@@ -759,8 +831,9 @@ jobs:
                   app:showAsAction="never" />
               <item
                   android:id="@+id/action_settings"
+                  android:icon="@drawable/ic_more_vert"
                   android:title="@string/action_settings"
-                  app:showAsAction="never" />
+                  app:showAsAction="always" />
           </menu>
           EOF
 
@@ -1385,6 +1458,14 @@ jobs:
                       app:tint="#FFFFFF" />
 
                   <ImageButton
+                      android:id="@+id/btnPlayerSettings"
+                      android:layout_width="40dp"
+                      android:layout_height="40dp"
+                      android:background="?attr/selectableItemBackgroundBorderless"
+                      android:src="@drawable/ic_more_vert"
+                      app:tint="#FFFFFF" />
+
+                  <ImageButton
                       android:id="@+id/btnLock"
                       android:layout_width="40dp"
                       android:layout_height="40dp"
@@ -1710,6 +1791,369 @@ jobs:
                   </LinearLayout>
               </LinearLayout>
           </androidx.constraintlayout.widget.ConstraintLayout>
+          EOF
+
+          # واجهة ورقة الإعدادات الاحترافية (Bottom Sheet Layout)
+          cat << 'EOF' > app/src/main/res/layout/dialog_app_settings.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/bg_settings_sheet"
+              android:orientation="vertical"
+              android:paddingBottom="24dp">
+
+              <View
+                  android:layout_width="48dp"
+                  android:layout_height="5dp"
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginTop="12dp"
+                  android:layout_marginBottom="12dp"
+                  android:background="#44FFFFFF" />
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:gravity="center_vertical"
+                  android:paddingStart="20dp"
+                  android:paddingEnd="20dp"
+                  android:paddingBottom="12dp">
+
+                  <ImageView
+                      android:layout_width="26dp"
+                      android:layout_height="26dp"
+                      android:src="@drawable/ic_settings"
+                      app:tint="@color/primary" />
+
+                  <TextView
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:layout_marginStart="10dp"
+                      android:text="إعدادات التطبيق والمشغل"
+                      android:textColor="#FFFFFF"
+                      android:textSize="18sp"
+                      android:textStyle="bold" />
+
+                  <ImageButton
+                      android:id="@+id/btnCloseSettings"
+                      android:layout_width="36dp"
+                      android:layout_height="36dp"
+                      android:background="?attr/selectableItemBackgroundBorderless"
+                      android:src="@drawable/ic_close"
+                      app:tint="#88FFFFFF" />
+              </LinearLayout>
+
+              <ScrollView
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:paddingStart="16dp"
+                  android:paddingEnd="16dp">
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical">
+
+                      <!-- كارت المظهر الداكن والغامق -->
+                      <LinearLayout
+                          android:id="@+id/rowDarkTheme"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginBottom="10dp"
+                          android:background="@drawable/bg_settings_card"
+                          android:gravity="center_vertical"
+                          android:padding="14dp">
+
+                          <ImageView
+                              android:layout_width="28dp"
+                              android:layout_height="28dp"
+                              android:src="@drawable/ic_dark_mode"
+                              app:tint="@color/primary" />
+
+                          <LinearLayout
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              android:layout_marginStart="12dp"
+                              android:layout_marginEnd="8dp"
+                              android:orientation="vertical">
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="مظهر التطبيق (داكن وغامق)"
+                                  android:textColor="#FFFFFF"
+                                  android:textSize="15sp"
+                                  android:textStyle="bold" />
+
+                              <TextView
+                                  android:id="@+id/tvDarkThemeSubtitle"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:layout_marginTop="2dp"
+                                  android:text="الوضع الداكن الاحترافي مفعل"
+                                  android:textColor="#9E9E9E"
+                                  android:textSize="12sp" />
+                          </LinearLayout>
+
+                          <TextView
+                              android:id="@+id/tvDarkThemeStatus"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:text="غامق"
+                              android:textColor="@color/primary"
+                              android:textSize="13sp"
+                              android:textStyle="bold" />
+                      </LinearLayout>
+
+                      <!-- كارت مضاعفة الصوت حتى 200% -->
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginBottom="10dp"
+                          android:background="@drawable/bg_settings_card"
+                          android:gravity="center_vertical"
+                          android:padding="14dp">
+
+                          <ImageView
+                              android:layout_width="28dp"
+                              android:layout_height="28dp"
+                              android:src="@drawable/ic_audiotrack"
+                              app:tint="@color/primary" />
+
+                          <LinearLayout
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              android:layout_marginStart="12dp"
+                              android:layout_marginEnd="8dp"
+                              android:orientation="vertical">
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="مضاعفة الصوت حتى 200%"
+                                  android:textColor="#FFFFFF"
+                                  android:textSize="15sp"
+                                  android:textStyle="bold" />
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:layout_marginTop="2dp"
+                                  android:text="تعزيز ذكي فائق النقاء يمنع التشويش"
+                                  android:textColor="#9E9E9E"
+                                  android:textSize="12sp" />
+                          </LinearLayout>
+
+                          <com.google.android.material.switchmaterial.SwitchMaterial
+                              android:id="@+id/switchVolumeBoost"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              app:useMaterialThemeColors="true" />
+                      </LinearLayout>
+
+                      <!-- كارت سرعة الضغط المطول -->
+                      <LinearLayout
+                          android:id="@+id/rowLongPressSpeed"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginBottom="10dp"
+                          android:background="@drawable/bg_settings_card"
+                          android:gravity="center_vertical"
+                          android:padding="14dp">
+
+                          <ImageView
+                              android:layout_width="28dp"
+                              android:layout_height="28dp"
+                              android:src="@drawable/ic_speed"
+                              app:tint="@color/primary" />
+
+                          <LinearLayout
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              android:layout_marginStart="12dp"
+                              android:layout_marginEnd="8dp"
+                              android:orientation="vertical">
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="سرعة الضغط المطول للتسريع"
+                                  android:textColor="#FFFFFF"
+                                  android:textSize="15sp"
+                                  android:textStyle="bold" />
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:layout_marginTop="2dp"
+                                  android:text="تسريع المقطع مؤقتاً أثناء الضغط على الشاشة"
+                                  android:textColor="#9E9E9E"
+                                  android:textSize="12sp" />
+                          </LinearLayout>
+
+                          <TextView
+                              android:id="@+id/tvLongPressSpeedValue"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:text="2x"
+                              android:textColor="@color/primary"
+                              android:textSize="14sp"
+                              android:textStyle="bold" />
+                      </LinearLayout>
+
+                      <!-- كارت استئناف تشغيل الفيديو -->
+                      <LinearLayout
+                          android:id="@+id/rowResumeMode"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginBottom="10dp"
+                          android:background="@drawable/bg_settings_card"
+                          android:gravity="center_vertical"
+                          android:padding="14dp">
+
+                          <ImageView
+                              android:layout_width="28dp"
+                              android:layout_height="28dp"
+                              android:src="@drawable/ic_replay_arrow"
+                              app:tint="@color/primary" />
+
+                          <LinearLayout
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              android:layout_marginStart="12dp"
+                              android:layout_marginEnd="8dp"
+                              android:orientation="vertical">
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="استئناف تشغيل الفيديو"
+                                  android:textColor="#FFFFFF"
+                                  android:textSize="15sp"
+                                  android:textStyle="bold" />
+
+                              <TextView
+                                  android:id="@+id/tvResumeModeSubtitle"
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:layout_marginTop="2dp"
+                                  android:text="الاستئناف من حيث توقف"
+                                  android:textColor="#9E9E9E"
+                                  android:textSize="12sp" />
+                          </LinearLayout>
+
+                          <TextView
+                              android:id="@+id/tvResumeModeArrow"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:text="تغيير"
+                              android:textColor="@color/primary"
+                              android:textSize="13sp"
+                              android:textStyle="bold" />
+                      </LinearLayout>
+
+                      <!-- كارت سماعة البلوتوث -->
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:layout_marginBottom="10dp"
+                          android:background="@drawable/bg_settings_card"
+                          android:gravity="center_vertical"
+                          android:padding="14dp">
+
+                          <ImageView
+                              android:layout_width="28dp"
+                              android:layout_height="28dp"
+                              android:src="@drawable/ic_bluetooth"
+                              app:tint="@color/primary" />
+
+                          <LinearLayout
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              android:layout_marginStart="12dp"
+                              android:layout_marginEnd="8dp"
+                              android:orientation="vertical">
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="التحكم بسماعة البلوتوث"
+                                  android:textColor="#FFFFFF"
+                                  android:textSize="15sp"
+                                  android:textStyle="bold" />
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:layout_marginTop="2dp"
+                                  android:text="الاستجابة لأزرار التشغيل والتنقل في السماعة"
+                                  android:textColor="#9E9E9E"
+                                  android:textSize="12sp" />
+                          </LinearLayout>
+
+                          <com.google.android.material.switchmaterial.SwitchMaterial
+                              android:id="@+id/switchBluetooth"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              app:useMaterialThemeColors="true" />
+                      </LinearLayout>
+
+                      <!-- كارت كلمات الأغاني -->
+                      <LinearLayout
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:background="@drawable/bg_settings_card"
+                          android:gravity="center_vertical"
+                          android:padding="14dp">
+
+                          <ImageView
+                              android:layout_width="28dp"
+                              android:layout_height="28dp"
+                              android:src="@drawable/ic_lyrics"
+                              app:tint="@color/primary" />
+
+                          <LinearLayout
+                              android:layout_width="0dp"
+                              android:layout_height="wrap_content"
+                              android:layout_weight="1"
+                              android:layout_marginStart="12dp"
+                              android:layout_marginEnd="8dp"
+                              android:orientation="vertical">
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:text="كلمات الأغاني الصوتية"
+                                  android:textColor="#FFFFFF"
+                                  android:textSize="15sp"
+                                  android:textStyle="bold" />
+
+                              <TextView
+                                  android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content"
+                                  android:layout_marginTop="2dp"
+                                  android:text="عرض كلمات الأغاني المتزامنة تلقائياً"
+                                  android:textColor="#9E9E9E"
+                                  android:textSize="12sp" />
+                          </LinearLayout>
+
+                          <com.google.android.material.switchmaterial.SwitchMaterial
+                              android:id="@+id/switchLyrics"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              app:useMaterialThemeColors="true" />
+                      </LinearLayout>
+
+                  </LinearLayout>
+              </ScrollView>
+          </LinearLayout>
           EOF
 
           # 13. MediaItem.kt
@@ -2391,6 +2835,7 @@ jobs:
           package com.lionplayer.app.ui
 
           import android.annotation.SuppressLint
+          import android.content.Context
           import android.content.Intent
           import android.os.Build
           import android.os.Bundle
@@ -2402,6 +2847,7 @@ jobs:
           import android.widget.ImageView
           import android.widget.TextView
           import androidx.appcompat.app.AppCompatActivity
+          import androidx.appcompat.app.AppCompatDelegate
           import com.lionplayer.app.R
 
           @SuppressLint("CustomSplashScreen")
@@ -2409,6 +2855,7 @@ jobs:
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
+                  applyAppTheme()
                   hideSystemBars()
                   setContentView(R.layout.activity_splash)
 
@@ -2447,6 +2894,15 @@ jobs:
                   }, 850)
               }
 
+              private fun applyAppTheme() {
+                  val prefs = getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
+                  val themeMode = prefs.getInt("theme_mode", 0) // 0: Dark (غامق وداكن), 1: AMOLED Black
+                  when (themeMode) {
+                      0, 1 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                      else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                  }
+              }
+
               private fun hideSystemBars() {
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                       window.insetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
@@ -2482,6 +2938,7 @@ jobs:
           import android.widget.*
           import androidx.appcompat.app.AlertDialog
           import androidx.appcompat.app.AppCompatActivity
+          import androidx.appcompat.app.AppCompatDelegate
           import androidx.appcompat.widget.SearchView
           import androidx.core.app.ActivityCompat
           import androidx.core.content.ContextCompat
@@ -2490,6 +2947,8 @@ jobs:
           import androidx.recyclerview.widget.RecyclerView
           import com.google.android.material.appbar.MaterialToolbar
           import com.google.android.material.bottomnavigation.BottomNavigationView
+          import com.google.android.material.bottomsheet.BottomSheetDialog
+          import com.google.android.material.switchmaterial.SwitchMaterial
           import com.lionplayer.app.R
           import com.lionplayer.app.adapter.MediaAdapter
           import com.lionplayer.app.adapter.ThumbnailLoader
@@ -2993,16 +3452,7 @@ jobs:
                   val sizeMb = String.format(Locale.US, "%.2f MB", item.size / (1024.0 * 1024.0))
                   val durStr = LionPlayerManager.formatDuration(item.duration)
 
-                  val message = """
-                      الاسم: ${item.title}
-                      المسار: ${item.path.ifEmpty { item.uri }}
-                      النوع: ${if (item.isVideo) "فيديو" else "صوتيات"}
-                      الألبوم: ${item.album}
-                      الفنان: ${item.artist}
-                      الحجم: $sizeMb
-                      المدة: $durStr
-                      تاريخ الإضافة: $dateStr
-                  """.trimIndent()
+                  val message = "الاسم: ${item.title}\nالمسار: ${item.path.ifEmpty { item.uri }}\nالنوع: ${if (item.isVideo) "فيديو" else "صوتيات"}\nالألبوم: ${item.album}\nالفنان: ${item.artist}\nالحجم: $sizeMb\nالمدة: $durStr\nتاريخ الإضافة: $dateStr"
 
                   AlertDialog.Builder(this)
                       .setTitle("خصائص المقطع")
@@ -3431,102 +3881,123 @@ jobs:
                           return true
                       }
                       R.id.action_settings -> {
-                          showAppSettingsDialog()
+                          showProfessionalSettingsBottomSheet()
                           return true
                       }
                   }
                   return super.onOptionsItemSelected(item)
               }
 
-              private fun showAppSettingsDialog() {
-                  val resumeModes = arrayOf("الاستئناف من حيث توقف", "البدء من بداية المقطع دائماً", "السؤال قبل اتخاذ القرار")
-                  val isBoostEnabled = prefs.getBoolean("volume_boost_enabled", false)
-                  val currentSpeedStr = prefs.getString("long_press_speed_str", "2x") ?: "2x"
-                  val currentResumeMode = prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)
-                  val isBtEnabled = LionPlayerManager.bluetoothControlEnabled
-                  val isLyricsEnabled = prefs.getBoolean("show_lyrics", true)
+              fun showProfessionalSettingsBottomSheet() {
+                  val bottomSheet = BottomSheetDialog(this, R.style.SettingsBottomSheetTheme)
+                  val view = layoutInflater.inflate(R.layout.dialog_app_settings, null)
+                  bottomSheet.setContentView(view)
 
-                  val items = arrayOf(
-                      "مضاعفة الصوت حتى 200%: " + if (isBoostEnabled) "مفعل ✅" else "معطل ❌",
-                      "سرعة الضغط المطول للتسريع: $currentSpeedStr",
-                      "استئناف تشغيل الفيديو: ${resumeModes[currentResumeMode]}",
-                      "التحكم بسماعة البلوتوث: " + if (isBtEnabled) "مفعل ✅" else "معطل ❌",
-                      "إظهار كلمات الأغاني: " + if (isLyricsEnabled) "مفعل ✅" else "معطل ❌"
-                  )
+                  val btnClose = view.findViewById<ImageButton>(R.id.btnCloseSettings)
+                  val rowDarkTheme = view.findViewById<LinearLayout>(R.id.rowDarkTheme)
+                  val tvDarkThemeSubtitle = view.findViewById<TextView>(R.id.tvDarkThemeSubtitle)
+                  val tvDarkThemeStatus = view.findViewById<TextView>(R.id.tvDarkThemeStatus)
 
-                  AlertDialog.Builder(this)
-                      .setTitle("الإعدادات العامة")
-                      .setItems(items) { _, which ->
-                          when (which) {
-                              0 -> {
-                                  val newBoost = !isBoostEnabled
-                                  prefs.edit().putBoolean("volume_boost_enabled", newBoost).apply()
-                                  val msg = if (newBoost) "تم تفعيل مضاعفة الصوت حتى 200%" else "تم إيقاف مضاعفة الصوت"
-                                  Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                                  showAppSettingsDialog()
-                              }
-                              1 -> showLongPressSpeedDialog()
-                              2 -> showResumeModeDialog()
-                              3 -> {
-                                  val newBt = !isBtEnabled
-                                  LionPlayerManager.bluetoothControlEnabled = newBt
-                                  prefs.edit().putBoolean("bluetooth_headset_control", newBt).apply()
-                                  val msg = if (newBt) "تم تفعيل التحكم بسماعة البلوتوث" else "تم إيقاف التحكم بسماعة البلوتوث"
-                                  Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                                  showAppSettingsDialog()
-                              }
-                              4 -> {
-                                  val newLyrics = !isLyricsEnabled
-                                  prefs.edit().putBoolean("show_lyrics", newLyrics).apply()
-                                  val msg = if (newLyrics) "تم تفعيل كلمات الأغاني" else "تم إخفاء كلمات الأغاني"
-                                  Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-                                  showAppSettingsDialog()
-                              }
+                  val switchVolumeBoost = view.findViewById<SwitchMaterial>(R.id.switchVolumeBoost)
+                  val rowLongPressSpeed = view.findViewById<LinearLayout>(R.id.rowLongPressSpeed)
+                  val tvLongPressSpeedValue = view.findViewById<TextView>(R.id.tvLongPressSpeedValue)
+
+                  val rowResumeMode = view.findViewById<LinearLayout>(R.id.rowResumeMode)
+                  val tvResumeModeSubtitle = view.findViewById<TextView>(R.id.tvResumeModeSubtitle)
+
+                  val switchBluetooth = view.findViewById<SwitchMaterial>(R.id.switchBluetooth)
+                  val switchLyrics = view.findViewById<SwitchMaterial>(R.id.switchLyrics)
+
+                  val themeMode = prefs.getInt("theme_mode", 0)
+                  val themeNames = arrayOf("الوضع الداكن (Dark)", "أسود غامق خالص (AMOLED Black)")
+                  tvDarkThemeStatus.text = if (themeMode == 1) "AMOLED" else "داكن"
+                  tvDarkThemeSubtitle.text = themeNames[themeMode.coerceIn(0, 1)]
+
+                  rowDarkTheme.setOnClickListener {
+                      val options = arrayOf("الوضع الداكن (Dark Grey)", "أسود غامق خالص (AMOLED Black)")
+                      AlertDialog.Builder(this)
+                          .setTitle("اختر درجة المظهر الداكن والغامق")
+                          .setSingleChoiceItems(options, themeMode) { d, which ->
+                              prefs.edit().putInt("theme_mode", which).apply()
+                              tvDarkThemeStatus.text = if (which == 1) "AMOLED" else "داكن"
+                              tvDarkThemeSubtitle.text = options[which]
+                              val msg = if (which == 1) "تم تفعيل الأسود الغامق (AMOLED)" else "تم تفعيل الوضع الداكن"
+                              Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                              d.dismiss()
                           }
-                      }
-                      .setPositiveButton("إغلاق", null)
-                      .show()
-              }
+                          .setNegativeButton("إلغاء", null)
+                          .show()
+                  }
 
-              private fun showLongPressSpeedDialog() {
-                  val speedOptions = arrayOf("1.25x", "1.5x", "1.75x", "2x")
-                  val speedValues = floatArrayOf(1.25f, 1.5f, 1.75f, 2.0f)
-                  val currentIndex = prefs.getInt("long_press_speed_idx", 3).coerceIn(0, 3)
+                  switchVolumeBoost.isChecked = prefs.getBoolean("volume_boost_enabled", false)
+                  switchVolumeBoost.setOnCheckedChangeListener { _, isChecked ->
+                      prefs.edit().putBoolean("volume_boost_enabled", isChecked).apply()
+                      val msg = if (isChecked) "تم تفعيل مضاعفة الصوت حتى 200%" else "تم إيقاف مضاعفة الصوت"
+                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                  }
 
-                  AlertDialog.Builder(this)
-                      .setTitle("سرعة الضغط المطول للتسريع")
-                      .setSingleChoiceItems(speedOptions, currentIndex) { dialog, which ->
-                          prefs.edit()
-                              .putInt("long_press_speed_idx", which)
-                              .putFloat("long_press_speed", speedValues[which])
-                              .putString("long_press_speed_str", speedOptions[which])
-                              .apply()
-                          Toast.makeText(this, "تم اختيار السرعة: ${speedOptions[which]}", Toast.LENGTH_SHORT).show()
-                          dialog.dismiss()
-                          showAppSettingsDialog()
-                      }
-                      .setNegativeButton("إلغاء") { _, _ -> showAppSettingsDialog() }
-                      .show()
-              }
+                  val currentSpeedStr = prefs.getString("long_press_speed_str", "2x") ?: "2x"
+                  tvLongPressSpeedValue.text = currentSpeedStr
 
-              private fun showResumeModeDialog() {
+                  rowLongPressSpeed.setOnClickListener {
+                      val speedOptions = arrayOf("1.25x", "1.5x", "1.75x", "2x")
+                      val speedValues = floatArrayOf(1.25f, 1.5f, 1.75f, 2.0f)
+                      val currentIndex = prefs.getInt("long_press_speed_idx", 3).coerceIn(0, 3)
+
+                      AlertDialog.Builder(this)
+                          .setTitle("سرعة الضغط المطول للتسريع")
+                          .setSingleChoiceItems(speedOptions, currentIndex) { d, which ->
+                              prefs.edit()
+                                  .putInt("long_press_speed_idx", which)
+                                  .putFloat("long_press_speed", speedValues[which])
+                                  .putString("long_press_speed_str", speedOptions[which])
+                                  .apply()
+                              tvLongPressSpeedValue.text = speedOptions[which]
+                              Toast.makeText(this, "تم اختيار السرعة: ${speedOptions[which]}", Toast.LENGTH_SHORT).show()
+                              d.dismiss()
+                          }
+                          .setNegativeButton("إلغاء", null)
+                          .show()
+                  }
+
                   val resumeModes = arrayOf(
                       "الاستئناف من حيث توقف المقطع",
                       "البدء من بداية المقطع دائماً",
                       "السؤال قبل اتخاذ القرار عند كل تشغيل"
                   )
-                  val currentMode = prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)
+                  val currentResumeMode = prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)
+                  tvResumeModeSubtitle.text = resumeModes[currentResumeMode]
 
-                  AlertDialog.Builder(this)
-                      .setTitle("إعدادات استئناف تشغيل الفيديو")
-                      .setSingleChoiceItems(resumeModes, currentMode) { dialog, which ->
-                          prefs.edit().putInt("resume_playback_mode", which).apply()
-                          Toast.makeText(this, "تم اختيار: ${resumeModes[which]}", Toast.LENGTH_SHORT).show()
-                          dialog.dismiss()
-                          showAppSettingsDialog()
-                      }
-                      .setNegativeButton("إلغاء") { _, _ -> showAppSettingsDialog() }
-                      .show()
+                  rowResumeMode.setOnClickListener {
+                      AlertDialog.Builder(this)
+                          .setTitle("إعدادات استئناف تشغيل الفيديو")
+                          .setSingleChoiceItems(resumeModes, prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)) { d, which ->
+                              prefs.edit().putInt("resume_playback_mode", which).apply()
+                              tvResumeModeSubtitle.text = resumeModes[which]
+                              Toast.makeText(this, "تم اختيار: ${resumeModes[which]}", Toast.LENGTH_SHORT).show()
+                              d.dismiss()
+                          }
+                          .setNegativeButton("إلغاء", null)
+                          .show()
+                  }
+
+                  switchBluetooth.isChecked = LionPlayerManager.bluetoothControlEnabled
+                  switchBluetooth.setOnCheckedChangeListener { _, isChecked ->
+                      LionPlayerManager.bluetoothControlEnabled = isChecked
+                      prefs.edit().putBoolean("bluetooth_headset_control", isChecked).apply()
+                      val msg = if (isChecked) "تم تفعيل التحكم بسماعة البلوتوث" else "تم إيقاف التحكم بسماعة البلوتوث"
+                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                  }
+
+                  switchLyrics.isChecked = prefs.getBoolean("show_lyrics", true)
+                  switchLyrics.setOnCheckedChangeListener { _, isChecked ->
+                      prefs.edit().putBoolean("show_lyrics", isChecked).apply()
+                      val msg = if (isChecked) "تم تفعيل كلمات الأغاني" else "تم إخفاء كلمات الأغاني"
+                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                  }
+
+                  btnClose.setOnClickListener { bottomSheet.dismiss() }
+                  bottomSheet.show()
               }
 
               private fun showViewStyleDialog() {
@@ -3635,7 +4106,7 @@ jobs:
           }
           EOF
 
-          # 20. PlayerActivity.kt (تحديث مضاعفة الصوت، التكبير حتى 500%، التسريع بالضغط المطول، واستئناف التشغيل)
+          # 20. PlayerActivity.kt
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
           package com.lionplayer.app.ui
 
@@ -3665,6 +4136,8 @@ jobs:
           import androidx.media3.common.PlaybackParameters
           import androidx.media3.ui.AspectRatioFrameLayout
           import androidx.media3.ui.PlayerView
+          import com.google.android.material.bottomsheet.BottomSheetDialog
+          import com.google.android.material.switchmaterial.SwitchMaterial
           import com.lionplayer.app.R
           import com.lionplayer.app.model.MediaItem as LionMediaItem
           import com.lionplayer.app.player.LionPlayerManager
@@ -3684,6 +4157,7 @@ jobs:
               private lateinit var btnDecoder: Button
               private lateinit var btnEqualizer: ImageButton
               private lateinit var btnPip: ImageButton
+              private lateinit var btnPlayerSettings: ImageButton
               private lateinit var btnLock: ImageButton
               private lateinit var btnUnlock: ImageButton
               private lateinit var btnToggleNav: ImageButton
@@ -3972,6 +4446,7 @@ jobs:
                   btnDecoder = findViewById(R.id.btnDecoder)
                   btnEqualizer = findViewById(R.id.btnEqualizer)
                   btnPip = findViewById(R.id.btnPip)
+                  btnPlayerSettings = findViewById(R.id.btnPlayerSettings)
                   btnLock = findViewById(R.id.btnLock)
                   btnUnlock = findViewById(R.id.btnUnlock)
                   btnToggleNav = findViewById(R.id.btnToggleNav)
@@ -4337,6 +4812,8 @@ jobs:
 
                   btnEqualizer.setOnClickListener { showAudioSettingsDialog() }
 
+                  btnPlayerSettings.setOnClickListener { showPlayerProfessionalSettings() }
+
                   btnLock.setOnClickListener {
                       isLocked = true
                       hideAllControls()
@@ -4409,6 +4886,121 @@ jobs:
                           LionPlayerManager.updateNotification(this@PlayerActivity)
                       }
                   })
+              }
+
+              private fun showPlayerProfessionalSettings() {
+                  val bottomSheet = BottomSheetDialog(this, R.style.SettingsBottomSheetTheme)
+                  val view = layoutInflater.inflate(R.layout.dialog_app_settings, null)
+                  bottomSheet.setContentView(view)
+
+                  val btnClose = view.findViewById<ImageButton>(R.id.btnCloseSettings)
+                  val rowDarkTheme = view.findViewById<LinearLayout>(R.id.rowDarkTheme)
+                  val tvDarkThemeSubtitle = view.findViewById<TextView>(R.id.tvDarkThemeSubtitle)
+                  val tvDarkThemeStatus = view.findViewById<TextView>(R.id.tvDarkThemeStatus)
+
+                  val switchVolumeBoost = view.findViewById<SwitchMaterial>(R.id.switchVolumeBoost)
+                  val rowLongPressSpeed = view.findViewById<LinearLayout>(R.id.rowLongPressSpeed)
+                  val tvLongPressSpeedValue = view.findViewById<TextView>(R.id.tvLongPressSpeedValue)
+
+                  val rowResumeMode = view.findViewById<LinearLayout>(R.id.rowResumeMode)
+                  val tvResumeModeSubtitle = view.findViewById<TextView>(R.id.tvResumeModeSubtitle)
+
+                  val switchBluetooth = view.findViewById<SwitchMaterial>(R.id.switchBluetooth)
+                  val switchLyrics = view.findViewById<SwitchMaterial>(R.id.switchLyrics)
+
+                  val themeMode = prefs.getInt("theme_mode", 0)
+                  val themeNames = arrayOf("الوضع الداكن (Dark)", "أسود غامق خالص (AMOLED Black)")
+                  tvDarkThemeStatus.text = if (themeMode == 1) "AMOLED" else "داكن"
+                  tvDarkThemeSubtitle.text = themeNames[themeMode.coerceIn(0, 1)]
+
+                  rowDarkTheme.setOnClickListener {
+                      val options = arrayOf("الوضع الداكن (Dark Grey)", "أسود غامق خالص (AMOLED Black)")
+                      AlertDialog.Builder(this)
+                          .setTitle("اختر درجة المظهر الداكن والغامق")
+                          .setSingleChoiceItems(options, themeMode) { d, which ->
+                              prefs.edit().putInt("theme_mode", which).apply()
+                              tvDarkThemeStatus.text = if (which == 1) "AMOLED" else "داكن"
+                              tvDarkThemeSubtitle.text = options[which]
+                              val msg = if (which == 1) "تم تفعيل الأسود الغامق (AMOLED)" else "تم تفعيل الوضع الداكن"
+                              Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                              d.dismiss()
+                          }
+                          .setNegativeButton("إلغاء", null)
+                          .show()
+                  }
+
+                  switchVolumeBoost.isChecked = prefs.getBoolean("volume_boost_enabled", false)
+                  switchVolumeBoost.setOnCheckedChangeListener { _, isChecked ->
+                      prefs.edit().putBoolean("volume_boost_enabled", isChecked).apply()
+                      val msg = if (isChecked) "تم تفعيل مضاعفة الصوت حتى 200%" else "تم إيقاف مضاعفة الصوت"
+                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                      if (!isChecked && currentTotalVolumePercent > 100f) {
+                          applyVolumePercent(100f)
+                      }
+                  }
+
+                  val currentSpeedStr = prefs.getString("long_press_speed_str", "2x") ?: "2x"
+                  tvLongPressSpeedValue.text = currentSpeedStr
+
+                  rowLongPressSpeed.setOnClickListener {
+                      val speedOptions = arrayOf("1.25x", "1.5x", "1.75x", "2x")
+                      val speedValues = floatArrayOf(1.25f, 1.5f, 1.75f, 2.0f)
+                      val currentIndex = prefs.getInt("long_press_speed_idx", 3).coerceIn(0, 3)
+
+                      AlertDialog.Builder(this)
+                          .setTitle("سرعة الضغط المطول للتسريع")
+                          .setSingleChoiceItems(speedOptions, currentIndex) { d, which ->
+                              prefs.edit()
+                                  .putInt("long_press_speed_idx", which)
+                                  .putFloat("long_press_speed", speedValues[which])
+                                  .putString("long_press_speed_str", speedOptions[which])
+                                  .apply()
+                              tvLongPressSpeedValue.text = speedOptions[which]
+                              Toast.makeText(this, "تم اختيار السرعة: ${speedOptions[which]}", Toast.LENGTH_SHORT).show()
+                              d.dismiss()
+                          }
+                          .setNegativeButton("إلغاء", null)
+                          .show()
+                  }
+
+                  val resumeModes = arrayOf(
+                      "الاستئناف من حيث توقف المقطع",
+                      "البدء من بداية المقطع دائماً",
+                      "السؤال قبل اتخاذ القرار عند كل تشغيل"
+                  )
+                  val currentResumeMode = prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)
+                  tvResumeModeSubtitle.text = resumeModes[currentResumeMode]
+
+                  rowResumeMode.setOnClickListener {
+                      AlertDialog.Builder(this)
+                          .setTitle("إعدادات استئناف تشغيل الفيديو")
+                          .setSingleChoiceItems(resumeModes, prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)) { d, which ->
+                              prefs.edit().putInt("resume_playback_mode", which).apply()
+                              tvResumeModeSubtitle.text = resumeModes[which]
+                              Toast.makeText(this, "تم اختيار: ${resumeModes[which]}", Toast.LENGTH_SHORT).show()
+                              d.dismiss()
+                          }
+                          .setNegativeButton("إلغاء", null)
+                          .show()
+                  }
+
+                  switchBluetooth.isChecked = LionPlayerManager.bluetoothControlEnabled
+                  switchBluetooth.setOnCheckedChangeListener { _, isChecked ->
+                      LionPlayerManager.bluetoothControlEnabled = isChecked
+                      prefs.edit().putBoolean("bluetooth_headset_control", isChecked).apply()
+                      val msg = if (isChecked) "تم تفعيل التحكم بسماعة البلوتوث" else "تم إيقاف التحكم بسماعة البلوتوث"
+                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                  }
+
+                  switchLyrics.isChecked = prefs.getBoolean("show_lyrics", true)
+                  switchLyrics.setOnCheckedChangeListener { _, isChecked ->
+                      prefs.edit().putBoolean("show_lyrics", isChecked).apply()
+                      val msg = if (isChecked) "تم تفعيل كلمات الأغاني" else "تم إخفاء كلمات الأغاني"
+                      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                  }
+
+                  btnClose.setOnClickListener { bottomSheet.dismiss() }
+                  bottomSheet.show()
               }
 
               private fun showAudioSettingsDialog() {
