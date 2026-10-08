@@ -155,6 +155,7 @@ jobs:
               <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
               <uses-permission android:name="android.permission.BLUETOOTH" />
               <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+              <uses-permission android:name="android.permission.VIBRATE" />
 
               <application
                   android:allowBackup="true"
@@ -1263,7 +1264,7 @@ jobs:
                   android:layout_width="match_parent"
                   android:layout_height="match_parent"
                   app:use_controller="false"
-                  app:surface_type="surface_view" />
+                  app:surface_type="texture_view" />
 
               <LinearLayout
                   android:id="@+id/layoutLyrics"
@@ -1457,7 +1458,7 @@ jobs:
 
               <LinearLayout
                   android:id="@+id/hudVolume"
-                  android:layout_width="64dp"
+                  android:layout_width="72dp"
                   android:layout_height="240dp"
                   android:layout_marginEnd="24dp"
                   android:background="@drawable/bg_hud"
@@ -1502,8 +1503,9 @@ jobs:
                       android:layout_height="wrap_content"
                       android:text="50%"
                       android:textColor="#FFFFFF"
-                      android:textSize="12sp"
-                      android:textStyle="bold" />
+                      android:textSize="11sp"
+                      android:textStyle="bold"
+                      android:gravity="center" />
               </LinearLayout>
 
               <LinearLayout
@@ -1527,6 +1529,62 @@ jobs:
                       android:gravity="center"
                       android:textColor="#FFFFFF"
                       android:textSize="18sp"
+                      android:textStyle="bold" />
+              </LinearLayout>
+
+              <!-- مؤشر التسريع بالضغط المطول -->
+              <LinearLayout
+                  android:id="@+id/hudFastForward"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:background="@drawable/bg_hud"
+                  android:gravity="center"
+                  android:orientation="horizontal"
+                  android:paddingStart="20dp"
+                  android:paddingEnd="20dp"
+                  android:paddingTop="12dp"
+                  android:paddingBottom="12dp"
+                  android:visibility="gone"
+                  app:layout_constraintTop_toTopOf="parent"
+                  app:layout_constraintBottom_toBottomOf="parent"
+                  app:layout_constraintStart_toStartOf="parent"
+                  app:layout_constraintEnd_toEndOf="parent">
+
+                  <TextView
+                      android:id="@+id/tvFastForwardValue"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="2x ⏩"
+                      android:textColor="#FF9800"
+                      android:textSize="20sp"
+                      android:textStyle="bold" />
+              </LinearLayout>
+
+              <!-- مؤشر نسبة التكبير والتصغير حتى 500% -->
+              <LinearLayout
+                  android:id="@+id/hudZoom"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:background="@drawable/bg_hud"
+                  android:gravity="center"
+                  android:orientation="horizontal"
+                  android:paddingStart="18dp"
+                  android:paddingEnd="18dp"
+                  android:paddingTop="10dp"
+                  android:paddingBottom="10dp"
+                  android:visibility="gone"
+                  app:layout_constraintTop_toTopOf="parent"
+                  app:layout_constraintStart_toStartOf="parent"
+                  app:layout_constraintEnd_toEndOf="parent"
+                  android:layout_marginTop="70dp">
+
+                  <TextView
+                      android:id="@+id/tvZoomValue"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="تكبير 100%"
+                      android:textColor="#FFFFFF"
+                      android:textSize="15sp"
                       android:textStyle="bold" />
               </LinearLayout>
 
@@ -1921,6 +1979,11 @@ jobs:
 
                                   override fun onPlaybackStateChanged(playbackState: Int) {
                                       if (playbackState == Player.STATE_ENDED) {
+                                          val finishedItem = playlist.getOrNull(currentIndex)
+                                          if (finishedItem != null) {
+                                              val prefs = appContext.getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
+                                              prefs.edit().remove("video_resume_pos_${finishedItem.id}").apply()
+                                          }
                                           if (currentIndex < playlist.size - 1) {
                                               playNext(appContext)
                                           } else {
@@ -2352,7 +2415,6 @@ jobs:
                   val ivLogo = findViewById<ImageView>(R.id.ivSplashLogo)
                   val tvName = findViewById<TextView>(R.id.tvSplashName)
 
-                  // ظهور أيقونة واسم التطبيق بشكل كبير يملأ الشاشة بسرعة وبحركة جذابة
                   ivLogo.alpha = 0f
                   ivLogo.scaleX = 0.65f
                   ivLogo.scaleY = 0.65f
@@ -2377,7 +2439,6 @@ jobs:
                       .setStartDelay(100)
                       .start()
 
-                  // الانتقال السريع والمباشر لواجهة التطبيق
                   Handler(Looper.getMainLooper()).postDelayed({
                       val intent = Intent(this, MainActivity::class.java)
                       startActivity(intent)
@@ -2454,7 +2515,6 @@ jobs:
               private lateinit var scaleGestureDetector: ScaleGestureDetector
               private lateinit var prefs: SharedPreferences
 
-              // شريط التحديد المتعدد
               private lateinit var selectionBar: LinearLayout
               private lateinit var tvSelectionCount: TextView
               private lateinit var btnCancelSelection: ImageButton
@@ -2463,13 +2523,11 @@ jobs:
               private lateinit var btnMoveSelected: ImageButton
               private lateinit var btnDeleteSelected: ImageButton
 
-              // شريط اللصق
               private lateinit var pasteBar: LinearLayout
               private lateinit var tvPasteStatus: TextView
               private lateinit var btnExecutePaste: Button
               private lateinit var btnCancelPaste: ImageButton
 
-              // المشغل المصغر
               private lateinit var miniPlayerLayout: LinearLayout
               private lateinit var ivMiniThumb: ImageView
               private lateinit var tvMiniTitle: TextView
@@ -2494,7 +2552,6 @@ jobs:
               private var viewStyle = MediaAdapter.VIEW_MODE_LIST
               private var showExtensions = false
 
-              // عمليات النسخ والنقل
               enum class ClipAction { NONE, COPY, MOVE }
               private var activeClipAction = ClipAction.NONE
               private val clipBufferList = mutableListOf<MediaItem>()
@@ -2510,7 +2567,6 @@ jobs:
 
                   prefs = getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
 
-                  // استعادة الإعدادات المحفوظة
                   showExtensions = prefs.getBoolean("show_extensions", false)
                   viewStyle = prefs.getInt("view_style", MediaAdapter.VIEW_MODE_LIST)
                   sortBy = prefs.getString("sort_by", "name") ?: "name"
@@ -2535,7 +2591,6 @@ jobs:
                   setupRecyclerView()
                   setupBottomNav()
 
-                  // ضبط التبويب المحفوظ
                   val targetMenuId = when (currentTab) {
                       TAB_VIDEO -> R.id.nav_local
                       TAB_AUDIO -> R.id.nav_music
@@ -3384,33 +3439,93 @@ jobs:
               }
 
               private fun showAppSettingsDialog() {
-                  val options = arrayOf(
-                      "خصائص سماعة البلوتوث",
-                      "إظهار كلمات الأغاني الصوتية"
-                  )
-                  val checked = booleanArrayOf(
-                      LionPlayerManager.bluetoothControlEnabled,
-                      prefs.getBoolean("show_lyrics", true)
+                  val resumeModes = arrayOf("الاستئناف من حيث توقف", "البدء من بداية المقطع دائماً", "السؤال قبل اتخاذ القرار")
+                  val isBoostEnabled = prefs.getBoolean("volume_boost_enabled", false)
+                  val currentSpeedStr = prefs.getString("long_press_speed_str", "2x") ?: "2x"
+                  val currentResumeMode = prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)
+                  val isBtEnabled = LionPlayerManager.bluetoothControlEnabled
+                  val isLyricsEnabled = prefs.getBoolean("show_lyrics", true)
+
+                  val items = arrayOf(
+                      "مضاعفة الصوت حتى 200%: " + if (isBoostEnabled) "مفعل ✅" else "معطل ❌",
+                      "سرعة الضغط المطول للتسريع: $currentSpeedStr",
+                      "استئناف تشغيل الفيديو: ${resumeModes[currentResumeMode]}",
+                      "التحكم بسماعة البلوتوث: " + if (isBtEnabled) "مفعل ✅" else "معطل ❌",
+                      "إظهار كلمات الأغاني: " + if (isLyricsEnabled) "مفعل ✅" else "معطل ❌"
                   )
 
                   AlertDialog.Builder(this)
                       .setTitle("الإعدادات العامة")
-                      .setMultiChoiceItems(options, checked) { _, which, isChecked ->
+                      .setItems(items) { _, which ->
                           when (which) {
                               0 -> {
-                                  LionPlayerManager.bluetoothControlEnabled = isChecked
-                                  prefs.edit().putBoolean("bluetooth_headset_control", isChecked).apply()
-                                  val msg = if (isChecked) "تم تفعيل التحكم بسماعة البلوتوث" else "تم إيقاف التحكم بسماعة البلوتوث"
+                                  val newBoost = !isBoostEnabled
+                                  prefs.edit().putBoolean("volume_boost_enabled", newBoost).apply()
+                                  val msg = if (newBoost) "تم تفعيل مضاعفة الصوت حتى 200%" else "تم إيقاف مضاعفة الصوت"
                                   Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                                  showAppSettingsDialog()
                               }
-                              1 -> {
-                                  prefs.edit().putBoolean("show_lyrics", isChecked).apply()
-                                  val msg = if (isChecked) "تم تفعيل كلمات الأغاني" else "تم إخفاء كلمات الأغاني"
+                              1 -> showLongPressSpeedDialog()
+                              2 -> showResumeModeDialog()
+                              3 -> {
+                                  val newBt = !isBtEnabled
+                                  LionPlayerManager.bluetoothControlEnabled = newBt
+                                  prefs.edit().putBoolean("bluetooth_headset_control", newBt).apply()
+                                  val msg = if (newBt) "تم تفعيل التحكم بسماعة البلوتوث" else "تم إيقاف التحكم بسماعة البلوتوث"
                                   Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                                  showAppSettingsDialog()
+                              }
+                              4 -> {
+                                  val newLyrics = !isLyricsEnabled
+                                  prefs.edit().putBoolean("show_lyrics", newLyrics).apply()
+                                  val msg = if (newLyrics) "تم تفعيل كلمات الأغاني" else "تم إخفاء كلمات الأغاني"
+                                  Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                                  showAppSettingsDialog()
                               }
                           }
                       }
-                      .setPositiveButton("تم", null)
+                      .setPositiveButton("إغلاق", null)
+                      .show()
+              }
+
+              private fun showLongPressSpeedDialog() {
+                  val speedOptions = arrayOf("1.25x", "1.5x", "1.75x", "2x")
+                  val speedValues = floatArrayOf(1.25f, 1.5f, 1.75f, 2.0f)
+                  val currentIndex = prefs.getInt("long_press_speed_idx", 3).coerceIn(0, 3)
+
+                  AlertDialog.Builder(this)
+                      .setTitle("سرعة الضغط المطول للتسريع")
+                      .setSingleChoiceItems(speedOptions, currentIndex) { dialog, which ->
+                          prefs.edit()
+                              .putInt("long_press_speed_idx", which)
+                              .putFloat("long_press_speed", speedValues[which])
+                              .putString("long_press_speed_str", speedOptions[which])
+                              .apply()
+                          Toast.makeText(this, "تم اختيار السرعة: ${speedOptions[which]}", Toast.LENGTH_SHORT).show()
+                          dialog.dismiss()
+                          showAppSettingsDialog()
+                      }
+                      .setNegativeButton("إلغاء") { _, _ -> showAppSettingsDialog() }
+                      .show()
+              }
+
+              private fun showResumeModeDialog() {
+                  val resumeModes = arrayOf(
+                      "الاستئناف من حيث توقف المقطع",
+                      "البدء من بداية المقطع دائماً",
+                      "السؤال قبل اتخاذ القرار عند كل تشغيل"
+                  )
+                  val currentMode = prefs.getInt("resume_playback_mode", 0).coerceIn(0, 2)
+
+                  AlertDialog.Builder(this)
+                      .setTitle("إعدادات استئناف تشغيل الفيديو")
+                      .setSingleChoiceItems(resumeModes, currentMode) { dialog, which ->
+                          prefs.edit().putInt("resume_playback_mode", which).apply()
+                          Toast.makeText(this, "تم اختيار: ${resumeModes[which]}", Toast.LENGTH_SHORT).show()
+                          dialog.dismiss()
+                          showAppSettingsDialog()
+                      }
+                      .setNegativeButton("إلغاء") { _, _ -> showAppSettingsDialog() }
                       .show()
               }
 
@@ -3520,7 +3635,7 @@ jobs:
           }
           EOF
 
-          # 20. PlayerActivity.kt (تحديث النافذة العائمة وأزرار التنقل)
+          # 20. PlayerActivity.kt (تحديث مضاعفة الصوت، التكبير حتى 500%، التسريع بالضغط المطول، واستئناف التشغيل)
           cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
           package com.lionplayer.app.ui
 
@@ -3535,6 +3650,7 @@ jobs:
           import android.media.MediaMetadataRetriever
           import android.media.audiofx.BassBoost
           import android.media.audiofx.Equalizer
+          import android.media.audiofx.LoudnessEnhancer
           import android.media.audiofx.PresetReverb
           import android.net.Uri
           import android.os.Build
@@ -3598,6 +3714,12 @@ jobs:
               private lateinit var brightnessProgressBar: ProgressBar
               private lateinit var tvBrightnessValue: TextView
 
+              private lateinit var hudFastForward: LinearLayout
+              private lateinit var tvFastForwardValue: TextView
+
+              private lateinit var hudZoom: LinearLayout
+              private lateinit var tvZoomValue: TextView
+
               private var isLocked = false
               private var controlsVisible = true
               private var rotationState = 0
@@ -3605,12 +3727,49 @@ jobs:
 
               private var audioManager: AudioManager? = null
               private var maxSystemVolume: Int = 15
+              private var currentTotalVolumePercent = 100f
 
               private var equalizer: Equalizer? = null
               private var bassBoost: BassBoost? = null
               private var presetReverb: PresetReverb? = null
+              private var loudnessEnhancer: LoudnessEnhancer? = null
 
               private lateinit var prefs: SharedPreferences
+
+              // Zoom & Pinch Variables (حتى 500%)
+              private lateinit var scaleGestureDetector: ScaleGestureDetector
+              private var videoScale = 1.0f
+              private var videoTranslationX = 0f
+              private var videoTranslationY = 0f
+              private var isPinching = false
+              private var lastTouchX = 0f
+              private var lastTouchY = 0f
+              private val hideZoomHudRunnable = Runnable { hudZoom.visibility = View.GONE }
+
+              // Long press fast forward
+              private var isLongPressSpeeding = false
+              private var originalSpeedBeforeLongPress = 1.0f
+              private val longPressRunnable = Runnable {
+                  if (!isDraggingVertical && !isDraggingHorizontal && !isPinching && videoScale <= 1.05f) {
+                      val p = LionPlayerManager.player
+                      if (p?.isPlaying == true) {
+                          isLongPressSpeeding = true
+                          originalSpeedBeforeLongPress = p.playbackParameters.speed
+                          val targetSpeed = prefs.getFloat("long_press_speed", 2.0f)
+                          val speedLabel = prefs.getString("long_press_speed_str", "2x") ?: "${targetSpeed}x"
+                          p.playbackParameters = PlaybackParameters(targetSpeed)
+
+                          hudFastForward.visibility = View.VISIBLE
+                          tvFastForwardValue.text = "$speedLabel ⏩ تسريع"
+                          try {
+                              playerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                          } catch (e: Exception) {}
+                      }
+                  }
+              }
+
+              // Resume position tracking
+              private var lastCheckedResumeItemId: Long = -1L
 
               private val handler = Looper.getMainLooper().let { Handler(it) }
               private val updateProgressRunnable = object : Runnable {
@@ -3671,10 +3830,6 @@ jobs:
                   applySystemBarsVisibility()
               }
 
-              /**
-               * إظهار أزرار التنقل المدمجة مع نظام الأندرويد في الوضع الطولي،
-               * وإخفاؤها تلقائياً في الوضع العرضي.
-               */
               private fun applySystemBarsVisibility() {
                   if (isInFloatingWindow()) return
 
@@ -3751,6 +3906,8 @@ jobs:
                   hudSeek.visibility = View.GONE
                   hudVolume.visibility = View.GONE
                   hudBrightness.visibility = View.GONE
+                  hudFastForward.visibility = View.GONE
+                  hudZoom.visibility = View.GONE
               }
 
               fun showAllControls() {
@@ -3844,11 +4001,19 @@ jobs:
                   hudBrightness = findViewById(R.id.hudBrightness)
                   brightnessProgressBar = findViewById(R.id.brightnessProgressBar)
                   tvBrightnessValue = findViewById(R.id.tvBrightnessValue)
+
+                  hudFastForward = findViewById(R.id.hudFastForward)
+                  tvFastForwardValue = findViewById(R.id.tvFastForwardValue)
+
+                  hudZoom = findViewById(R.id.hudZoom)
+                  tvZoomValue = findViewById(R.id.tvZoomValue)
               }
 
               private fun initAudioManager() {
                   audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
                   maxSystemVolume = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
+                  val currVol = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: (maxSystemVolume / 2)
+                  currentTotalVolumePercent = (currVol.toFloat() / maxSystemVolume.toFloat()) * 100f
               }
 
               private fun initAudioEffects() {
@@ -3864,9 +4029,153 @@ jobs:
                           if (presetReverb == null) {
                               presetReverb = PresetReverb(0, sessionId).apply { enabled = true }
                           }
+                          if (loudnessEnhancer == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                              loudnessEnhancer = LoudnessEnhancer(sessionId).apply {
+                                  enabled = currentTotalVolumePercent > 100f
+                                  if (currentTotalVolumePercent > 100f) {
+                                      val boostRatio = (currentTotalVolumePercent - 100f) / 100f
+                                      setTargetGain((boostRatio * 1000f).toInt())
+                                  }
+                              }
+                          }
                       }
                   } catch (e: Exception) {
                       e.printStackTrace()
+                  }
+              }
+
+              private fun applyVolumePercent(targetPercent: Float) {
+                  val volumeBoostEnabled = prefs.getBoolean("volume_boost_enabled", false)
+                  val maxPercent = if (volumeBoostEnabled) 200f else 100f
+                  val clampedPercent = targetPercent.coerceIn(0f, maxPercent)
+                  currentTotalVolumePercent = clampedPercent
+
+                  audioManager?.let { am ->
+                      if (clampedPercent <= 100f) {
+                          val targetSysVol = kotlin.math.round((clampedPercent / 100f) * maxSystemVolume).toInt().coerceIn(0, maxSystemVolume)
+                          am.setStreamVolume(AudioManager.STREAM_MUSIC, targetSysVol, 0)
+                          try {
+                              loudnessEnhancer?.setTargetGain(0)
+                              loudnessEnhancer?.enabled = false
+                          } catch (e: Exception) {}
+                      } else {
+                          am.setStreamVolume(AudioManager.STREAM_MUSIC, maxSystemVolume, 0)
+                          val boostRatio = (clampedPercent - 100f) / 100f
+                          val targetGainmB = (boostRatio * 1000f).toInt()
+                          initAudioEffects()
+                          try {
+                              loudnessEnhancer?.apply {
+                                  setTargetGain(targetGainmB)
+                                  enabled = true
+                              }
+                          } catch (e: Exception) {}
+                      }
+                  }
+
+                  hudVolume.visibility = View.VISIBLE
+                  volumeProgressBar.max = if (volumeBoostEnabled) 200 else 100
+                  volumeProgressBar.progress = clampedPercent.toInt()
+                  if (clampedPercent > 100f) {
+                      tvVolumeValue.text = "${clampedPercent.toInt()}% 🔊 مضاعف"
+                      tvVolumeValue.setTextColor(Color.parseColor("#FF9800"))
+                  } else {
+                      tvVolumeValue.text = "${clampedPercent.toInt()}%"
+                      tvVolumeValue.setTextColor(Color.WHITE)
+                  }
+              }
+
+              private fun updateBrightnessByPercent(deltaPercent: Float) {
+                  val initialPercent = initialBrightness * 100f
+                  val targetPercent = (initialPercent + deltaPercent).coerceIn(1f, 100f)
+
+                  val layoutParams = window.attributes
+                  layoutParams.screenBrightness = (targetPercent / 100f).coerceIn(0.01f, 1.0f)
+                  window.attributes = layoutParams
+
+                  hudBrightness.visibility = View.VISIBLE
+                  brightnessProgressBar.progress = targetPercent.toInt()
+                  tvBrightnessValue.text = "${targetPercent.toInt()}%"
+              }
+
+              private fun applyVideoTransform() {
+                  val targetView = playerView.videoSurfaceView ?: playerView
+                  targetView.pivotX = targetView.width / 2f
+                  targetView.pivotY = targetView.height / 2f
+                  targetView.scaleX = videoScale
+                  targetView.scaleY = videoScale
+
+                  if (videoScale <= 1.05f) {
+                      videoScale = 1.0f
+                      targetView.scaleX = 1.0f
+                      targetView.scaleY = 1.0f
+                      videoTranslationX = 0f
+                      videoTranslationY = 0f
+                      targetView.translationX = 0f
+                      targetView.translationY = 0f
+                  } else {
+                      val maxTransX = (targetView.width * (videoScale - 1f)) / 2f
+                      val maxTransY = (targetView.height * (videoScale - 1f)) / 2f
+                      videoTranslationX = videoTranslationX.coerceIn(-maxTransX, maxTransX)
+                      videoTranslationY = videoTranslationY.coerceIn(-maxTransY, maxTransY)
+                      targetView.translationX = videoTranslationX
+                      targetView.translationY = videoTranslationY
+                  }
+
+                  if (videoScale > 1.0f) {
+                      hudZoom.visibility = View.VISIBLE
+                      tvZoomValue.text = "تكبير ${(videoScale * 100).toInt()}%"
+                  } else {
+                      hudZoom.visibility = View.GONE
+                  }
+              }
+
+              private fun checkResumePositionForTrack(item: LionMediaItem) {
+                  if (!item.isVideo || item.id == lastCheckedResumeItemId) return
+                  lastCheckedResumeItemId = item.id
+
+                  val savedPos = prefs.getLong("video_resume_pos_${item.id}", 0L)
+                  if (savedPos > 3000L) {
+                      val resumeMode = prefs.getInt("resume_playback_mode", 0)
+                      when (resumeMode) {
+                          0 -> {
+                              LionPlayerManager.player?.seekTo(savedPos)
+                              Toast.makeText(this, "تم استئناف المقطع من ${formatDuration(savedPos)}", Toast.LENGTH_SHORT).show()
+                          }
+                          1 -> {
+                              LionPlayerManager.player?.seekTo(0L)
+                          }
+                          2 -> {
+                              val p = LionPlayerManager.player
+                              p?.pause()
+                              AlertDialog.Builder(this)
+                                  .setTitle("استئناف المشاهدة")
+                                  .setMessage("هل ترغب في متابعة المقطع من حيث توقفت (${formatDuration(savedPos)}) أم البدء من البداية؟")
+                                  .setPositiveButton("استئناف (${formatDuration(savedPos)})") { _, _ ->
+                                      p?.seekTo(savedPos)
+                                      p?.play()
+                                  }
+                                  .setNegativeButton("من البداية") { _, _ ->
+                                      p?.seekTo(0L)
+                                      p?.play()
+                                  }
+                                  .setCancelable(false)
+                                  .show()
+                          }
+                      }
+                  }
+              }
+
+              private fun saveCurrentVideoPosition() {
+                  val currentItem = LionPlayerManager.getCurrentItem()
+                  if (currentItem?.isVideo == true) {
+                      val p = LionPlayerManager.player
+                      val pos = p?.currentPosition ?: 0L
+                      val dur = p?.duration ?: 0L
+                      if (dur > 0 && pos > 3000L && pos < dur - 5000L) {
+                          prefs.edit().putLong("video_resume_pos_${currentItem.id}", pos).apply()
+                      } else if (pos >= dur - 5000L) {
+                          prefs.edit().remove("video_resume_pos_${currentItem.id}").apply()
+                      }
                   }
               }
 
@@ -3900,9 +4209,15 @@ jobs:
 
                   btnLyricsToggle.visibility = if (!item.isVideo) View.VISIBLE else View.GONE
 
+                  videoScale = 1.0f
+                  videoTranslationX = 0f
+                  videoTranslationY = 0f
+                  applyVideoTransform()
+
                   if (item.isVideo) {
                       applySystemBarsVisibility()
                       layoutLyrics.visibility = View.GONE
+                      checkResumePositionForTrack(item)
                   } else {
                       showSystemNavBars()
                       checkAndLoadLyrics(item)
@@ -4038,7 +4353,6 @@ jobs:
                       Toast.makeText(this, "تم إلغاء قفل الشاشة", Toast.LENGTH_SHORT).show()
                   }
 
-                  // زر النافذة العائمة: إخفاء الأزرار والانتقال للنافذة العائمة مباشرة
                   btnPip.setOnClickListener {
                       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                           hideAllControls()
@@ -4115,10 +4429,26 @@ jobs:
                       setPadding(32, 24, 32, 24)
                   }
 
+                  val switchBoost = Switch(this).apply {
+                      text = "مضاعفة الصوت حتى 200% (تعزيز نقي)"
+                      isChecked = prefs.getBoolean("volume_boost_enabled", false)
+                      setTextColor(Color.WHITE)
+                      setOnCheckedChangeListener { _, isChecked ->
+                          prefs.edit().putBoolean("volume_boost_enabled", isChecked).apply()
+                          val msg = if (isChecked) "تم تفعيل مضاعفة الصوت حتى 200%" else "تم إيقاف مضاعفة الصوت"
+                          Toast.makeText(this@PlayerActivity, msg, Toast.LENGTH_SHORT).show()
+                          if (!isChecked && currentTotalVolumePercent > 100f) {
+                              applyVolumePercent(100f)
+                          }
+                      }
+                  }
+                  layout.addView(switchBoost)
+
                   val switchEnable = Switch(this).apply {
                       text = "تفعيل المعادل الصوتي"
                       isChecked = eq.enabled
                       setTextColor(Color.WHITE)
+                      setPadding(0, 16, 0, 0)
                       setOnCheckedChangeListener { _, isChecked ->
                           eq.enabled = isChecked
                           bassBoost?.enabled = isChecked
@@ -4200,10 +4530,34 @@ jobs:
               }
 
               private fun setupGestureDetection() {
+                  scaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                      override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                          isPinching = true
+                          handler.removeCallbacks(longPressRunnable)
+                          return true
+                      }
+
+                      override fun onScale(detector: ScaleGestureDetector): Boolean {
+                          val factor = detector.scaleFactor
+                          videoScale = (videoScale * factor).coerceIn(1.0f, 5.0f)
+                          applyVideoTransform()
+                          return true
+                      }
+
+                      override fun onScaleEnd(detector: ScaleGestureDetector) {
+                          if (videoScale <= 1.05f) {
+                              videoScale = 1.0f
+                              applyVideoTransform()
+                          }
+                          handler.postDelayed({ isPinching = false }, 200)
+                          handler.removeCallbacks(hideZoomHudRunnable)
+                          handler.postDelayed(hideZoomHudRunnable, 1500)
+                      }
+                  })
+
                   val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
                       override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                          if (!isLocked) {
-                              // إذا كانت النافذة عائمة أو الأزرار معروضة: ضغطة واحدة تخفي كافة الأزرار
+                          if (!isLocked && !isLongPressSpeeding) {
                               if (isInFloatingWindow() || controlsVisible) {
                                   hideAllControls()
                               } else {
@@ -4216,6 +4570,14 @@ jobs:
 
                       override fun onDoubleTap(e: MotionEvent): Boolean {
                           if (isLocked || isInFloatingWindow()) return true
+                          if (videoScale > 1.05f) {
+                              videoScale = 1.0f
+                              videoTranslationX = 0f
+                              videoTranslationY = 0f
+                              applyVideoTransform()
+                              Toast.makeText(this@PlayerActivity, "إعادة التكبير 100%", Toast.LENGTH_SHORT).show()
+                              return true
+                          }
                           val screenWidth = resources.displayMetrics.widthPixels
                           val p = LionPlayerManager.player ?: return true
                           if (e.x > screenWidth / 2) {
@@ -4230,16 +4592,19 @@ jobs:
                   })
 
                   playerView.setOnTouchListener { _, event ->
+                      scaleGestureDetector.onTouchEvent(event)
                       gestureDetector.onTouchEvent(event)
                       if (isLocked || isInFloatingWindow()) return@setOnTouchListener true
 
                       val screenWidth = resources.displayMetrics.widthPixels
                       val screenHeight = resources.displayMetrics.heightPixels
 
-                      when (event.action) {
+                      when (event.actionMasked) {
                           MotionEvent.ACTION_DOWN -> {
                               gestureStartX = event.x
                               initialGestureY = event.y
+                              lastTouchX = event.x
+                              lastTouchY = event.y
                               isDraggingVertical = false
                               isDraggingHorizontal = false
                               gestureMode = 0
@@ -4250,47 +4615,92 @@ jobs:
                               }
                               val lp = window.attributes
                               initialBrightness = if (lp.screenBrightness >= 0f) lp.screenBrightness else 0.5f
+
+                              if (event.pointerCount == 1 && videoScale <= 1.05f && LionPlayerManager.player?.isPlaying == true) {
+                                  handler.postDelayed(longPressRunnable, 400)
+                              }
+                          }
+                          MotionEvent.ACTION_POINTER_DOWN -> {
+                              handler.removeCallbacks(longPressRunnable)
+                              hudVolume.visibility = View.GONE
+                              hudBrightness.visibility = View.GONE
+                              hudSeek.visibility = View.GONE
+                              isDraggingVertical = false
+                              isDraggingHorizontal = false
                           }
                           MotionEvent.ACTION_MOVE -> {
                               val dx = event.x - gestureStartX
                               val dy = event.y - initialGestureY
 
-                              if (!isDraggingVertical && !isDraggingHorizontal) {
-                                  if (kotlin.math.abs(dy) > 25 && kotlin.math.abs(dy) > kotlin.math.abs(dx)) {
-                                      isDraggingVertical = true
-                                      gestureMode = if (gestureStartX > screenWidth / 2) GESTURE_VOLUME else GESTURE_BRIGHTNESS
-                                  } else if (kotlin.math.abs(dx) > 25 && kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
-                                      isDraggingHorizontal = true
-                                  }
+                              if (kotlin.math.abs(dx) > 20 || kotlin.math.abs(dy) > 20) {
+                                  handler.removeCallbacks(longPressRunnable)
                               }
 
-                              if (isDraggingVertical) {
-                                  val deltaY = initialGestureY - event.y
-                                  val deltaPercent = (deltaY / (screenHeight * 0.6f)) * 100f
+                              if (event.pointerCount >= 2 && videoScale > 1.05f) {
+                                  val moveX = event.x - lastTouchX
+                                  val moveY = event.y - lastTouchY
+                                  videoTranslationX += moveX
+                                  videoTranslationY += moveY
+                                  applyVideoTransform()
+                              } else if (event.pointerCount == 1 && !isPinching && !isLongPressSpeeding) {
+                                  if (videoScale > 1.05f) {
+                                      val moveX = event.x - lastTouchX
+                                      val moveY = event.y - lastTouchY
+                                      videoTranslationX += moveX
+                                      videoTranslationY += moveY
+                                      applyVideoTransform()
+                                  } else {
+                                      if (!isDraggingVertical && !isDraggingHorizontal) {
+                                          if (kotlin.math.abs(dy) > 25 && kotlin.math.abs(dy) > kotlin.math.abs(dx)) {
+                                              isDraggingVertical = true
+                                              gestureMode = if (gestureStartX > screenWidth / 2) GESTURE_VOLUME else GESTURE_BRIGHTNESS
+                                          } else if (kotlin.math.abs(dx) > 25 && kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
+                                              isDraggingHorizontal = true
+                                          }
+                                      }
 
-                                  if (gestureMode == GESTURE_VOLUME) {
-                                      updateVolumeByPercent(deltaPercent)
-                                  } else if (gestureMode == GESTURE_BRIGHTNESS) {
-                                      updateBrightnessByPercent(deltaPercent)
-                                  }
-                              } else if (isDraggingHorizontal) {
-                                  val deltaX = gestureStartX - event.x
-                                  val seekOffsetMs = (deltaX / screenWidth) * 90000L
-                                  val maxDur = LionPlayerManager.player?.duration?.coerceAtLeast(0L) ?: 0L
-                                  if (maxDur > 0) {
-                                      targetSeekPosition = (initialSeekPosition + seekOffsetMs.toLong()).coerceIn(0L, maxDur)
+                                      if (isDraggingVertical) {
+                                          val deltaY = initialGestureY - event.y
+                                          val volumeBoostEnabled = prefs.getBoolean("volume_boost_enabled", false)
+                                          val maxPerc = if (volumeBoostEnabled) 200f else 100f
+                                          val deltaPercent = (deltaY / (screenHeight * 0.6f)) * maxPerc
 
-                                      playerSeekBar.progress = targetSeekPosition.toInt()
-                                      tvCurrentTime.text = formatDuration(targetSeekPosition)
+                                          if (gestureMode == GESTURE_VOLUME) {
+                                              val initPerc = (initialVolume.toFloat() / maxSystemVolume.toFloat()) * 100f
+                                              applyVolumePercent(initPerc + deltaPercent)
+                                          } else if (gestureMode == GESTURE_BRIGHTNESS) {
+                                              updateBrightnessByPercent((deltaY / (screenHeight * 0.6f)) * 100f)
+                                          }
+                                      } else if (isDraggingHorizontal) {
+                                          val deltaX = gestureStartX - event.x
+                                          val seekOffsetMs = (deltaX / screenWidth) * 90000L
+                                          val maxDur = LionPlayerManager.player?.duration?.coerceAtLeast(0L) ?: 0L
+                                          if (maxDur > 0) {
+                                              targetSeekPosition = (initialSeekPosition + seekOffsetMs.toLong()).coerceIn(0L, maxDur)
 
-                                      hudSeek.visibility = View.VISIBLE
-                                      val diffSeconds = (targetSeekPosition - initialSeekPosition) / 1000
-                                      val sign = if (diffSeconds >= 0) "+" else ""
-                                      tvSeekTarget.text = "$sign${diffSeconds}s\n${formatDuration(targetSeekPosition)} / ${formatDuration(maxDur)}"
+                                              playerSeekBar.progress = targetSeekPosition.toInt()
+                                              tvCurrentTime.text = formatDuration(targetSeekPosition)
+
+                                              hudSeek.visibility = View.VISIBLE
+                                              val diffSeconds = (targetSeekPosition - initialSeekPosition) / 1000
+                                              val sign = if (diffSeconds >= 0) "+" else ""
+                                              tvSeekTarget.text = "$sign${diffSeconds}s\n${formatDuration(targetSeekPosition)} / ${formatDuration(maxDur)}"
+                                          }
+                                      }
                                   }
                               }
+                              lastTouchX = event.x
+                              lastTouchY = event.y
                           }
                           MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                              handler.removeCallbacks(longPressRunnable)
+
+                              if (isLongPressSpeeding) {
+                                  isLongPressSpeeding = false
+                                  hudFastForward.visibility = View.GONE
+                                  LionPlayerManager.player?.playbackParameters = PlaybackParameters(originalSpeedBeforeLongPress)
+                              }
+
                               if (isDraggingHorizontal) {
                                   LionPlayerManager.player?.seekTo(targetSeekPosition)
                                   LionPlayerManager.updateNotification(this)
@@ -4304,33 +4714,6 @@ jobs:
                       }
                       true
                   }
-              }
-
-              private fun updateVolumeByPercent(deltaPercent: Float) {
-                  audioManager?.let { am ->
-                      val initialPercent = (initialVolume.toFloat() / maxSystemVolume.toFloat()) * 100f
-                      val targetPercent = (initialPercent + deltaPercent).coerceIn(0f, 100f)
-
-                      val targetVol = kotlin.math.round((targetPercent / 100f) * maxSystemVolume).toInt().coerceIn(0, maxSystemVolume)
-                      am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
-
-                      hudVolume.visibility = View.VISIBLE
-                      volumeProgressBar.progress = targetPercent.toInt()
-                      tvVolumeValue.text = "${targetPercent.toInt()}%"
-                  }
-              }
-
-              private fun updateBrightnessByPercent(deltaPercent: Float) {
-                  val initialPercent = initialBrightness * 100f
-                  val targetPercent = (initialPercent + deltaPercent).coerceIn(1f, 100f)
-
-                  val layoutParams = window.attributes
-                  layoutParams.screenBrightness = (targetPercent / 100f).coerceIn(0.01f, 1.0f)
-                  window.attributes = layoutParams
-
-                  hudBrightness.visibility = View.VISIBLE
-                  brightnessProgressBar.progress = targetPercent.toInt()
-                  tvBrightnessValue.text = "${targetPercent.toInt()}%"
               }
 
               private fun formatDuration(durationMs: Long): String {
@@ -4350,6 +4733,8 @@ jobs:
                       Toast.makeText(this, "الشاشة مقفلة! اضغط على زر القفل أولاً", Toast.LENGTH_SHORT).show()
                       return
                   }
+
+                  saveCurrentVideoPosition()
 
                   val currentItem = LionPlayerManager.getCurrentItem()
                   val isVideo = currentItem?.isVideo ?: true
@@ -4401,8 +4786,14 @@ jobs:
                   updateScreenLock()
               }
 
+              override fun onPause() {
+                  super.onPause()
+                  saveCurrentVideoPosition()
+              }
+
               override fun onStop() {
                   super.onStop()
+                  saveCurrentVideoPosition()
                   LionPlayerManager.onTrackChanged = null
                   LionPlayerManager.onPlaybackStateChanged = null
                   updateScreenLock()
@@ -4410,8 +4801,16 @@ jobs:
 
               override fun onDestroy() {
                   super.onDestroy()
+                  saveCurrentVideoPosition()
                   handler.removeCallbacks(updateProgressRunnable)
+                  handler.removeCallbacks(longPressRunnable)
+                  handler.removeCallbacks(hideZoomHudRunnable)
                   playerView.player = null
+                  try {
+                      loudnessEnhancer?.enabled = false
+                      loudnessEnhancer?.release()
+                      loudnessEnhancer = null
+                  } catch (e: Exception) {}
                   if (!LionPlayerManager.allowBackgroundPlayback && LionPlayerManager.player?.isPlaying != true) {
                       LionPlayerManager.dismissNotification(this)
                   }
