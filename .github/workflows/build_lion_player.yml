@@ -22,11 +22,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.5'
-
       - name: Create App Code & Environment
         run: |
           mkdir -p gradle
@@ -144,7 +139,8 @@ jobs:
           # 6. AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.lionplayer.app">
 
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
@@ -1888,9 +1884,9 @@ jobs:
                           retriever.setDataSource(context, Uri.parse(item.uri))
                       }
                       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                          retriever.getScaledFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, 128, 128)
+                          retriever.getScaledFrameAtTime(1000000L, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, 128, 128)
                       } else {
-                          retriever.getFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                          retriever.getFrameAtTime(1000000L, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
                       }
                   } catch (e: Exception) {
                       null
@@ -2038,7 +2034,7 @@ jobs:
                               if (!bluetoothEnabled) {
                                   return true
                               }
-                              return super.onMediaButtonEvent(session, controllerInfo, intent)
+                              return false
                           }
                       }
 
@@ -2047,7 +2043,7 @@ jobs:
                           .setCallback(sessionCallback)
                           .build()
 
-                      createNotificationChannel(appContext!!)
+                      createNotificationChannel(appContext!)
                   }
                   return player!!
               }
@@ -2592,7 +2588,7 @@ jobs:
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                       window.insetsController?.let { controller ->
                           controller.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                          controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+                          controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
                       }
                   } else {
                       @Suppress("DEPRECATION")
@@ -3857,7 +3853,7 @@ jobs:
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                       window.insetsController?.let { controller ->
                           controller.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                          controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+                          controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
                       }
                   } else {
                       @Suppress("DEPRECATION")
@@ -4749,8 +4745,18 @@ jobs:
           }
           EOF
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
+
+      - name: Generate Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.5
+          chmod +x gradlew
+
       - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace --no-daemon
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
