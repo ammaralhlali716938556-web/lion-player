@@ -43,20 +43,20 @@ jobs:
           mkdir -p app/src/main/res/color
 
           # 1. gradle.properties
-          cat << 'EOF' > gradle.properties
+          cat << 'EOF_GRADLE_PROP' > gradle.properties
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
           android.nonTransitiveRClass=false
-          EOF
+          EOF_GRADLE_PROP
 
           # 2. settings.gradle
-          cat << 'EOF' > settings.gradle
+          cat << 'EOF_SETTINGS' > settings.gradle
           rootProject.name = "LionPlayer"
           include ':app'
-          EOF
+          EOF_SETTINGS
 
           # 3. Root build.gradle
-          cat << 'EOF' > build.gradle
+          cat << 'EOF_ROOT_BUILD' > build.gradle
           buildscript {
               repositories {
                   google()
@@ -78,10 +78,10 @@ jobs:
           tasks.register('clean', Delete) {
               delete rootProject.layout.buildDirectory
           }
-          EOF
+          EOF_ROOT_BUILD
 
           # 4. app/build.gradle
-          cat << 'EOF' > app/build.gradle
+          cat << 'EOF_APP_BUILD' > app/build.gradle
           plugins {
               id 'com.android.application'
               id 'org.jetbrains.kotlin.android'
@@ -95,8 +95,8 @@ jobs:
                   applicationId "com.lionplayer.app"
                   minSdk 21
                   targetSdk 34
-                  versionCode 5
-                  versionName "1.4.0"
+                  versionCode 6
+                  versionName "1.5.0"
 
                   testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
               }
@@ -135,16 +135,16 @@ jobs:
               implementation "androidx.media3:media3-common:$media3_version"
               implementation "androidx.media3:media3-session:$media3_version"
           }
-          EOF
+          EOF_APP_BUILD
 
           # 5. app/proguard-rules.pro
-          cat << 'EOF' > app/proguard-rules.pro
+          cat << 'EOF_PROGUARD' > app/proguard-rules.pro
           -keep class androidx.media3.** { *; }
           -keep class com.lionplayer.app.model.** { *; }
-          EOF
+          EOF_PROGUARD
 
           # 6. AndroidManifest.xml
-          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          cat << 'EOF_MANIFEST' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
@@ -203,10 +203,10 @@ jobs:
                   </receiver>
               </application>
           </manifest>
-          EOF
+          EOF_MANIFEST
 
           # 7. strings.xml
-          cat << 'EOF' > app/src/main/res/values/strings.xml
+          cat << 'EOF_STRINGS' > app/src/main/res/values/strings.xml
           <resources>
               <string name="app_name">Lion Player</string>
               <string name="tab_video">فيديو</string>
@@ -222,10 +222,10 @@ jobs:
               <string name="action_toggle_extension">إظهار امتداد الملفات</string>
               <string name="action_settings">الإعدادات</string>
           </resources>
-          EOF
+          EOF_STRINGS
 
           # 8. colors.xml
-          cat << 'EOF' > app/src/main/res/values/colors.xml
+          cat << 'EOF_COLORS' > app/src/main/res/values/colors.xml
           <resources>
               <color name="primary">#FF9800</color>
               <color name="primary_dark">#E65100</color>
@@ -244,10 +244,10 @@ jobs:
               <color name="surface_dark">@color/app_surface</color>
               <color name="card_dark">@color/app_card</color>
           </resources>
-          EOF
+          EOF_COLORS
 
           # 9. values-night/colors.xml
-          cat << 'EOF' > app/src/main/res/values-night/colors.xml
+          cat << 'EOF_COLORS_NIGHT' > app/src/main/res/values-night/colors.xml
           <resources>
               <color name="primary">#FF9800</color>
               <color name="primary_dark">#E65100</color>
@@ -266,10 +266,10 @@ jobs:
               <color name="surface_dark">@color/app_surface</color>
               <color name="card_dark">@color/app_card</color>
           </resources>
-          EOF
+          EOF_COLORS_NIGHT
 
           # 10. styles.xml
-          cat << 'EOF' > app/src/main/res/values/styles.xml
+          cat << 'EOF_STYLES' > app/src/main/res/values/styles.xml
           <resources>
               <style name="Theme.LionPlayer" parent="Theme.MaterialComponents.DayNight.NoActionBar">
                   <item name="colorPrimary">@color/primary</item>
@@ -294,18 +294,18 @@ jobs:
                   <item name="android:background">@android:color/transparent</item>
               </style>
           </resources>
-          EOF
+          EOF_STYLES
 
           # 11. color_chip_text.xml
-          cat << 'EOF' > app/src/main/res/color/color_chip_text.xml
+          cat << 'EOF_CHIP' > app/src/main/res/color/color_chip_text.xml
           <selector xmlns:android="http://schemas.android.com/apk/res/android">
               <item android:state_selected="true" android:color="@color/primary" />
               <item android:color="@color/text_secondary" />
           </selector>
-          EOF
+          EOF_CHIP
 
           # 12. Drawables
-          cat << 'EOF' > app/src/main/res/drawable/ic_lion_logo.xml
+          cat << 'EOF_LOGO' > app/src/main/res/drawable/ic_lion_logo.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="96dp"
               android:height="96dp"
@@ -315,9 +315,30 @@ jobs:
                 android:fillColor="#FF9800"
                 android:pathData="M48,8C25.9,8 8,25.9 8,48s17.9,40 40,40 40,-17.9 40,-40S70.1,8 48,8zM38,66V30l28,18 -28,18z"/>
           </vector>
-          EOF
+          EOF_LOGO
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_play.xml
+          cat << 'EOF_DUR_BG' > app/src/main/res/drawable/bg_duration_badge.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#B3000000" />
+              <corners android:radius="4dp" />
+          </shape>
+          EOF_DUR_BG
+
+          cat << 'EOF_NEW_BG' > app/src/main/res/drawable/bg_new_badge.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#E53935" />
+              <corners android:radius="3dp" />
+          </shape>
+          EOF_NEW_BG
+
+          cat << 'EOF_RED_CIRCLE' > app/src/main/res/drawable/bg_badge_red_circle.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android"
+              android:shape="oval">
+              <solid android:color="#E53935" />
+          </shape>
+          EOF_RED_CIRCLE
+
+          cat << 'EOF_D1' > app/src/main/res/drawable/ic_play.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="36dp"
               android:height="36dp"
@@ -327,9 +348,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M8,5v14l11,-7z"/>
           </vector>
-          EOF
+          EOF_D1
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_pause.xml
+          cat << 'EOF_D2' > app/src/main/res/drawable/ic_pause.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="36dp"
               android:height="36dp"
@@ -339,9 +360,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M6,19h4V5H6v14zm8,-14v14h4V5h-4z"/>
           </vector>
-          EOF
+          EOF_D2
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_skip_previous.xml
+          cat << 'EOF_D3' > app/src/main/res/drawable/ic_skip_previous.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="32dp"
               android:height="32dp"
@@ -351,9 +372,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M6,6h2v12H6zm3.5,6l8.5,6V6z"/>
           </vector>
-          EOF
+          EOF_D3
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_skip_next.xml
+          cat << 'EOF_D4' > app/src/main/res/drawable/ic_skip_next.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="32dp"
               android:height="32dp"
@@ -363,9 +384,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M6,18l8.5,-6L6,6v12zM16,6v12h2V6h-2z"/>
           </vector>
-          EOF
+          EOF_D4
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_replay_10.xml
+          cat << 'EOF_D5' > app/src/main/res/drawable/ic_replay_10.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="32dp"
               android:height="32dp"
@@ -375,9 +396,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M12,5V1L7,6l5,5V7c3.31,0 6,2.69 6,6s-2.69,6 -6,6 -6,-2.69 -6,-6H4c0,4.42 3.58,8 8,8s8,-3.58 8,-8 -3.58,-8 -8,-8zM10.25,16.5h-1.5v-5h-1v-1.25h2.5v6.25zm4.75,0h-1.5v-6.25h1.5v6.25z"/>
           </vector>
-          EOF
+          EOF_D5
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_forward_10.xml
+          cat << 'EOF_D6' > app/src/main/res/drawable/ic_forward_10.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="32dp"
               android:height="32dp"
@@ -387,9 +408,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M12,5V1l5,5 -5,5V7c-3.31,0 -6,2.69 -6,6s2.69,6 6,6 6,-2.69 6,-6h2c0,4.42 -3.58,8 -8,8s-8,-3.58 -8,-8 3.58,-8 8,-8zM10.25,16.5h-1.5v-5h-1v-1.25h2.5v6.25zm4.75,0h-1.5v-6.25h1.5v6.25z"/>
           </vector>
-          EOF
+          EOF_D6
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_close.xml
+          cat << 'EOF_D7' > app/src/main/res/drawable/ic_close.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -399,9 +420,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12z"/>
           </vector>
-          EOF
+          EOF_D7
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_more_vert.xml
+          cat << 'EOF_D8' > app/src/main/res/drawable/ic_more_vert.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -411,9 +432,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M12,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zm0,2c-1.1,0 -2,0.9 -2,2s0.9,2 2,2 2,-0.9 2,-2 -0.9,-2 -2,-2zm0,6c-1.1,0 -2,0.9 -2,2s0.9,2 2,2 2,-0.9 2,-2 -0.9,-2 -2,-2z"/>
           </vector>
-          EOF
+          EOF_D8
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_favorite.xml
+          cat << 'EOF_D9' > app/src/main/res/drawable/ic_favorite.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -423,9 +444,9 @@ jobs:
                 android:fillColor="#FF9800"
                 android:pathData="M12,21.35l-1.45,-1.32C5.4,15.36 2,12.28 2,8.5 2,5.42 4.42,3 7.5,3c1.74,0 3.41,0.81 4.5,2.09C13.09,3.81 14.76,3 16.5,3 19.58,3 22,5.42 22,8.5c0,3.78 -3.4,6.86 -8.55,11.54L12,21.35z"/>
           </vector>
-          EOF
+          EOF_D9
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_favorite_border.xml
+          cat << 'EOF_D10' > app/src/main/res/drawable/ic_favorite_border.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -435,9 +456,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M16.5,3c-1.74,0 -3.41,0.81 -4.5,2.09C10.91,3.81 9.24,3 7.5,3 4.42,3 2,5.42 2,8.5c0,3.78 3.4,6.86 8.55,11.54L12,21.35l1.45,-1.32C18.6,15.36 22,12.28 22,8.5 22,5.42 19.58,3 16.5,3zm-4.4,15.55l-0.1,0.1 -0.1,-0.1C7.14,14.24 4,11.39 4,8.5 4,6.5 5.5,5 7.5,5c1.54,0 3.04,0.99 3.57,2.36h1.87C13.46,5.99 14.96,5 16.5,5c2,0 3.5,1.5 3.5,3.5 0,2.89 -3.14,5.74 -7.9,10.05z"/>
           </vector>
-          EOF
+          EOF_D10
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_all_files.xml
+          cat << 'EOF_D11' > app/src/main/res/drawable/ic_all_files.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -447,9 +468,9 @@ jobs:
                 android:fillColor="#FF9800"
                 android:pathData="M4,6H2v14c0,1.1 0.9,2 2,2h14v-2H4V6zm16,-4H8c-1.1,0 -2,0.9 -2,2v12c0,1.1 0.9,2 2,2h12c1.1,0 2,-0.9 2,-2V4c0,-1.1 -0.9,-2 -2,-2zm0,14H8V4h12v12z"/>
           </vector>
-          EOF
+          EOF_D11
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_copy.xml
+          cat << 'EOF_D12' > app/src/main/res/drawable/ic_copy.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -459,9 +480,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M16,1H4c-1.1,0 -2,0.9 -2,2v14h2V3h12V1zm3,4H8c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h11c1.1,0 2,-0.9 2,-2V7c0,-1.1 -0.9,-2 -2,-2zm0,16H8V7h11v14z"/>
           </vector>
-          EOF
+          EOF_D12
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_move.xml
+          cat << 'EOF_D13' > app/src/main/res/drawable/ic_move.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -471,9 +492,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M10,9h4V6h3l-5,-5 -5,5h3v3zm-1,1H6V7l-5,5 5,5v-3h3v-4zm14,2l-5,-5v3h-3v4h3v3l5,-5zm-9,3h-4v3H7l5,5 5,-5h-3v-3z"/>
           </vector>
-          EOF
+          EOF_D13
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_paste.xml
+          cat << 'EOF_D14' > app/src/main/res/drawable/ic_paste.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -483,9 +504,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M19,2h-4.18C14.4,0.84 13.3,0 12,0c-1.3,0 -2.4,0.84 -2.82,2H5c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2V4c0,-1.1 -0.9,-2 -2,-2zm-7,0c0.55,0 1,0.45 1,1s-0.45,1 -1,1 -1,-0.45 -1,-1 0.45,-1 1,-1zm7,18H5V4h2v3h10V4h2v16z"/>
           </vector>
-          EOF
+          EOF_D14
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_check_circle.xml
+          cat << 'EOF_D15' > app/src/main/res/drawable/ic_check_circle.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -495,9 +516,9 @@ jobs:
                 android:fillColor="#FF9800"
                 android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zm-2,15l-5,-5 1.41,-1.41L10,14.17l7.59,-7.59L19,8l-9,9z"/>
           </vector>
-          EOF
+          EOF_D15
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_settings.xml
+          cat << 'EOF_D16' > app/src/main/res/drawable/ic_settings.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -507,9 +528,9 @@ jobs:
                 android:fillColor="#FF9800"
                 android:pathData="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94 0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87c-0.12,0.21 -0.08,0.47 0.12,0.61l2.03,1.58c-0.05,0.3 -0.09,0.63 -0.09,0.94s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61l-2.01,-1.58zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6 3.6,1.62 3.6,3.6 -1.62,3.6 -3.6,3.6z"/>
           </vector>
-          EOF
+          EOF_D16
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_fullscreen.xml
+          cat << 'EOF_D17' > app/src/main/res/drawable/ic_fullscreen.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -519,9 +540,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M7,14H5v5h5v-2H7v-3zm-2,-4h2V7h3V5H5v5zm12,7h-3v2h5v-5h-2v3zM14,5v2h3v3h2V5h-5z"/>
           </vector>
-          EOF
+          EOF_D17
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_lyrics.xml
+          cat << 'EOF_D18' > app/src/main/res/drawable/ic_lyrics.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -531,24 +552,24 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M12,3v10.55c-0.59,-0.34 -1.27,-0.55 -2,-0.55 -2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4V7h4V3h-6zM4,6h6v2H4V6zm0,4h6v2H4v-2z"/>
           </vector>
-          EOF
+          EOF_D18
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_thumb_round.xml
+          cat << 'EOF_D19' > app/src/main/res/drawable/bg_thumb_round.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
               <corners android:radius="8dp" />
               <solid android:color="#2A2A2A" />
           </shape>
-          EOF
+          EOF_D19
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_mini_player.xml
+          cat << 'EOF_D20' > app/src/main/res/drawable/bg_mini_player.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
               <solid android:color="@color/mini_player_bg" />
               <stroke android:width="1dp" android:color="@color/card_stroke" />
               <corners android:radius="12dp" />
           </shape>
-          EOF
+          EOF_D20
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_lock.xml
+          cat << 'EOF_D21' > app/src/main/res/drawable/ic_lock.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -558,9 +579,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M18,8h-1V6c0,-2.76 -2.24,-5 -5,-5S7,3.24 7,6v2H6c-1.1,0 -2,0.9 -2,2v10c0,1.1 0.9,2 2,2h12c1.1,0 2,-0.9 2,-2V10c0,-1.1 -0.9,-2 -2,-2zm-6,9c-1.1,0 -2,-0.9 -2,-2s0.9,-2 2,-2 2,0.9 2,2 -0.9,2 -2,2zm3.1,-9H8.9V6c0,-1.71 1.39,-3.1 3.1,-3.1 1.71,0 3.1,1.39 3.1,3.1v2z"/>
           </vector>
-          EOF
+          EOF_D21
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_lock_open.xml
+          cat << 'EOF_D22' > app/src/main/res/drawable/ic_lock_open.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="28dp"
               android:height="28dp"
@@ -570,9 +591,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M12,17c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zm6,-9h-1V6c0,-2.76 -2.24,-5 -5,-5 -2.28,0 -4.27,1.54 -4.84,3.75 -0.14,0.54 0.18,1.08 0.72,1.22 0.53,0.14 1.08,-0.18 1.22,-0.72C10.51,3.53 11.66,2.5 13,2.5c1.71,0 3.1,1.39 3.1,3.1V8H6c-1.1,0 -2,0.9 -2,2v10c0,1.1 0.9,2 2,2h12c1.1,0 2,-0.9 2,-2V10c0,-1.1 -0.9,-2 -2,-2zm0,12H6V10h12v10z"/>
           </vector>
-          EOF
+          EOF_D22
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_aspect_ratio.xml
+          cat << 'EOF_D23' > app/src/main/res/drawable/ic_aspect_ratio.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -582,9 +603,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M19,12h-2v3h-3v2h5v-5zM7,9h3V7H5v5h2V9zm14,-6H3c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h18c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2zm0,16.01H3V4.99h18v14.02z"/>
           </vector>
-          EOF
+          EOF_D23
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_pip.xml
+          cat << 'EOF_D24' > app/src/main/res/drawable/ic_pip.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -594,9 +615,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M19,7h-8v6h8V7zm2,-4H3c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,1.98 2,1.98h18c1.1,0 2,-0.88 2,-1.98V5c0,-1.1 -0.9,-2 -2,-2zm0,16.01H3V4.98h18v14.03z"/>
           </vector>
-          EOF
+          EOF_D24
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_audiotrack.xml
+          cat << 'EOF_D25' > app/src/main/res/drawable/ic_audiotrack.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -606,9 +627,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M12,3v10.55c-0.59,-0.34 -1.27,-0.55 -2,-0.55 -2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4V7h4V3h-6z"/>
           </vector>
-          EOF
+          EOF_D25
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_equalizer.xml
+          cat << 'EOF_D26' > app/src/main/res/drawable/ic_equalizer.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -618,9 +639,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M10,20h4V4h-4v16zm-6,0h4v-8H4v8zM16,9v11h4V9h-4z"/>
           </vector>
-          EOF
+          EOF_D26
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_refresh.xml
+          cat << 'EOF_D27' > app/src/main/res/drawable/ic_refresh.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -630,9 +651,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M17.65,6.35C16.2,4.9 14.21,4 12,4c-4.42,0 -7.99,3.58 -7.99,8s3.57,8 7.99,8c3.73,0 6.84,-2.55 7.73,-6h-2.08c-0.82,2.33 -3.04,4 -5.65,4 -3.31,0 -6,-2.69 -6,-6s2.69,-6 6,-6c1.66,0 3.14,0.69 4.22,1.78L13,11h7V4l-2.35,2.35z"/>
           </vector>
-          EOF
+          EOF_D27
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_back.xml
+          cat << 'EOF_D28' > app/src/main/res/drawable/ic_back.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -642,9 +663,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M20,11H7.83l5.59,-5.59L12,4l-8,8 8,8 1.41,-1.41L7.83,13H20v-2z"/>
           </vector>
-          EOF
+          EOF_D28
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_folder.xml
+          cat << 'EOF_D29' > app/src/main/res/drawable/ic_folder.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -654,9 +675,9 @@ jobs:
                 android:fillColor="#FFB74D"
                 android:pathData="M10,4H4c-1.1,0 -1.99,0.9 -1.99,2L2,18c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2V8c0,-1.1 -0.9,-2 -2,-2h-8l-2,-2z"/>
           </vector>
-          EOF
+          EOF_D29
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_video.xml
+          cat << 'EOF_D30' > app/src/main/res/drawable/ic_video.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -666,9 +687,9 @@ jobs:
                 android:fillColor="#FF9800"
                 android:pathData="M17,10.5V7c0,-0.55 -0.45,-1 -1,-1H4c-0.55,0 -1,0.45 -1,1v10c0,0.55 0.45,1 1,1h12c0.55,0 1,-0.45 1,-1v-3.5l4,4v-11l-4,4z"/>
           </vector>
-          EOF
+          EOF_D30
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_screen_rotation.xml
+          cat << 'EOF_D31' > app/src/main/res/drawable/ic_screen_rotation.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -678,9 +699,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M16.48,2.52c3.27,1.55 5.61,4.72 5.97,8.48h1.5C23.44,4.84 18.29,0 12,0l-0.66,0.03 3.81,3.81 1.33,-1.32zM10.23,1.75c-0.59,-0.59 -1.54,-0.59 -2.12,0L1.75,8.11c-0.59,0.59 -0.59,1.54 0,2.12l12.02,12.02c0.59,0.59 1.54,0.59 2.12,0l6.36,-6.36c0.59,-0.59 0.59,-1.54 0,-2.12L10.23,1.75zM14.83,21.19L2.81,9.17l6.36,-6.36 12.02,12.02 -6.36,6.36zM7.52,21.48C4.25,19.94 1.91,16.76 1.55,13H0.05C0.56,19.16 5.71,24 12,24l0.66,-0.03 -3.81,-3.81 -1.33,1.32z"/>
           </vector>
-          EOF
+          EOF_D31
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_sort.xml
+          cat << 'EOF_D32' > app/src/main/res/drawable/ic_sort.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -690,9 +711,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M3,18h6v-2H3v2zM3,6v2h18V6H3zm0,7h12v-2H3v2z"/>
           </vector>
-          EOF
+          EOF_D32
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_view_mode.xml
+          cat << 'EOF_D33' > app/src/main/res/drawable/ic_view_mode.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -702,9 +723,9 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M4,11h5V5H4v6zm0,7h5v-6H4v6zm6,0h5v-6h-5v6zm6,0h5v-6h-5v6zm-6,-7h5V5h-5v6zm6,-6v6h5V5h-5z"/>
           </vector>
-          EOF
+          EOF_D33
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_music_note.xml
+          cat << 'EOF_D34' > app/src/main/res/drawable/ic_music_note.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -714,9 +735,9 @@ jobs:
                 android:fillColor="#FF9800"
                 android:pathData="M12,3v10.55c-0.59,-0.34 -1.27,-0.55 -2,-0.55 -2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4V7h4V3h-6z"/>
           </vector>
-          EOF
+          EOF_D34
 
-          cat << 'EOF' > app/src/main/res/drawable/ic_brightness.xml
+          cat << 'EOF_D35' > app/src/main/res/drawable/ic_brightness.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="24dp"
               android:height="24dp"
@@ -726,26 +747,26 @@ jobs:
                 android:fillColor="#FFFFFFFF"
                 android:pathData="M20,8.69V4h-4.69L12,0.69 8.69,4H4v4.69L0.69,12 4,15.31V20h4.69L12,23.31 15.31,20H20v-4.69L23.31,12 20,8.69zM12,18c-3.31,0 -6,-2.69 -6,-6s2.69,-6 6,-6 6,2.69 6,6 -2.69,6 -6,6z"/>
           </vector>
-          EOF
+          EOF_D35
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_hud.xml
+          cat << 'EOF_D36' > app/src/main/res/drawable/bg_hud.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android"
               android:shape="rectangle">
               <solid android:color="#B3000000" />
               <corners android:radius="16dp" />
           </shape>
-          EOF
+          EOF_D36
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_controls_gradient.xml
+          cat << 'EOF_D37' > app/src/main/res/drawable/bg_controls_gradient.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
               <gradient
                   android:angle="90"
                   android:startColor="#CC000000"
                   android:endColor="#00000000" />
           </shape>
-          EOF
+          EOF_D37
 
-          cat << 'EOF' > app/src/main/res/drawable/progress_hud.xml
+          cat << 'EOF_D38' > app/src/main/res/drawable/progress_hud.xml
           <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
               <item android:id="@android:id/background">
                   <shape>
@@ -762,31 +783,31 @@ jobs:
                   </clip>
               </item>
           </layer-list>
-          EOF
+          EOF_D38
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_bottom_sheet.xml
+          cat << 'EOF_D39' > app/src/main/res/drawable/bg_bottom_sheet.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
               <solid android:color="@color/app_surface" />
               <corners android:topLeftRadius="24dp" android:topRightRadius="24dp" />
           </shape>
-          EOF
+          EOF_D39
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_sheet_handle.xml
+          cat << 'EOF_D40' > app/src/main/res/drawable/bg_sheet_handle.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
               <solid android:color="@color/divider_color" />
               <corners android:radius="3dp" />
           </shape>
-          EOF
+          EOF_D40
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_settings_card.xml
+          cat << 'EOF_D41' > app/src/main/res/drawable/bg_settings_card.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
               <solid android:color="@color/app_card" />
               <corners android:radius="14dp" />
               <stroke android:width="1dp" android:color="@color/card_stroke" />
           </shape>
-          EOF
+          EOF_D41
 
-          cat << 'EOF' > app/src/main/res/drawable/bg_chip_selector.xml
+          cat << 'EOF_D42' > app/src/main/res/drawable/bg_chip_selector.xml
           <selector xmlns:android="http://schemas.android.com/apk/res/android">
               <item android:state_selected="true">
                   <shape>
@@ -803,10 +824,10 @@ jobs:
                   </shape>
               </item>
           </selector>
-          EOF
+          EOF_D42
 
           # 13. Menus
-          cat << 'EOF' > app/src/main/res/menu/top_main_menu.xml
+          cat << 'EOF_M1' > app/src/main/res/menu/top_main_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
           <menu xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -850,9 +871,9 @@ jobs:
                   android:title="@string/action_settings"
                   app:showAsAction="never" />
           </menu>
-          EOF
+          EOF_M1
 
-          cat << 'EOF' > app/src/main/res/menu/bottom_nav_menu.xml
+          cat << 'EOF_M2' > app/src/main/res/menu/bottom_nav_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
           <menu xmlns:android="http://schemas.android.com/apk/res/android">
               <item
@@ -872,10 +893,10 @@ jobs:
                   android:icon="@drawable/ic_favorite"
                   android:title="@string/tab_favorites" />
           </menu>
-          EOF
+          EOF_M2
 
           # 14. Layouts
-          cat << 'EOF' > app/src/main/res/layout/activity_splash.xml
+          cat << 'EOF_L1' > app/src/main/res/layout/activity_splash.xml
           <?xml version="1.0" encoding="utf-8"?>
           <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -914,9 +935,9 @@ jobs:
               </LinearLayout>
 
           </androidx.constraintlayout.widget.ConstraintLayout>
-          EOF
+          EOF_L1
 
-          cat << 'EOF' > app/src/main/res/layout/activity_main.xml
+          cat << 'EOF_L2' > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -1132,12 +1153,13 @@ jobs:
                           android:textSize="11sp" />
                   </LinearLayout>
 
+                  <!-- تصميم الأزرار معكوس بصرياً مع الحفاظ على الوظائف -->
                   <ImageButton
                       android:id="@+id/btnMiniPrev"
                       android:layout_width="38dp"
                       android:layout_height="38dp"
                       android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_skip_previous"
+                      android:src="@drawable/ic_skip_next"
                       app:tint="@color/text_primary" />
 
                   <ImageButton
@@ -1153,7 +1175,7 @@ jobs:
                       android:layout_width="38dp"
                       android:layout_height="38dp"
                       android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_skip_next"
+                      android:src="@drawable/ic_skip_previous"
                       app:tint="@color/text_primary" />
 
                   <ImageButton
@@ -1176,9 +1198,9 @@ jobs:
                   app:layout_constraintBottom_toBottomOf="parent" />
 
           </androidx.constraintlayout.widget.ConstraintLayout>
-          EOF
+          EOF_L2
 
-          cat << 'EOF' > app/src/main/res/layout/item_media_video.xml
+          cat << 'EOF_L3' > app/src/main/res/layout/item_media_video.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -1206,14 +1228,65 @@ jobs:
                       android:src="@drawable/ic_check_circle"
                       android:visibility="gone" />
 
-                  <ImageView
-                      android:id="@+id/ivThumbnail"
-                      android:layout_width="56dp"
-                      android:layout_height="56dp"
-                      android:scaleType="centerCrop"
-                      android:background="@drawable/bg_thumb_round"
-                      android:clipToOutline="true"
-                      android:src="@drawable/ic_video" />
+                  <FrameLayout
+                      android:layout_width="62dp"
+                      android:layout_height="56dp">
+
+                      <ImageView
+                          android:id="@+id/ivThumbnail"
+                          android:layout_width="match_parent"
+                          android:layout_height="match_parent"
+                          android:scaleType="centerCrop"
+                          android:background="@drawable/bg_thumb_round"
+                          android:clipToOutline="true"
+                          android:src="@drawable/ic_video" />
+
+                      <TextView
+                          android:id="@+id/tvNewBadge"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_gravity="top|start"
+                          android:layout_margin="3dp"
+                          android:background="@drawable/bg_new_badge"
+                          android:paddingStart="4dp"
+                          android:paddingEnd="4dp"
+                          android:paddingTop="1dp"
+                          android:paddingBottom="1dp"
+                          android:text="NEW"
+                          android:textColor="#FFFFFF"
+                          android:textSize="8sp"
+                          android:textStyle="bold"
+                          android:visibility="gone" />
+
+                      <TextView
+                          android:id="@+id/tvFolderNewCount"
+                          android:layout_width="18dp"
+                          android:layout_height="18dp"
+                          android:layout_gravity="top|end"
+                          android:layout_margin="2dp"
+                          android:background="@drawable/bg_badge_red_circle"
+                          android:gravity="center"
+                          android:textColor="#FFFFFF"
+                          android:textSize="9sp"
+                          android:textStyle="bold"
+                          android:visibility="gone" />
+
+                      <TextView
+                          android:id="@+id/tvThumbDuration"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_gravity="bottom|end"
+                          android:layout_margin="3dp"
+                          android:background="@drawable/bg_duration_badge"
+                          android:paddingStart="4dp"
+                          android:paddingEnd="4dp"
+                          android:paddingTop="1dp"
+                          android:paddingBottom="1dp"
+                          android:textColor="#FFFFFF"
+                          android:textSize="9sp"
+                          android:textStyle="bold"
+                          android:visibility="gone" />
+                  </FrameLayout>
 
                   <LinearLayout
                       android:layout_width="0dp"
@@ -1267,9 +1340,9 @@ jobs:
                   android:layout_marginStart="76dp"
                   android:background="@color/divider_color" />
           </LinearLayout>
-          EOF
+          EOF_L3
 
-          cat << 'EOF' > app/src/main/res/layout/item_media_grid.xml
+          cat << 'EOF_L4' > app/src/main/res/layout/item_media_grid.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -1302,6 +1375,55 @@ jobs:
                       android:layout_alignParentTop="true"
                       android:layout_margin="4dp"
                       android:src="@drawable/ic_check_circle"
+                      android:visibility="gone" />
+
+                  <TextView
+                      android:id="@+id/tvNewBadge"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_alignParentStart="true"
+                      android:layout_alignParentTop="true"
+                      android:layout_margin="4dp"
+                      android:background="@drawable/bg_new_badge"
+                      android:paddingStart="4dp"
+                      android:paddingEnd="4dp"
+                      android:paddingTop="1dp"
+                      android:paddingBottom="1dp"
+                      android:text="NEW"
+                      android:textColor="#FFFFFF"
+                      android:textSize="9sp"
+                      android:textStyle="bold"
+                      android:visibility="gone" />
+
+                  <TextView
+                      android:id="@+id/tvFolderNewCount"
+                      android:layout_width="20dp"
+                      android:layout_height="20dp"
+                      android:layout_alignParentEnd="true"
+                      android:layout_alignParentTop="true"
+                      android:layout_margin="4dp"
+                      android:background="@drawable/bg_badge_red_circle"
+                      android:gravity="center"
+                      android:textColor="#FFFFFF"
+                      android:textSize="10sp"
+                      android:textStyle="bold"
+                      android:visibility="gone" />
+
+                  <TextView
+                      android:id="@+id/tvThumbDuration"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_alignParentEnd="true"
+                      android:layout_alignParentBottom="true"
+                      android:layout_margin="4dp"
+                      android:background="@drawable/bg_duration_badge"
+                      android:paddingStart="4dp"
+                      android:paddingEnd="4dp"
+                      android:paddingTop="1dp"
+                      android:paddingBottom="1dp"
+                      android:textColor="#FFFFFF"
+                      android:textSize="10sp"
+                      android:textStyle="bold"
                       android:visibility="gone" />
 
                   <ImageButton
@@ -1347,10 +1469,9 @@ jobs:
                   android:textColor="@color/text_secondary"
                   android:textSize="10sp" />
           </LinearLayout>
-          EOF
+          EOF_L4
 
-          # 15. bottom_sheet_settings.xml (توافقية مع إزالة أيقونات الهلال والشمس)
-          cat << 'EOF' > app/src/main/res/layout/bottom_sheet_settings.xml
+          cat << 'EOF_L5' > app/src/main/res/layout/bottom_sheet_settings.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
@@ -1421,9 +1542,9 @@ jobs:
                       android:textStyle="bold" />
               </LinearLayout>
           </LinearLayout>
-          EOF
+          EOF_L5
 
-          cat << 'EOF' > app/src/main/res/layout/activity_player.xml
+          cat << 'EOF_L6' > app/src/main/res/layout/activity_player.xml
           <?xml version="1.0" encoding="utf-8"?>
           <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -1817,6 +1938,7 @@ jobs:
                           android:textSize="12sp" />
                   </LinearLayout>
 
+                  <!-- تم عكس تصميم الأزرار (أيقوناتها) بدون عكس وظائفها، وإضافة زر السرعة جوار أزرار التنقل -->
                   <LinearLayout
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
@@ -1824,49 +1946,64 @@ jobs:
                       android:gravity="center"
                       android:orientation="horizontal">
 
+                      <!-- زر السابق: تصميمه أيقونة التالي، لكنه يشغل السابق -->
                       <ImageButton
                           android:id="@+id/btnPrev"
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_skip_next"
+                          app:tint="#FFFFFF" />
+
+                      <!-- زر ترجيع 10 ثواني: تصميمه أيقونة تقديم 10 ثواني، لكنه يرجع 10 ثواني -->
+                      <ImageButton
+                          android:id="@+id/btnRewind10"
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:layout_marginStart="8dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_forward_10"
+                          app:tint="#FFFFFF" />
+
+                      <ImageButton
+                          android:id="@+id/btnPlayPause"
+                          android:layout_width="58dp"
+                          android:layout_height="58dp"
+                          android:layout_marginStart="12dp"
+                          android:layout_marginEnd="12dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_play"
+                          app:tint="#FF9800" />
+
+                      <!-- زر تقديم 10 ثواني: تصميمه أيقونة ترجيع 10 ثواني، لكنه يقدم 10 ثواني -->
+                      <ImageButton
+                          android:id="@+id/btnForward10"
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:layout_marginEnd="8dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_replay_10"
+                          app:tint="#FFFFFF" />
+
+                      <!-- زر التالي: تصميمه أيقونة السابق، لكنه يشغل التالي -->
+                      <ImageButton
+                          android:id="@+id/btnNext"
                           android:layout_width="44dp"
                           android:layout_height="44dp"
                           android:background="?attr/selectableItemBackgroundBorderless"
                           android:src="@drawable/ic_skip_previous"
                           app:tint="#FFFFFF" />
 
-                      <ImageButton
-                          android:id="@+id/btnRewind10"
-                          android:layout_width="44dp"
-                          android:layout_height="44dp"
-                          android:layout_marginStart="14dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_replay_10"
-                          app:tint="#FFFFFF" />
-
-                      <ImageButton
-                          android:id="@+id/btnPlayPause"
-                          android:layout_width="60dp"
-                          android:layout_height="60dp"
-                          android:layout_marginStart="16dp"
-                          android:layout_marginEnd="16dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_play"
-                          app:tint="#FF9800" />
-
-                      <ImageButton
-                          android:id="@+id/btnForward10"
-                          android:layout_width="44dp"
-                          android:layout_height="44dp"
-                          android:layout_marginEnd="14dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_forward_10"
-                          app:tint="#FFFFFF" />
-
-                      <ImageButton
-                          android:id="@+id/btnNext"
-                          android:layout_width="44dp"
-                          android:layout_height="44dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_skip_next"
-                          app:tint="#FFFFFF" />
+                      <!-- زر سرعة التشغيل تمت إضافته جوار أزرار التنقل -->
+                      <Button
+                          android:id="@+id/btnSpeed"
+                          android:layout_width="wrap_content"
+                          android:layout_height="34dp"
+                          android:layout_marginStart="10dp"
+                          android:backgroundTint="#333333"
+                          android:text="1.0x"
+                          android:textColor="#FFFFFF"
+                          android:textSize="11sp" />
                   </LinearLayout>
 
                   <LinearLayout
@@ -1882,27 +2019,13 @@ jobs:
                           android:background="?attr/selectableItemBackgroundBorderless"
                           android:src="@drawable/ic_aspect_ratio"
                           app:tint="#FFFFFF" />
-
-                      <View
-                          android:layout_width="0dp"
-                          android:layout_height="1dp"
-                          android:layout_weight="1" />
-
-                      <Button
-                          android:id="@+id/btnSpeed"
-                          android:layout_width="wrap_content"
-                          android:layout_height="36dp"
-                          android:backgroundTint="#333333"
-                          android:text="1.0x"
-                          android:textColor="#FFFFFF"
-                          android:textSize="12sp" />
                   </LinearLayout>
               </LinearLayout>
           </androidx.constraintlayout.widget.ConstraintLayout>
-          EOF
+          EOF_L6
 
-          # 16. LionPlayerApp.kt
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/LionPlayerApp.kt
+          # 15. LionPlayerApp.kt
+          cat << 'EOF_C1' > app/src/main/java/com/lionplayer/app/LionPlayerApp.kt
           package com.lionplayer.app
 
           import android.app.Application
@@ -1929,10 +2052,10 @@ jobs:
                   }
               }
           }
-          EOF
+          EOF_C1
 
-          # 17. MediaItem.kt
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/model/MediaItem.kt
+          # 16. MediaItem.kt
+          cat << 'EOF_C2' > app/src/main/java/com/lionplayer/app/model/MediaItem.kt
           package com.lionplayer.app.model
 
           import java.io.Serializable
@@ -1952,12 +2075,14 @@ jobs:
               val album: String = "غير معروف",
               var isFavorite: Boolean = false,
               val path: String = "",
-              var isSelected: Boolean = false
+              var isSelected: Boolean = false,
+              var isNew: Boolean = false,
+              var newCount: Int = 0
           ) : Serializable
-          EOF
+          EOF_C2
 
-          # 18. ThumbnailLoader.kt (يدعم إظهار الصور المصغرة على المجلدات)
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/adapter/ThumbnailLoader.kt
+          # 17. ThumbnailLoader.kt
+          cat << 'EOF_C3' > app/src/main/java/com/lionplayer/app/adapter/ThumbnailLoader.kt
           package com.lionplayer.app.adapter
 
           import android.content.Context
@@ -2112,10 +2237,10 @@ jobs:
                   return BitmapFactory.decodeByteArray(data, 0, data.size, options)
               }
           }
-          EOF
+          EOF_C3
 
-          # 19. LionPlayerManager.kt
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/player/LionPlayerManager.kt
+          # 18. LionPlayerManager.kt
+          cat << 'EOF_C4' > app/src/main/java/com/lionplayer/app/player/LionPlayerManager.kt
           package com.lionplayer.app.player
 
           import android.app.NotificationChannel
@@ -2176,6 +2301,16 @@ jobs:
                           }
                       }
                   }
+              }
+
+              fun markItemAsPlayed(context: Context, id: Long) {
+                  try {
+                      val prefs = context.getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
+                      val played = prefs.getStringSet("played_media_ids", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+                      if (played.add(id.toString())) {
+                          prefs.edit().putStringSet("played_media_ids", played).apply()
+                      }
+                  } catch (e: Exception) {}
               }
 
               fun getOrCreatePlayer(context: Context): ExoPlayer {
@@ -2266,6 +2401,9 @@ jobs:
                   val item = playlist.getOrNull(currentIndex) ?: return
                   val appContext = context.applicationContext
                   val p = getOrCreatePlayer(appContext)
+
+                  markItemAsPlayed(appContext, item.id)
+                  item.isNew = false
 
                   if (!item.isVideo) {
                       allowBackgroundPlayback = true
@@ -2438,10 +2576,10 @@ jobs:
                   manager.cancel(NOTIFICATION_ID)
               }
           }
-          EOF
+          EOF_C4
 
-          # 20. NotificationReceiver.kt
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/receiver/NotificationReceiver.kt
+          # 19. NotificationReceiver.kt
+          cat << 'EOF_C5' > app/src/main/java/com/lionplayer/app/receiver/NotificationReceiver.kt
           package com.lionplayer.app.receiver
 
           import android.content.BroadcastReceiver
@@ -2467,10 +2605,10 @@ jobs:
                   }
               }
           }
-          EOF
+          EOF_C5
 
-          # 21. MediaAdapter.kt (يدعم عرض الصور المصغرة على المجلدات)
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/adapter/MediaAdapter.kt
+          # 20. MediaAdapter.kt (عرض المدة على المصغرات + علامة NEW والعدد على المجلدات)
+          cat << 'EOF_C6' > app/src/main/java/com/lionplayer/app/adapter/MediaAdapter.kt
           package com.lionplayer.app.adapter
 
           import android.graphics.Color
@@ -2535,6 +2673,9 @@ jobs:
                   private val tvSubInfo: TextView = itemView.findViewById(R.id.tvSubInfo)
                   private val tvDetails: TextView = itemView.findViewById(R.id.tvDetails)
                   private val btnMore: ImageButton? = itemView.findViewById(R.id.btnMore)
+                  private val tvThumbDuration: TextView? = itemView.findViewById(R.id.tvThumbDuration)
+                  private val tvNewBadge: TextView? = itemView.findViewById(R.id.tvNewBadge)
+                  private val tvFolderNewCount: TextView? = itemView.findViewById(R.id.tvFolderNewCount)
 
                   fun bind(item: MediaItem) {
                       val ext = if (item.path.isNotEmpty()) File(item.path).extension else ""
@@ -2567,7 +2708,30 @@ jobs:
                           tvSubInfo.visibility = View.GONE
                           tvDetails.text = "${item.itemCount} عناصر"
                           btnMore?.visibility = View.GONE
+                          tvThumbDuration?.visibility = View.GONE
+                          tvNewBadge?.visibility = View.GONE
+
+                          if (item.newCount > 0) {
+                              tvFolderNewCount?.visibility = View.VISIBLE
+                              tvFolderNewCount?.text = if (item.newCount > 99) "99+" else item.newCount.toString()
+                          } else {
+                              tvFolderNewCount?.visibility = View.GONE
+                          }
                       } else {
+                          tvFolderNewCount?.visibility = View.GONE
+                          if (item.isNew && !(isSelectionMode && item.isSelected)) {
+                              tvNewBadge?.visibility = View.VISIBLE
+                          } else {
+                              tvNewBadge?.visibility = View.GONE
+                          }
+
+                          if (item.duration > 0) {
+                              tvThumbDuration?.visibility = View.VISIBLE
+                              tvThumbDuration?.text = formatDuration(item.duration)
+                          } else {
+                              tvThumbDuration?.visibility = View.GONE
+                          }
+
                           tvSubInfo.visibility = View.VISIBLE
                           val albumStr = if (item.album.isNotEmpty() && item.album != "<unknown>") item.album else "ألبوم غير محدد"
                           val artistStr = if (item.artist.isNotEmpty() && item.artist != "<unknown>") item.artist else "فنان غير معروف"
@@ -2610,10 +2774,10 @@ jobs:
                   }
               }
           }
-          EOF
+          EOF_C6
 
-          # 22. SplashActivity.kt
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/SplashActivity.kt
+          # 21. SplashActivity.kt
+          cat << 'EOF_C7' > app/src/main/java/com/lionplayer/app/ui/SplashActivity.kt
           package com.lionplayer.app.ui
 
           import android.annotation.SuppressLint
@@ -2686,10 +2850,10 @@ jobs:
                   }
               }
           }
-          EOF
+          EOF_C7
 
-          # 23. PlayerSettingsBottomSheet.kt (تصميم مطابق تماماً لنافذة إعدادات الصوت والمؤثرات وبدون أيقونات الهلال والشمس)
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/PlayerSettingsBottomSheet.kt
+          # 22. PlayerSettingsBottomSheet.kt
+          cat << 'EOF_C8' > app/src/main/java/com/lionplayer/app/ui/PlayerSettingsBottomSheet.kt
           package com.lionplayer.app.ui
 
           import android.app.Activity
@@ -2738,7 +2902,7 @@ jobs:
                       }
                   }
 
-                  // 1. مظهر التطبيق (السمة) - بدون أيقونات الهلال والشمس
+                  // 1. مظهر التطبيق (السمة)
                   layout.addView(createHeader("مظهر التطبيق (السمة):"))
                   val themeModes = arrayOf("dark", "light", "system")
                   val themeLabels = arrayOf("داكن", "فاتح", "النظام")
@@ -2897,10 +3061,10 @@ jobs:
                   builder.show()
               }
           }
-          EOF
+          EOF_C8
 
-          # 24. MainActivity.kt (توفير المصغرات للمجلدات وتحديث إعدادات التطبيق)
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/MainActivity.kt
+          # 23. MainActivity.kt (تتبع الملفات الحديثة والمجلدات وتحديث واجهة المستخدم)
+          cat << 'EOF_C9' > app/src/main/java/com/lionplayer/app/ui/MainActivity.kt
           package com.lionplayer.app.ui
 
           import android.Manifest
@@ -3049,6 +3213,24 @@ jobs:
                       window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
                   }
                   window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+              }
+
+              private fun markItemAsPlayed(id: Long) {
+                  val playedSet = prefs.getStringSet("played_media_ids", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+                  if (playedSet.add(id.toString())) {
+                      prefs.edit().putStringSet("played_media_ids", playedSet).apply()
+                  }
+              }
+
+              private fun syncPlayedStatus() {
+                  val playedSet = prefs.getStringSet("played_media_ids", setOf()) ?: setOf()
+                  for (item in rawVideosList) {
+                      item.isNew = !playedSet.contains(item.id.toString())
+                  }
+                  for (item in rawAudioList) {
+                      item.isNew = !playedSet.contains(item.id.toString())
+                  }
+                  refreshListDisplay()
               }
 
               private fun initSelectionBar() {
@@ -3326,6 +3508,10 @@ jobs:
                                   refreshListDisplay()
                                   updatePasteBarUI()
                               } else {
+                                  markItemAsPlayed(item.id)
+                                  item.isNew = false
+                                  mediaAdapter.notifyDataSetChanged()
+
                                   val playlist = ArrayList(displayedList.filter { !it.isFolder })
                                   val index = playlist.indexOfFirst { it.id == item.id }.coerceAtLeast(0)
                                   val intent = Intent(this, PlayerActivity::class.java).apply {
@@ -3654,6 +3840,7 @@ jobs:
               private fun loadVideos() {
                   rawVideosList.clear()
                   val favSet = prefs.getStringSet("favorite_ids", setOf()) ?: setOf()
+                  val playedSet = prefs.getStringSet("played_media_ids", setOf()) ?: setOf()
                   val uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
                   val projection = arrayOf(
                       MediaStore.Video.Media._ID,
@@ -3695,11 +3882,13 @@ jobs:
                                   "الرئيسي"
                               }
                               val isFav = favSet.contains(id.toString())
+                              val isNew = !playedSet.contains(id.toString())
 
                               rawVideosList.add(
                                   MediaItem(
                                       id, title, contentUri, duration, size, dateAdded, true,
-                                      folderName, false, 0, artist, album, isFav, path
+                                      folderName, false, 0, artist, album, isFav, path,
+                                      isSelected = false, isNew = isNew, newCount = 0
                                   )
                               )
                           }
@@ -3710,6 +3899,7 @@ jobs:
               private fun loadAudio() {
                   rawAudioList.clear()
                   val favSet = prefs.getStringSet("favorite_ids", setOf()) ?: setOf()
+                  val playedSet = prefs.getStringSet("played_media_ids", setOf()) ?: setOf()
                   val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
                   val projection = arrayOf(
                       MediaStore.Audio.Media._ID,
@@ -3751,11 +3941,13 @@ jobs:
                                   "الرئيسي"
                               }
                               val isFav = favSet.contains(id.toString())
+                              val isNew = !playedSet.contains(id.toString())
 
                               rawAudioList.add(
                                   MediaItem(
                                       id, title, contentUri, duration, size, dateAdded, false,
-                                      folderName, false, 0, artist, album, isFav, path
+                                      folderName, false, 0, artist, album, isFav, path,
+                                      isSelected = false, isNew = isNew, newCount = 0
                                   )
                               )
                           }
@@ -3773,6 +3965,7 @@ jobs:
                               val grouped = rawVideosList.groupBy { it.parentFolder }
                               for ((folderName, items) in grouped) {
                                   val firstItem = items.firstOrNull { it.path.isNotEmpty() || it.uri.isNotEmpty() } ?: items.firstOrNull()
+                                  val newItemsCount = items.count { it.isNew }
                                   displayedList.add(
                                       MediaItem(
                                           id = firstItem?.id ?: folderName.hashCode().toLong(),
@@ -3785,7 +3978,8 @@ jobs:
                                           parentFolder = folderName,
                                           isFolder = true,
                                           itemCount = items.size,
-                                          path = firstItem?.path ?: ""
+                                          path = firstItem?.path ?: "",
+                                          newCount = newItemsCount
                                       )
                                   )
                               }
@@ -3803,6 +3997,7 @@ jobs:
                               val grouped = rawAudioList.groupBy { it.parentFolder }
                               for ((folderName, items) in grouped) {
                                   val firstItem = items.firstOrNull { it.path.isNotEmpty() || it.uri.isNotEmpty() } ?: items.firstOrNull()
+                                  val newItemsCount = items.count { it.isNew }
                                   displayedList.add(
                                       MediaItem(
                                           id = firstItem?.id ?: folderName.hashCode().toLong(),
@@ -3815,7 +4010,8 @@ jobs:
                                           parentFolder = folderName,
                                           isFolder = true,
                                           itemCount = items.size,
-                                          path = firstItem?.path ?: ""
+                                          path = firstItem?.path ?: "",
+                                          newCount = newItemsCount
                                       )
                                   )
                               }
@@ -4033,6 +4229,7 @@ jobs:
                   super.onResume()
                   showSystemBars()
                   updateMiniPlayerUI()
+                  syncPlayedStatus()
                   syncFavoritesFromPrefs()
               }
 
@@ -4049,10 +4246,10 @@ jobs:
                   }
               }
           }
-          EOF
+          EOF_C9
 
-          # 25. PlayerActivity.kt (إبقاء الشاشة مضاءة في الفيديو وانطفاؤها في الصوت وإعدادات موحدة)
-          cat << 'EOF' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
+          # 24. PlayerActivity.kt (جميع التحسينات والتعديلات المطلوبة)
+          cat << 'EOF_C10' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
           package com.lionplayer.app.ui
 
           import android.app.PictureInPictureParams
@@ -4163,6 +4360,25 @@ jobs:
               private var lastTouchY = 0f
               private val hideZoomHudRunnable = Runnable { hudZoom.visibility = View.GONE }
 
+              // اختفاء جميع العناصر تلقائياً في الوضع العرضي بعد ثانيتين
+              private val autoHideLandscapeRunnable = Runnable {
+                  val currentItem = LionPlayerManager.getCurrentItem()
+                  val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                  if (currentItem?.isVideo == true && isLandscape) {
+                      hideAllControls()
+                      hideSystemBars()
+                  }
+              }
+
+              private fun scheduleAutoHideLandscape() {
+                  handler.removeCallbacks(autoHideLandscapeRunnable)
+                  val currentItem = LionPlayerManager.getCurrentItem()
+                  val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                  if (currentItem?.isVideo == true && isLandscape) {
+                      handler.postDelayed(autoHideLandscapeRunnable, 2000L)
+                  }
+              }
+
               private var isLongPressSpeeding = false
               private var originalSpeedBeforeLongPress = 1.0f
               private val longPressRunnable = Runnable {
@@ -4243,6 +4459,9 @@ jobs:
               override fun onConfigurationChanged(newConfig: Configuration) {
                   super.onConfigurationChanged(newConfig)
                   applySystemBarsVisibility()
+                  if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                      scheduleAutoHideLandscape()
+                  }
               }
 
               private fun applySystemBarsVisibility() {
@@ -4333,6 +4552,7 @@ jobs:
                   if (currentItem?.isVideo == false) {
                       checkAndLoadLyrics(currentItem)
                   }
+                  scheduleAutoHideLandscape()
               }
 
               @Suppress("DEPRECATION")
@@ -4340,6 +4560,7 @@ jobs:
                   super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
                   if (isInPictureInPictureMode) {
                       hideAllControls()
+                      playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
                   } else {
                       showAllControls()
                       applySystemBarsVisibility()
@@ -4350,10 +4571,38 @@ jobs:
                   super.onUserLeaveHint()
                   val currentItem = LionPlayerManager.getCurrentItem()
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && currentItem?.isVideo == true && LionPlayerManager.player?.isPlaying == true) {
+                      enterPipMode()
+                  }
+              }
+
+              private fun enterPipMode() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                       hideAllControls()
+                      val builder = PictureInPictureParams.Builder()
+
+                      val format = LionPlayerManager.player?.videoFormat
+                      if (format != null && format.width > 0 && format.height > 0) {
+                          val width = format.width
+                          val height = format.height
+                          val ratio = width.toFloat() / height.toFloat()
+                          if (ratio in 0.42f..2.38f) {
+                              builder.setAspectRatio(android.util.Rational(width, height))
+                          }
+                      }
+
+                      // تمكين تكبير وتصغير الشاشة العائمة بسلاسة
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                          builder.setSeamlessResizeEnabled(true)
+                          builder.setAutoEnterEnabled(true)
+                      }
+
                       try {
-                          enterPictureInPictureMode(PictureInPictureParams.Builder().build())
-                      } catch (e: Exception) {}
+                          enterPictureInPictureMode(builder.build())
+                      } catch (e: Exception) {
+                          enterPictureInPictureMode()
+                      }
+                  } else {
+                      Toast.makeText(this, "خاصية النافذة العائمة غير مدعومة", Toast.LENGTH_SHORT).show()
                   }
               }
 
@@ -4375,6 +4624,7 @@ jobs:
                   }
                   updatePlayPauseButton(LionPlayerManager.player?.isPlaying == true)
                   updateScreenLock()
+                  scheduleAutoHideLandscape()
               }
 
               private fun initViews() {
@@ -4596,7 +4846,6 @@ jobs:
                   }
               }
 
-              // الشاشة لا تنطفئ تلقائياً في الفيديو وتتنطفئ في الصوت فقط
               private fun updateScreenLock() {
                   val currentItem = LionPlayerManager.getCurrentItem()
                   val isVideo = currentItem?.isVideo ?: true
@@ -4654,6 +4903,7 @@ jobs:
                       applySystemBarsVisibility()
                       layoutLyrics.visibility = View.GONE
                       checkResumePositionForTrack(item)
+                      scheduleAutoHideLandscape()
                   } else {
                       showSystemNavBars()
                       checkAndLoadLyrics(item)
@@ -4790,6 +5040,7 @@ jobs:
                   }
 
                   btnPlayPause.setOnClickListener { LionPlayerManager.togglePlayPause(this) }
+                  // زر التالي السابق بعكس التصميم وبقاء الوظيفة الأصلية
                   btnNext.setOnClickListener { LionPlayerManager.playNext(this) }
                   btnPrev.setOnClickListener { LionPlayerManager.playPrevious(this) }
 
@@ -4826,13 +5077,7 @@ jobs:
                   }
 
                   btnPip.setOnClickListener {
-                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                          hideAllControls()
-                          val params = PictureInPictureParams.Builder().build()
-                          enterPictureInPictureMode(params)
-                      } else {
-                          Toast.makeText(this, "خاصية النافذة العائمة غير مدعومة", Toast.LENGTH_SHORT).show()
-                      }
+                      enterPipMode()
                   }
 
                   btnResize.setOnClickListener {
@@ -5004,12 +5249,19 @@ jobs:
               private fun setupGestureDetection() {
                   scaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
                       override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                          val currentItem = LionPlayerManager.getCurrentItem()
+                          // لا يعمل التكبير والتصغير أثناء تشغيل مقطع صوتي
+                          if (currentItem == null || !currentItem.isVideo) {
+                              return false
+                          }
                           isPinching = true
                           handler.removeCallbacks(longPressRunnable)
                           return true
                       }
 
                       override fun onScale(detector: ScaleGestureDetector): Boolean {
+                          val currentItem = LionPlayerManager.getCurrentItem()
+                          if (currentItem == null || !currentItem.isVideo) return false
                           val factor = detector.scaleFactor
                           videoScale = (videoScale * factor).coerceIn(1.0f, 5.0f)
                           applyVideoTransform()
@@ -5017,6 +5269,8 @@ jobs:
                       }
 
                       override fun onScaleEnd(detector: ScaleGestureDetector) {
+                          val currentItem = LionPlayerManager.getCurrentItem()
+                          if (currentItem == null || !currentItem.isVideo) return
                           if (videoScale <= 1.05f) {
                               videoScale = 1.0f
                               applyVideoTransform()
@@ -5042,7 +5296,8 @@ jobs:
 
                       override fun onDoubleTap(e: MotionEvent): Boolean {
                           if (isLocked || isInFloatingWindow()) return true
-                          if (videoScale > 1.05f) {
+                          val currentItem = LionPlayerManager.getCurrentItem()
+                          if (currentItem?.isVideo == true && videoScale > 1.05f) {
                               videoScale = 1.0f
                               videoTranslationX = 0f
                               videoTranslationY = 0f
@@ -5070,6 +5325,8 @@ jobs:
 
                       val screenWidth = resources.displayMetrics.widthPixels
                       val screenHeight = resources.displayMetrics.heightPixels
+                      val currentItem = LionPlayerManager.getCurrentItem()
+                      val isVideo = currentItem?.isVideo == true
 
                       when (event.actionMasked) {
                           MotionEvent.ACTION_DOWN -> {
@@ -5108,14 +5365,14 @@ jobs:
                                   handler.removeCallbacks(longPressRunnable)
                               }
 
-                              if (event.pointerCount >= 2 && videoScale > 1.05f) {
+                              if (event.pointerCount >= 2 && videoScale > 1.05f && isVideo) {
                                   val moveX = event.x - lastTouchX
                                   val moveY = event.y - lastTouchY
                                   videoTranslationX += moveX
                                   videoTranslationY += moveY
                                   applyVideoTransform()
                               } else if (event.pointerCount == 1 && !isPinching && !isLongPressSpeeding) {
-                                  if (videoScale > 1.05f) {
+                                  if (videoScale > 1.05f && isVideo) {
                                       val moveX = event.x - lastTouchX
                                       val moveY = event.y - lastTouchY
                                       videoTranslationX += moveX
@@ -5144,7 +5401,8 @@ jobs:
                                               updateBrightnessByPercent((deltaY / (screenHeight * 0.6f)) * 100f)
                                           }
                                       } else if (isDraggingHorizontal) {
-                                          val deltaX = gestureStartX - event.x
+                                          // تقديم وتأخير لحظي ومباشر أثناء السحب
+                                          val deltaX = event.x - gestureStartX
                                           val seekOffsetMs = (deltaX / screenWidth) * 90000L
                                           val maxDur = LionPlayerManager.player?.duration?.coerceAtLeast(0L) ?: 0L
                                           if (maxDur > 0) {
@@ -5152,6 +5410,9 @@ jobs:
 
                                               playerSeekBar.progress = targetSeekPosition.toInt()
                                               tvCurrentTime.text = formatDuration(targetSeekPosition)
+
+                                              // تقديم وتأخير لحظي بدون انتظار رفع الإصبع
+                                              LionPlayerManager.player?.seekTo(targetSeekPosition)
 
                                               hudSeek.visibility = View.VISIBLE
                                               val diffSeconds = (targetSeekPosition - initialSeekPosition) / 1000
@@ -5240,22 +5501,32 @@ jobs:
               override fun onStart() {
                   super.onStart()
                   LionPlayerManager.onTrackChanged = { item ->
-                      runOnUiThread { updateUIForItem(item) }
+                      runOnUiThread {
+                          updateUIForItem(item)
+                          scheduleAutoHideLandscape()
+                      }
                   }
                   LionPlayerManager.onPlaybackStateChanged = { isPlaying ->
-                      runOnUiThread { updatePlayPauseButton(isPlaying) }
+                      runOnUiThread {
+                          updatePlayPauseButton(isPlaying)
+                          if (isPlaying) {
+                              scheduleAutoHideLandscape()
+                          }
+                      }
                   }
                   LionPlayerManager.getCurrentItem()?.let { updateUIForItem(it) }
                   playerView.player = LionPlayerManager.player
                   updatePlayPauseButton(LionPlayerManager.player?.isPlaying == true)
                   updateScreenLock()
                   handler.post(updateProgressRunnable)
+                  scheduleAutoHideLandscape()
               }
 
               override fun onResume() {
                   super.onResume()
                   applySystemBarsVisibility()
                   updateScreenLock()
+                  scheduleAutoHideLandscape()
               }
 
               override fun onPause() {
@@ -5277,6 +5548,7 @@ jobs:
                   handler.removeCallbacks(updateProgressRunnable)
                   handler.removeCallbacks(longPressRunnable)
                   handler.removeCallbacks(hideZoomHudRunnable)
+                  handler.removeCallbacks(autoHideLandscapeRunnable)
                   playerView.player = null
                   try {
                       loudnessEnhancer?.enabled = false
@@ -5288,7 +5560,7 @@ jobs:
                   }
               }
           }
-          EOF
+          EOF_C10
 
       - name: Build Debug APK
         run: gradle assembleDebug --stacktrace --no-daemon
