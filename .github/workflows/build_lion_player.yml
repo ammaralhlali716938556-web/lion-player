@@ -2084,6 +2084,7 @@ jobs:
           # 17. ThumbnailLoader.kt
           cat << 'EOF_C3' > app/src/main/java/com/lionplayer/app/adapter/ThumbnailLoader.kt
           package com.lionplayer.app.adapter
+
           import android.content.Context
           import android.graphics.Bitmap
           import android.graphics.BitmapFactory
@@ -2901,7 +2902,7 @@ jobs:
                       }
                   }
 
-                  # 1. مظهر التطبيق (السمة)
+                  // 1. مظهر التطبيق (السمة)
                   layout.addView(createHeader("مظهر التطبيق (السمة):"))
                   val themeModes = arrayOf("dark", "light", "system")
                   val themeLabels = arrayOf("داكن", "فاتح", "النظام")
@@ -2930,7 +2931,7 @@ jobs:
                   }
                   layout.addView(themeSpinner)
 
-                  # 2. الصوت والمؤثرات
+                  // 2. الصوت والمؤثرات
                   layout.addView(createHeader("الصوت والمؤثرات:"))
                   val switchBoost = Switch(activity).apply {
                       text = "مضاعفة الصوت حتى 200% (تعزيز نقي)"
@@ -2960,7 +2961,7 @@ jobs:
                       layout.addView(tvEq)
                   }
 
-                  # 3. المشغل وسرعة التسريع
+                  // 3. المشغل وسرعة التسريع
                   layout.addView(createHeader("سرعة الضغط المطول للتسريع:"))
                   val speedLabels = arrayOf("1.25x", "1.5x", "1.75x", "2.0x")
                   val speedValues = floatArrayOf(1.25f, 1.5f, 1.75f, 2.0f)
@@ -3015,7 +3016,7 @@ jobs:
                   }
                   layout.addView(resumeSpinner)
 
-                  # 4. تفضيلات إضافية
+                  // 4. تفضيلات إضافية
                   layout.addView(createHeader("تفضيلات إضافية:"))
                   val switchBt = Switch(activity).apply {
                       text = "التحكم عبر سماعة البلوتوث"
@@ -4359,7 +4360,7 @@ jobs:
               private var lastTouchY = 0f
               private val hideZoomHudRunnable = Runnable { hudZoom.visibility = View.GONE }
 
-              # التبديل الدوري لأبعاد الفيديو عند الضغط المتتالي بدون أسئلة
+              // التبديل الدوري لأبعاد الفيديو عند الضغط المتتالي بدون أسئلة
               private var resizeModeIndex = -1
               private val resizeModes = arrayOf(
                   AspectRatioFrameLayout.RESIZE_MODE_FIT to "ملاءمة للشاشة (Fit)",
@@ -4367,7 +4368,7 @@ jobs:
                   AspectRatioFrameLayout.RESIZE_MODE_FILL to "تمديد (Stretch)"
               )
 
-              # اختفاء جميع العناصر تلقائياً في الوضع العرضي بعد ثانيتين
+              // اختفاء جميع العناصر تلقائياً في الوضع العرضي بعد ثانيتين
               private val autoHideLandscapeRunnable = Runnable {
                   val currentItem = LionPlayerManager.getCurrentItem()
                   val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -4485,7 +4486,7 @@ jobs:
                           showSystemNavBars()
                       }
                   } else {
-                          showSystemNavBars()
+                      showSystemNavBars()
                   }
               }
 
@@ -4606,7 +4607,7 @@ jobs:
                           }
                       }
 
-                      # تمكين تكبير وتصغير الشاشة العائمة بسلاسة بواسطة إيماءة الأصابع
+                      // تمكين تكبير وتصغير الشاشة العائمة بسلاسة بواسطة إيماءة الأصابع
                       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                           builder.setSeamlessResizeEnabled(true)
                           builder.setAutoEnterEnabled(true)
@@ -5060,7 +5061,7 @@ jobs:
                   }
 
                   btnPlayPause.setOnClickListener { LionPlayerManager.togglePlayPause(this) }
-                  # زر التالي السابق بعكس التصميم وبقاء الوظيفة الأصلية
+                  // زر التالي السابق بعكس التصميم وبقاء الوظيفة الأصلية
                   btnNext.setOnClickListener { LionPlayerManager.playNext(this) }
                   btnPrev.setOnClickListener { LionPlayerManager.playPrevious(this) }
 
@@ -5100,7 +5101,7 @@ jobs:
                       enterPipMode()
                   }
 
-                  # 1. الضغط على زر أبعاد الفيديو ينفذ الخيار الأول ثم الثاني ثم الثالث بالتتابع وبدون أي أسئلة
+                  // 1. الضغط على زر أبعاد الفيديو ينفذ الخيار الأول ثم الثاني ثم الثالث بالتتابع وبدون أي أسئلة
                   btnResize.setOnClickListener {
                       resizeModeIndex = (resizeModeIndex + 1) % resizeModes.size
                       val (mode, modeName) = resizeModes[resizeModeIndex]
@@ -5297,7 +5298,7 @@ jobs:
                   val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
                       override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                           if (!isLocked && !isLongPressSpeeding) {
-                              # الشاشة العائمة لا تعود إلى وضعها داخل البرنامج عند الضغط مرة واحدة
+                              // الشاشة العائمة لا تعود إلى وضعها داخل البرنامج عند الضغط مرة واحدة
                               if (isInFloatingWindow()) {
                                   return true
                               }
@@ -5314,7 +5315,7 @@ jobs:
                       override fun onDoubleTap(e: MotionEvent): Boolean {
                           if (isLocked) return true
 
-                          # الشاشة العائمة تعود لوضعها الطبيعي داخل البرنامج فقط عند الضغط مرتين متتالية بسرعة
+                          // الشاشة العائمة تعود لوضعها الطبيعي داخل البرنامج فقط عند الضغط مرتين متتالية بسرعة
                           if (isInFloatingWindow()) {
                               returnToAppFromFloating()
                               return true
@@ -5333,8 +5334,8 @@ jobs:
                           val screenWidth = resources.displayMetrics.widthPixels
                           val p = LionPlayerManager.player ?: return true
 
-                          # يمين الشاشة: يعود للخلف (ترجيع 10 ثواني)
-                          # يسار الشاشة: يتقدم للأمام (تقديم 10 ثواني)
+                          // يمين الشاشة: يعود للخلف (ترجيع 10 ثواني)
+                          // يسار الشاشة: يتقدم للأمام (تقديم 10 ثواني)
                           if (e.x > screenWidth / 2) {
                               p.seekTo((p.currentPosition - 10000).coerceAtLeast(0L))
                               Toast.makeText(this@PlayerActivity, "-10 ثواني", Toast.LENGTH_SHORT).show()
@@ -5351,7 +5352,7 @@ jobs:
                       gestureDetector.onTouchEvent(event)
                       if (isLocked) return@setOnTouchListener true
 
-                      # دعم تكبير وتصغير الشاشة العائمة بالإيماء بالأصابع وتحريكها
+                      // دعم تكبير وتصغير الشاشة العائمة بالإيماء بالأصابع وتحريكها
                       if (isInFloatingWindow()) {
                           if (event.pointerCount >= 2 && videoScale > 1.0f) {
                               when (event.actionMasked) {
@@ -5447,8 +5448,8 @@ jobs:
                                               updateBrightnessByPercent((deltaY / (screenHeight * 0.6f)) * 100f)
                                           }
                                       } else if (isDraggingHorizontal) {
-                                          # السحب لليمين يعود بالزمن للخلف، والسحب لليسار يتقدم بالأزمنة للأمام
-                                          # تقديم وتأخير لحظي ومباشر أثناء السحب حتى بدون رفع الإصبع
+                                          // السحب لليمين يعود بالزمن للخلف، والسحب لليسار يتقدم بالأزمنة للأمام
+                                          // تقديم وتأخير لحظي ومباشر أثناء السحب حتى بدون رفع الإصبع
                                           val deltaX = gestureStartX - event.x
                                           val seekOffsetMs = (deltaX / screenWidth) * 90000L
                                           val maxDur = LionPlayerManager.player?.duration?.coerceAtLeast(0L) ?: 0L
@@ -5458,7 +5459,7 @@ jobs:
                                               playerSeekBar.progress = targetSeekPosition.toInt()
                                               tvCurrentTime.text = formatDuration(targetSeekPosition)
 
-                                              # تقديم وتأخير لحظي في نفس اللحظة بدون انتظار رفع الإصبع
+                                              // تقديم وتأخير لحظي في نفس اللحظة بدون انتظار رفع الإصبع
                                               LionPlayerManager.player?.seekTo(targetSeekPosition)
 
                                               hudSeek.visibility = View.VISIBLE
