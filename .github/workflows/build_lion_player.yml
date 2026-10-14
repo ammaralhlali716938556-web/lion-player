@@ -95,8 +95,8 @@ jobs:
                   applicationId "com.lionplayer.app"
                   minSdk 21
                   targetSdk 34
-                  versionCode 6
-                  versionName "1.5.0"
+                  versionCode 7
+                  versionName "1.6.0"
 
                   testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
               }
@@ -337,6 +337,13 @@ jobs:
               <solid android:color="#E53935" />
           </shape>
           EOF_RED_CIRCLE
+
+          cat << 'EOF_DEC_BG' > app/src/main/res/drawable/bg_decoder_badge.xml
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#FF9800" />
+              <corners android:radius="4dp" />
+          </shape>
+          EOF_DEC_BG
 
           cat << 'EOF_D1' > app/src/main/res/drawable/ic_play.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -826,6 +833,18 @@ jobs:
           </selector>
           EOF_D42
 
+          cat << 'EOF_D43' > app/src/main/res/drawable/ic_repeat.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:pathData="M7,7h10v3l4,-4 -4,-4v3H5v6h2V7zm10,10H7v-3l-4,4 4,4v-3h12v-6h-2v4z"/>
+          </vector>
+          EOF_D43
+
           # 13. Menus
           cat << 'EOF_M1' > app/src/main/res/menu/top_main_menu.xml
           <?xml version="1.0" encoding="utf-8"?>
@@ -1153,7 +1172,6 @@ jobs:
                           android:textSize="11sp" />
                   </LinearLayout>
 
-                  <!-- تصميم الأزرار معكوس بصرياً مع الحفاظ على الوظائف -->
                   <ImageButton
                       android:id="@+id/btnMiniPrev"
                       android:layout_width="38dp"
@@ -1598,111 +1616,175 @@ jobs:
                   </ScrollView>
               </LinearLayout>
 
+              <!-- عناصر التحكم العلوية: شريطان بدون حدود -->
               <LinearLayout
                   android:id="@+id/topControls"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:background="@drawable/bg_controls_gradient"
-                  android:orientation="horizontal"
-                  android:gravity="center_vertical"
-                  android:padding="10dp"
+                  android:orientation="vertical"
+                  android:paddingStart="6dp"
+                  android:paddingEnd="6dp"
+                  android:paddingTop="6dp"
+                  android:paddingBottom="4dp"
                   app:layout_constraintTop_toTopOf="parent">
 
-                  <ImageButton
-                      android:id="@+id/btnBack"
-                      android:layout_width="38dp"
+                  <!-- الشريط العلوي الأول: السهم + اسم المقطع + زر الترميز المصغر جداً + علامة النقاط الثلاث -->
+                  <LinearLayout
+                      android:id="@+id/topBarPrimary"
+                      android:layout_width="match_parent"
+                      android:layout_height="42dp"
+                      android:gravity="center_vertical"
+                      android:orientation="horizontal">
+
+                      <ImageButton
+                          android:id="@+id/btnBack"
+                          android:layout_width="38dp"
+                          android:layout_height="38dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_back"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="رجوع" />
+
+                      <TextView
+                          android:id="@+id/tvVideoTitle"
+                          android:layout_width="0dp"
+                          android:layout_height="wrap_content"
+                          android:layout_weight="1"
+                          android:layout_marginStart="8dp"
+                          android:layout_marginEnd="6dp"
+                          android:ellipsize="end"
+                          android:maxLines="1"
+                          android:textColor="#FFFFFF"
+                          android:textSize="14sp"
+                          android:textStyle="bold" />
+
+                      <!-- زر الترميز الصغير جداً -->
+                      <TextView
+                          android:id="@+id/btnDecoder"
+                          android:layout_width="wrap_content"
+                          android:layout_height="22dp"
+                          android:layout_marginStart="4dp"
+                          android:layout_marginEnd="6dp"
+                          android:background="@drawable/bg_decoder_badge"
+                          android:clickable="true"
+                          android:focusable="true"
+                          android:gravity="center"
+                          android:paddingStart="7dp"
+                          android:paddingEnd="7dp"
+                          android:text="HW"
+                          android:textColor="#FFFFFF"
+                          android:textSize="10sp"
+                          android:textStyle="bold" />
+
+                      <!-- علامة النقاط الثلاث تنقلك لاعدادات المشغل والتطبيق فورا -->
+                      <ImageButton
+                          android:id="@+id/btnMore"
+                          android:layout_width="38dp"
+                          android:layout_height="38dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_more_vert"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="الإعدادات" />
+                  </LinearLayout>
+
+                  <!-- الشريط العلوي الثاني: يحتوي بقية الأزرار العلوية + زر التكرار بدون أي حدود -->
+                  <LinearLayout
+                      android:id="@+id/topBarSecondary"
+                      android:layout_width="match_parent"
                       android:layout_height="38dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_back"
-                      app:tint="#FFFFFF" />
+                      android:gravity="center_vertical|end"
+                      android:orientation="horizontal">
 
-                  <TextView
-                      android:id="@+id/tvVideoTitle"
-                      android:layout_width="0dp"
-                      android:layout_height="wrap_content"
-                      android:layout_weight="1"
-                      android:layout_marginStart="8dp"
-                      android:layout_marginEnd="8dp"
-                      android:ellipsize="end"
-                      android:maxLines="1"
-                      android:textColor="#FFFFFF"
-                      android:textSize="14sp"
-                      android:textStyle="bold" />
+                      <!-- زر تكرار الفيديو أو الصوت -->
+                      <ImageButton
+                          android:id="@+id/btnRepeat"
+                          android:layout_width="36dp"
+                          android:layout_height="36dp"
+                          android:layout_marginStart="2dp"
+                          android:layout_marginEnd="2dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_repeat"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="تكرار المقطع" />
 
-                  <ImageButton
-                      android:id="@+id/btnFavorite"
-                      android:layout_width="38dp"
-                      android:layout_height="38dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_favorite_border"
-                      app:tint="#FFFFFF"
-                      android:contentDescription="تفضيل" />
+                      <ImageButton
+                          android:id="@+id/btnFavorite"
+                          android:layout_width="36dp"
+                          android:layout_height="36dp"
+                          android:layout_marginStart="2dp"
+                          android:layout_marginEnd="2dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_favorite_border"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="تفضيل" />
 
-                  <ImageButton
-                      android:id="@+id/btnLyricsToggle"
-                      android:layout_width="38dp"
-                      android:layout_height="38dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_lyrics"
-                      app:tint="#FFFFFF" />
+                      <ImageButton
+                          android:id="@+id/btnEqualizer"
+                          android:layout_width="36dp"
+                          android:layout_height="36dp"
+                          android:layout_marginStart="2dp"
+                          android:layout_marginEnd="2dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_equalizer"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="معادل الصوت" />
 
-                  <ImageButton
-                      android:id="@+id/btnToggleNav"
-                      android:layout_width="38dp"
-                      android:layout_height="38dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_fullscreen"
-                      app:tint="#FFFFFF" />
+                      <ImageButton
+                          android:id="@+id/btnRotate"
+                          android:layout_width="36dp"
+                          android:layout_height="36dp"
+                          android:layout_marginStart="2dp"
+                          android:layout_marginEnd="2dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_screen_rotation"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="تدوير الشاشة" />
 
-                  <ImageButton
-                      android:id="@+id/btnEqualizer"
-                      android:layout_width="38dp"
-                      android:layout_height="38dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_equalizer"
-                      app:tint="#FFFFFF" />
+                      <ImageButton
+                          android:id="@+id/btnPip"
+                          android:layout_width="36dp"
+                          android:layout_height="36dp"
+                          android:layout_marginStart="2dp"
+                          android:layout_marginEnd="2dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_pip"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="الشاشة العائمة" />
 
-                  <ImageButton
-                      android:id="@+id/btnRotate"
-                      android:layout_width="38dp"
-                      android:layout_height="38dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_screen_rotation"
-                      app:tint="#FFFFFF" />
+                      <ImageButton
+                          android:id="@+id/btnLock"
+                          android:layout_width="36dp"
+                          android:layout_height="36dp"
+                          android:layout_marginStart="2dp"
+                          android:layout_marginEnd="2dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_lock"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="قفل الشاشة" />
 
-                  <Button
-                      android:id="@+id/btnDecoder"
-                      android:layout_width="wrap_content"
-                      android:layout_height="34dp"
-                      android:backgroundTint="#FF9800"
-                      android:text="HW"
-                      android:textColor="#FFFFFF"
-                      android:textSize="11sp" />
+                      <ImageButton
+                          android:id="@+id/btnToggleNav"
+                          android:layout_width="36dp"
+                          android:layout_height="36dp"
+                          android:layout_marginStart="2dp"
+                          android:layout_marginEnd="2dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_fullscreen"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="شاشة كاملة" />
 
-                  <ImageButton
-                      android:id="@+id/btnPip"
-                      android:layout_width="38dp"
-                      android:layout_height="38dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_pip"
-                      app:tint="#FFFFFF" />
-
-                  <ImageButton
-                      android:id="@+id/btnLock"
-                      android:layout_width="38dp"
-                      android:layout_height="38dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_lock"
-                      app:tint="#FFFFFF" />
-
-                  <ImageButton
-                      android:id="@+id/btnMore"
-                      android:layout_width="38dp"
-                      android:layout_height="38dp"
-                      android:background="?attr/selectableItemBackgroundBorderless"
-                      android:src="@drawable/ic_more_vert"
-                      app:tint="#FFFFFF"
-                      android:contentDescription="الإعدادات" />
+                      <ImageButton
+                          android:id="@+id/btnLyricsToggle"
+                          android:layout_width="36dp"
+                          android:layout_height="36dp"
+                          android:layout_marginStart="2dp"
+                          android:layout_marginEnd="2dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:src="@drawable/ic_lyrics"
+                          app:tint="#FFFFFF"
+                          android:contentDescription="كلمات الأغنية" />
+                  </LinearLayout>
               </LinearLayout>
 
               <ImageButton
@@ -1820,6 +1902,7 @@ jobs:
                       android:gravity="center" />
               </LinearLayout>
 
+              <!-- مؤشر التقديم والتأخير اللحظي بدقة أجزاء الثانية -->
               <LinearLayout
                   android:id="@+id/hudSeek"
                   android:layout_width="wrap_content"
@@ -1886,7 +1969,7 @@ jobs:
                   app:layout_constraintTop_toTopOf="parent"
                   app:layout_constraintStart_toStartOf="parent"
                   app:layout_constraintEnd_toEndOf="parent"
-                  android:layout_marginTop="70dp">
+                  android:layout_marginTop="85dp">
 
                   <TextView
                       android:id="@+id/tvZoomValue"
@@ -1938,7 +2021,6 @@ jobs:
                           android:textSize="12sp" />
                   </LinearLayout>
 
-                  <!-- تم عكس تصميم الأزرار (أيقوناتها) بدون عكس وظائفها، وإضافة زر السرعة جوار أزرار التنقل -->
                   <LinearLayout
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
@@ -1946,7 +2028,6 @@ jobs:
                       android:gravity="center"
                       android:orientation="horizontal">
 
-                      <!-- زر السابق: تصميمه أيقونة التالي، لكنه يشغل السابق -->
                       <ImageButton
                           android:id="@+id/btnPrev"
                           android:layout_width="44dp"
@@ -1955,7 +2036,6 @@ jobs:
                           android:src="@drawable/ic_skip_next"
                           app:tint="#FFFFFF" />
 
-                      <!-- زر ترجيع 10 ثواني: تصميمه أيقونة تقديم 10 ثواني، لكنه يرجع 10 ثواني -->
                       <ImageButton
                           android:id="@+id/btnRewind10"
                           android:layout_width="44dp"
@@ -1975,7 +2055,6 @@ jobs:
                           android:src="@drawable/ic_play"
                           app:tint="#FF9800" />
 
-                      <!-- زر تقديم 10 ثواني: تصميمه أيقونة ترجيع 10 ثواني، لكنه يقدم 10 ثواني -->
                       <ImageButton
                           android:id="@+id/btnForward10"
                           android:layout_width="44dp"
@@ -1985,7 +2064,6 @@ jobs:
                           android:src="@drawable/ic_replay_10"
                           app:tint="#FFFFFF" />
 
-                      <!-- زر التالي: تصميمه أيقونة السابق، لكنه يشغل التالي -->
                       <ImageButton
                           android:id="@+id/btnNext"
                           android:layout_width="44dp"
@@ -1994,7 +2072,6 @@ jobs:
                           android:src="@drawable/ic_skip_previous"
                           app:tint="#FFFFFF" />
 
-                      <!-- زر سرعة التشغيل تمت إضافته جوار أزرار التنقل -->
                       <Button
                           android:id="@+id/btnSpeed"
                           android:layout_width="wrap_content"
@@ -2239,7 +2316,7 @@ jobs:
           }
           EOF_C3
 
-          # 18. LionPlayerManager.kt
+          # 18. LionPlayerManager.kt (إضافة دعم HW و HW+ و SW، التكرار، والانتقال الدقيق جداً)
           cat << 'EOF_C4' > app/src/main/java/com/lionplayer/app/player/LionPlayerManager.kt
           package com.lionplayer.app.player
 
@@ -2262,8 +2339,13 @@ jobs:
           import androidx.media3.common.AudioAttributes
           import androidx.media3.common.C
           import androidx.media3.common.MediaItem
+          import androidx.media3.common.PlaybackParameters
           import androidx.media3.common.Player
+          import androidx.media3.exoplayer.DefaultRenderersFactory
           import androidx.media3.exoplayer.ExoPlayer
+          import androidx.media3.exoplayer.RenderersFactory
+          import androidx.media3.exoplayer.SeekParameters
+          import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
           import androidx.media3.session.MediaSession
           import com.lionplayer.app.R
           import com.lionplayer.app.model.MediaItem as LionMediaItem
@@ -2286,6 +2368,9 @@ jobs:
               var currentIndex: Int = 0
               var allowBackgroundPlayback: Boolean = false
               var bluetoothControlEnabled: Boolean = true
+
+              var currentDecoderMode: String = "HW"
+              var isRepeatMode: Boolean = false
 
               var onTrackChanged: ((LionMediaItem) -> Unit)? = null
               var onPlaybackStateChanged: ((Boolean) -> Unit)? = null
@@ -2313,12 +2398,51 @@ jobs:
                   } catch (e: Exception) {}
               }
 
-              fun getOrCreatePlayer(context: Context): ExoPlayer {
+              fun createRenderersFactory(context: Context, mode: String): RenderersFactory {
+                  val factory = DefaultRenderersFactory(context.applicationContext)
+                  factory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
+                  factory.setEnableDecoderFallback(true)
+
+                  when (mode) {
+                      "SW" -> {
+                          factory.setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
+                              val allDecoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
+                              val swDecoders = allDecoders.filter {
+                                  it.softwareOnly || it.name.startsWith("OMX.google.", ignoreCase = true) || it.name.startsWith("c2.android.", ignoreCase = true)
+                              }
+                              if (swDecoders.isNotEmpty()) swDecoders else allDecoders
+                          }
+                      }
+                      "HW+" -> {
+                          factory.forceEnableMediaCodecAsynchronousQueueing()
+                          factory.setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
+                              val allDecoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
+                              val hwDecoders = allDecoders.filter {
+                                  !it.softwareOnly && !it.name.startsWith("OMX.google.", ignoreCase = true) && !it.name.startsWith("c2.android.", ignoreCase = true)
+                              }
+                              if (hwDecoders.isNotEmpty()) hwDecoders else allDecoders
+                          }
+                      }
+                      else -> { // "HW"
+                          factory.setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
+                              val allDecoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
+                              val hwDecoders = allDecoders.filter { !it.softwareOnly }
+                              if (hwDecoders.isNotEmpty()) hwDecoders else allDecoders
+                          }
+                      }
+                  }
+                  return factory
+              }
+
+              fun getOrCreatePlayer(context: Context, mode: String = currentDecoderMode): ExoPlayer {
                   val appContext = context.applicationContext
                   appContextRef = appContext
 
                   if (player == null) {
+                      currentDecoderMode = mode
                       player = ExoPlayer.Builder(appContext)
+                          .setRenderersFactory(createRenderersFactory(appContext, mode))
+                          .setSeekParameters(SeekParameters.EXACT)
                           .setAudioAttributes(
                               AudioAttributes.Builder()
                                   .setUsage(C.USAGE_MEDIA)
@@ -2329,6 +2453,7 @@ jobs:
                           .setWakeMode(C.WAKE_MODE_LOCAL)
                           .setHandleAudioBecomingNoisy(true)
                           .build().apply {
+                              repeatMode = if (isRepeatMode) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
                               addListener(object : Player.Listener {
                                   override fun onIsPlayingChanged(isPlaying: Boolean) {
                                       onPlaybackStateChanged?.invoke(isPlaying)
@@ -2341,6 +2466,11 @@ jobs:
 
                                   override fun onPlaybackStateChanged(playbackState: Int) {
                                       if (playbackState == Player.STATE_ENDED) {
+                                          if (isRepeatMode || repeatMode == Player.REPEAT_MODE_ONE) {
+                                              seekTo(0L)
+                                              play()
+                                              return
+                                          }
                                           val finishedItem = playlist.getOrNull(currentIndex)
                                           if (finishedItem != null) {
                                               val prefs = appContext.getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
@@ -2376,6 +2506,40 @@ jobs:
                       createNotificationChannel(appContext)
                   }
                   return player!!
+              }
+
+              fun switchDecoder(context: Context, mode: String): ExoPlayer {
+                  currentDecoderMode = mode
+                  val p = player
+                  val currentPos = p?.currentPosition ?: 0L
+                  val wasPlaying = p?.isPlaying == true
+                  val speed = p?.playbackParameters?.speed ?: 1.0f
+
+                  tickerHandler.removeCallbacks(progressTickerRunnable)
+                  mediaSession?.release()
+                  mediaSession = null
+                  player?.release()
+                  player = null
+
+                  val newPlayer = getOrCreatePlayer(context, mode)
+                  newPlayer.playbackParameters = PlaybackParameters(speed)
+                  val curItem = playlist.getOrNull(currentIndex)
+                  if (curItem != null) {
+                      val mediaItem = MediaItem.fromUri(Uri.parse(curItem.uri))
+                      newPlayer.setMediaItem(mediaItem)
+                      newPlayer.prepare()
+                      newPlayer.seekTo(currentPos)
+                      if (wasPlaying) {
+                          newPlayer.play()
+                      }
+                  }
+                  return newPlayer
+              }
+
+              fun toggleRepeat(): Boolean {
+                  isRepeatMode = !isRepeatMode
+                  player?.repeatMode = if (isRepeatMode) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+                  return isRepeatMode
               }
 
               fun playPlaylist(context: Context, list: ArrayList<LionMediaItem>, index: Int) {
@@ -2607,7 +2771,7 @@ jobs:
           }
           EOF_C5
 
-          # 20. MediaAdapter.kt (عرض المدة على المصغرات + علامة NEW والعدد على المجلدات)
+          # 20. MediaAdapter.kt
           cat << 'EOF_C6' > app/src/main/java/com/lionplayer/app/adapter/MediaAdapter.kt
           package com.lionplayer.app.adapter
 
@@ -2902,7 +3066,6 @@ jobs:
                       }
                   }
 
-                  // 1. مظهر التطبيق (السمة)
                   layout.addView(createHeader("مظهر التطبيق (السمة):"))
                   val themeModes = arrayOf("dark", "light", "system")
                   val themeLabels = arrayOf("داكن", "فاتح", "النظام")
@@ -2931,7 +3094,6 @@ jobs:
                   }
                   layout.addView(themeSpinner)
 
-                  // 2. الصوت والمؤثرات
                   layout.addView(createHeader("الصوت والمؤثرات:"))
                   val switchBoost = Switch(activity).apply {
                       text = "مضاعفة الصوت حتى 200% (تعزيز نقي)"
@@ -2961,7 +3123,6 @@ jobs:
                       layout.addView(tvEq)
                   }
 
-                  // 3. المشغل وسرعة التسريع
                   layout.addView(createHeader("سرعة الضغط المطول للتسريع:"))
                   val speedLabels = arrayOf("1.25x", "1.5x", "1.75x", "2.0x")
                   val speedValues = floatArrayOf(1.25f, 1.5f, 1.75f, 2.0f)
@@ -3016,7 +3177,6 @@ jobs:
                   }
                   layout.addView(resumeSpinner)
 
-                  // 4. تفضيلات إضافية
                   layout.addView(createHeader("تفضيلات إضافية:"))
                   val switchBt = Switch(activity).apply {
                       text = "التحكم عبر سماعة البلوتوث"
@@ -3063,7 +3223,7 @@ jobs:
           }
           EOF_C8
 
-          # 23. MainActivity.kt (تتبع الملفات الحديثة والمجلدات وتحديث واجهة المستخدم)
+          # 23. MainActivity.kt
           cat << 'EOF_C9' > app/src/main/java/com/lionplayer/app/ui/MainActivity.kt
           package com.lionplayer.app.ui
 
@@ -4248,7 +4408,7 @@ jobs:
           }
           EOF_C9
 
-          # 24. PlayerActivity.kt (جميع التحسينات والتعديلات المطلوبة)
+          # 24. PlayerActivity.kt (جميع التحسينات للشريطين بدون حدود، التكرار، الترميزات HW/HW+/SW، التكبير بالقرص في الشاشة العائمة، والسحب فائق السلاسة لأجزاء الثانية)
           cat << 'EOF_C10' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
           package com.lionplayer.app.ui
 
@@ -4259,6 +4419,7 @@ jobs:
           import android.content.pm.ActivityInfo
           import android.content.res.Configuration
           import android.graphics.Color
+          import android.graphics.drawable.GradientDrawable
           import android.media.AudioManager
           import android.media.MediaMetadataRetriever
           import android.media.audiofx.BassBoost
@@ -4270,6 +4431,7 @@ jobs:
           import android.os.Bundle
           import android.os.Handler
           import android.os.Looper
+          import android.os.SystemClock
           import android.view.*
           import android.widget.*
           import androidx.appcompat.app.AlertDialog
@@ -4293,11 +4455,13 @@ jobs:
               private lateinit var bottomControls: View
               private lateinit var tvVideoTitle: TextView
               private lateinit var btnBack: ImageButton
-              private lateinit var btnFavorite: ImageButton
+              private lateinit var btnDecoder: TextView
               private lateinit var btnMore: ImageButton
-              private lateinit var btnRotate: ImageButton
-              private lateinit var btnDecoder: Button
+
+              private lateinit var btnRepeat: ImageButton
+              private lateinit var btnFavorite: ImageButton
               private lateinit var btnEqualizer: ImageButton
+              private lateinit var btnRotate: ImageButton
               private lateinit var btnPip: ImageButton
               private lateinit var btnLock: ImageButton
               private lateinit var btnUnlock: ImageButton
@@ -4360,7 +4524,6 @@ jobs:
               private var lastTouchY = 0f
               private val hideZoomHudRunnable = Runnable { hudZoom.visibility = View.GONE }
 
-              // التبديل الدوري لأبعاد الفيديو عند الضغط المتتالي بدون أسئلة
               private var resizeModeIndex = -1
               private val resizeModes = arrayOf(
                   AspectRatioFrameLayout.RESIZE_MODE_FIT to "ملاءمة للشاشة (Fit)",
@@ -4368,7 +4531,6 @@ jobs:
                   AspectRatioFrameLayout.RESIZE_MODE_FILL to "تمديد (Stretch)"
               )
 
-              // اختفاء جميع العناصر تلقائياً في الوضع العرضي بعد ثانيتين
               private val autoHideLandscapeRunnable = Runnable {
                   val currentItem = LionPlayerManager.getCurrentItem()
                   val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -4438,6 +4600,7 @@ jobs:
               private var initialBrightness = 0.5f
               private var initialSeekPosition = 0L
               private var targetSeekPosition = 0L
+              private var lastSeekDispatchTime = 0L
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
@@ -4607,7 +4770,6 @@ jobs:
                           }
                       }
 
-                      // تمكين تكبير وتصغير الشاشة العائمة بسلاسة بواسطة إيماءة الأصابع
                       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                           builder.setSeamlessResizeEnabled(true)
                           builder.setAutoEnterEnabled(true)
@@ -4644,6 +4806,7 @@ jobs:
                       LionPlayerManager.getCurrentItem()?.let { updateUIForItem(it) }
                   }
                   updatePlayPauseButton(LionPlayerManager.player?.isPlaying == true)
+                  updateRepeatButtonUI()
                   updateScreenLock()
                   scheduleAutoHideLandscape()
               }
@@ -4654,11 +4817,13 @@ jobs:
                   bottomControls = findViewById(R.id.bottomControls)
                   tvVideoTitle = findViewById(R.id.tvVideoTitle)
                   btnBack = findViewById(R.id.btnBack)
-                  btnFavorite = findViewById(R.id.btnFavorite)
-                  btnMore = findViewById(R.id.btnMore)
-                  btnRotate = findViewById(R.id.btnRotate)
                   btnDecoder = findViewById(R.id.btnDecoder)
+                  btnMore = findViewById(R.id.btnMore)
+
+                  btnRepeat = findViewById(R.id.btnRepeat)
+                  btnFavorite = findViewById(R.id.btnFavorite)
                   btnEqualizer = findViewById(R.id.btnEqualizer)
+                  btnRotate = findViewById(R.id.btnRotate)
                   btnPip = findViewById(R.id.btnPip)
                   btnLock = findViewById(R.id.btnLock)
                   btnUnlock = findViewById(R.id.btnUnlock)
@@ -4695,6 +4860,10 @@ jobs:
 
                   hudZoom = findViewById(R.id.hudZoom)
                   tvZoomValue = findViewById(R.id.tvZoomValue)
+
+                  btnDecoder.text = LionPlayerManager.currentDecoderMode
+                  updateDecoderBadge(LionPlayerManager.currentDecoderMode)
+                  updateRepeatButtonUI()
               }
 
               private fun initAudioManager() {
@@ -4792,7 +4961,7 @@ jobs:
                   targetView.scaleX = videoScale
                   targetView.scaleY = videoScale
 
-                  if (videoScale <= 1.05f) {
+                  if (!isInFloatingWindow() && videoScale <= 1.05f && videoScale >= 0.95f) {
                       videoScale = 1.0f
                       targetView.scaleX = 1.0f
                       targetView.scaleY = 1.0f
@@ -4801,19 +4970,21 @@ jobs:
                       targetView.translationX = 0f
                       targetView.translationY = 0f
                   } else {
-                      val maxTransX = (targetView.width * (videoScale - 1f)) / 2f
-                      val maxTransY = (targetView.height * (videoScale - 1f)) / 2f
+                      val maxTransX = (targetView.width * kotlin.math.abs(videoScale - 1f)) / 2f
+                      val maxTransY = (targetView.height * kotlin.math.abs(videoScale - 1f)) / 2f
                       videoTranslationX = videoTranslationX.coerceIn(-maxTransX, maxTransX)
                       videoTranslationY = videoTranslationY.coerceIn(-maxTransY, maxTransY)
                       targetView.translationX = videoTranslationX
                       targetView.translationY = videoTranslationY
                   }
 
-                  if (videoScale > 1.0f) {
-                      hudZoom.visibility = View.VISIBLE
-                      tvZoomValue.text = "تكبير ${(videoScale * 100).toInt()}%"
-                  } else {
-                      hudZoom.visibility = View.GONE
+                  if (!isInFloatingWindow()) {
+                      if (videoScale > 1.0f) {
+                          hudZoom.visibility = View.VISIBLE
+                          tvZoomValue.text = "تكبير ${(videoScale * 100).toInt()}%"
+                      } else {
+                          hudZoom.visibility = View.GONE
+                      }
                   }
               }
 
@@ -4890,6 +5061,24 @@ jobs:
                   }
               }
 
+              private fun updateRepeatButtonUI() {
+                  if (LionPlayerManager.isRepeatMode) {
+                      btnRepeat.setColorFilter(Color.parseColor("#FF9800"))
+                  } else {
+                      btnRepeat.setColorFilter(Color.WHITE)
+                  }
+              }
+
+              private fun updateDecoderBadge(mode: String) {
+                  val bg = btnDecoder.background as? GradientDrawable
+                  when (mode) {
+                      "HW" -> bg?.setColor(Color.parseColor("#FF9800"))
+                      "HW+" -> bg?.setColor(Color.parseColor("#E65100"))
+                      "SW" -> bg?.setColor(Color.parseColor("#0288D1"))
+                      else -> bg?.setColor(Color.parseColor("#FF9800"))
+                  }
+              }
+
               private fun updateUIForItem(item: LionMediaItem) {
                   tvVideoTitle.text = item.title
                   val dur = item.duration.coerceAtLeast(0L)
@@ -4903,17 +5092,20 @@ jobs:
                   item.isFavorite = favSet.contains(item.id.toString())
                   updateFavoriteIcon(item.isFavorite)
 
+                  btnRepeat.visibility = View.VISIBLE
+                  btnFavorite.visibility = View.VISIBLE
+                  btnEqualizer.visibility = View.VISIBLE
+                  btnLock.visibility = View.VISIBLE
+                  btnMore.visibility = View.VISIBLE
+                  btnDecoder.visibility = View.VISIBLE
+
                   val videoControlsVis = if (item.isVideo) View.VISIBLE else View.GONE
                   btnRotate.visibility = videoControlsVis
-                  btnDecoder.visibility = videoControlsVis
                   btnPip.visibility = videoControlsVis
                   btnResize.visibility = videoControlsVis
                   btnToggleNav.visibility = videoControlsVis
 
                   btnLyricsToggle.visibility = if (!item.isVideo) View.VISIBLE else View.GONE
-
-                  btnFavorite.visibility = View.VISIBLE
-                  btnMore.visibility = View.VISIBLE
 
                   videoScale = 1.0f
                   videoTranslationX = 0f
@@ -4983,6 +5175,44 @@ jobs:
               private fun setupListeners() {
                   btnBack.setOnClickListener { handleBackAction() }
 
+                  btnMore.setOnClickListener {
+                      PlayerSettingsBottomSheet.show(
+                          activity = this,
+                          onEqualizerClick = { showAudioSettingsDialog() },
+                          onVolumeBoostChanged = { isBoosted ->
+                              if (!isBoosted && currentTotalVolumePercent > 100f) {
+                                  applyVolumePercent(100f)
+                              }
+                          },
+                          onSettingChanged = {
+                              LionPlayerManager.getCurrentItem()?.let { updateUIForItem(it) }
+                          }
+                      )
+                  }
+
+                  btnDecoder.setOnClickListener {
+                      val nextMode = when (LionPlayerManager.currentDecoderMode) {
+                          "HW" -> "HW+"
+                          "HW+" -> "SW"
+                          else -> "HW"
+                      }
+                      val newPlayer = LionPlayerManager.switchDecoder(this, nextMode)
+                      playerView.player = newPlayer
+                      btnDecoder.text = nextMode
+                      updateDecoderBadge(nextMode)
+                      Toast.makeText(this, "تم التبديل إلى ترميز: $nextMode", Toast.LENGTH_SHORT).show()
+                  }
+
+                  btnRepeat.setOnClickListener {
+                      val isRepeating = LionPlayerManager.toggleRepeat()
+                      updateRepeatButtonUI()
+                      if (isRepeating) {
+                          Toast.makeText(this, "تم تفعيل تكرار المقطع 🔂", Toast.LENGTH_SHORT).show()
+                      } else {
+                          Toast.makeText(this, "تم إيقاف التكرار", Toast.LENGTH_SHORT).show()
+                      }
+                  }
+
                   btnFavorite.setOnClickListener {
                       val currentItem = LionPlayerManager.getCurrentItem() ?: return@setOnClickListener
                       val favSet = prefs.getStringSet("favorite_ids", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
@@ -5002,21 +5232,6 @@ jobs:
                       btnFavorite.animate().scaleX(1.35f).scaleY(1.35f).setDuration(120).withEndAction {
                           btnFavorite.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
                       }.start()
-                  }
-
-                  btnMore.setOnClickListener {
-                      PlayerSettingsBottomSheet.show(
-                          activity = this,
-                          onEqualizerClick = { showAudioSettingsDialog() },
-                          onVolumeBoostChanged = { isBoosted ->
-                              if (!isBoosted && currentTotalVolumePercent > 100f) {
-                                  applyVolumePercent(100f)
-                              }
-                          },
-                          onSettingChanged = {
-                              LionPlayerManager.getCurrentItem()?.let { updateUIForItem(it) }
-                          }
-                      )
                   }
 
                   btnRotate.setOnClickListener {
@@ -5061,7 +5276,6 @@ jobs:
                   }
 
                   btnPlayPause.setOnClickListener { LionPlayerManager.togglePlayPause(this) }
-                  // زر التالي السابق بعكس التصميم وبقاء الوظيفة الأصلية
                   btnNext.setOnClickListener { LionPlayerManager.playNext(this) }
                   btnPrev.setOnClickListener { LionPlayerManager.playPrevious(this) }
 
@@ -5101,7 +5315,6 @@ jobs:
                       enterPipMode()
                   }
 
-                  // 1. الضغط على زر أبعاد الفيديو ينفذ الخيار الأول ثم الثاني ثم الثالث بالتتابع وبدون أي أسئلة
                   btnResize.setOnClickListener {
                       resizeModeIndex = (resizeModeIndex + 1) % resizeModes.size
                       val (mode, modeName) = resizeModes[resizeModeIndex]
@@ -5264,30 +5477,32 @@ jobs:
               private fun setupGestureDetection() {
                   scaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
                       override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-                          val currentItem = LionPlayerManager.getCurrentItem()
-                          if (currentItem == null || !currentItem.isVideo) {
-                              return false
-                          }
                           isPinching = true
                           handler.removeCallbacks(longPressRunnable)
                           return true
                       }
 
                       override fun onScale(detector: ScaleGestureDetector): Boolean {
-                          val currentItem = LionPlayerManager.getCurrentItem()
-                          if (currentItem == null || !currentItem.isVideo) return false
                           val factor = detector.scaleFactor
-                          videoScale = (videoScale * factor).coerceIn(1.0f, 5.0f)
-                          applyVideoTransform()
+                          if (isInFloatingWindow()) {
+                              videoScale = (videoScale * factor).coerceIn(0.5f, 4.0f)
+                              applyVideoTransform()
+                          } else {
+                              val currentItem = LionPlayerManager.getCurrentItem()
+                              if (currentItem != null && currentItem.isVideo) {
+                                  videoScale = (videoScale * factor).coerceIn(1.0f, 5.0f)
+                                  applyVideoTransform()
+                              }
+                          }
                           return true
                       }
 
                       override fun onScaleEnd(detector: ScaleGestureDetector) {
-                          val currentItem = LionPlayerManager.getCurrentItem()
-                          if (currentItem == null || !currentItem.isVideo) return
-                          if (videoScale <= 1.05f) {
-                              videoScale = 1.0f
-                              applyVideoTransform()
+                          if (!isInFloatingWindow()) {
+                              if (videoScale <= 1.05f) {
+                                  videoScale = 1.0f
+                                  applyVideoTransform()
+                              }
                           }
                           handler.postDelayed({ isPinching = false }, 200)
                           handler.removeCallbacks(hideZoomHudRunnable)
@@ -5298,7 +5513,6 @@ jobs:
                   val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
                       override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                           if (!isLocked && !isLongPressSpeeding) {
-                              // الشاشة العائمة لا تعود إلى وضعها داخل البرنامج عند الضغط مرة واحدة
                               if (isInFloatingWindow()) {
                                   return true
                               }
@@ -5315,7 +5529,6 @@ jobs:
                       override fun onDoubleTap(e: MotionEvent): Boolean {
                           if (isLocked) return true
 
-                          // الشاشة العائمة تعود لوضعها الطبيعي داخل البرنامج فقط عند الضغط مرتين متتالية بسرعة
                           if (isInFloatingWindow()) {
                               returnToAppFromFloating()
                               return true
@@ -5334,8 +5547,6 @@ jobs:
                           val screenWidth = resources.displayMetrics.widthPixels
                           val p = LionPlayerManager.player ?: return true
 
-                          // يمين الشاشة: يعود للخلف (ترجيع 10 ثواني)
-                          // يسار الشاشة: يتقدم للأمام (تقديم 10 ثواني)
                           if (e.x > screenWidth / 2) {
                               p.seekTo((p.currentPosition - 10000).coerceAtLeast(0L))
                               Toast.makeText(this@PlayerActivity, "-10 ثواني", Toast.LENGTH_SHORT).show()
@@ -5352,9 +5563,8 @@ jobs:
                       gestureDetector.onTouchEvent(event)
                       if (isLocked) return@setOnTouchListener true
 
-                      // دعم تكبير وتصغير الشاشة العائمة بالإيماء بالأصابع وتحريكها
                       if (isInFloatingWindow()) {
-                          if (event.pointerCount >= 2 && videoScale > 1.0f) {
+                          if (event.pointerCount >= 2 && (videoScale > 1.05f || videoScale < 0.95f)) {
                               when (event.actionMasked) {
                                   MotionEvent.ACTION_MOVE -> {
                                       val moveX = event.x - lastTouchX
@@ -5448,24 +5658,28 @@ jobs:
                                               updateBrightnessByPercent((deltaY / (screenHeight * 0.6f)) * 100f)
                                           }
                                       } else if (isDraggingHorizontal) {
-                                          // السحب لليمين يعود بالزمن للخلف، والسحب لليسار يتقدم بالأزمنة للأمام
-                                          // تقديم وتأخير لحظي ومباشر أثناء السحب حتى بدون رفع الإصبع
+                                          // انتقال لحظي فائق السلاسة والسرعة بدقة أجزاء الثانية
                                           val deltaX = gestureStartX - event.x
-                                          val seekOffsetMs = (deltaX / screenWidth) * 90000L
                                           val maxDur = LionPlayerManager.player?.duration?.coerceAtLeast(0L) ?: 0L
                                           if (maxDur > 0) {
-                                              targetSeekPosition = (initialSeekPosition + seekOffsetMs.toLong()).coerceIn(0L, maxDur)
+                                              val seekOffsetMs = ((deltaX / screenWidth) * 60000.0).toLong()
+                                              targetSeekPosition = (initialSeekPosition + seekOffsetMs).coerceIn(0L, maxDur)
 
                                               playerSeekBar.progress = targetSeekPosition.toInt()
-                                              tvCurrentTime.text = formatDuration(targetSeekPosition)
+                                              tvCurrentTime.text = formatDurationWithMillis(targetSeekPosition)
 
-                                              // تقديم وتأخير لحظي في نفس اللحظة بدون انتظار رفع الإصبع
-                                              LionPlayerManager.player?.seekTo(targetSeekPosition)
+                                              val now = SystemClock.uptimeMillis()
+                                              if (now - lastSeekDispatchTime >= 16L) {
+                                                  lastSeekDispatchTime = now
+                                                  LionPlayerManager.player?.seekTo(targetSeekPosition)
+                                              }
 
                                               hudSeek.visibility = View.VISIBLE
-                                              val diffSeconds = (targetSeekPosition - initialSeekPosition) / 1000
-                                              val sign = if (diffSeconds > 0) "+" else ""
-                                              tvSeekTarget.text = "$sign${diffSeconds}s\n${formatDuration(targetSeekPosition)} / ${formatDuration(maxDur)}"
+                                              val diffMs = targetSeekPosition - initialSeekPosition
+                                              val diffSec = diffMs / 1000.0
+                                              val sign = if (diffSec > 0) "+" else ""
+                                              val diffFormatted = String.format(Locale.US, "%s%.1fs", sign, diffSec)
+                                              tvSeekTarget.text = "$diffFormatted\n${formatDurationWithMillis(targetSeekPosition)} / ${formatDuration(maxDur)}"
                                           }
                                       }
                                   }
@@ -5506,6 +5720,19 @@ jobs:
                       String.format(Locale.US, "%d:%02d:%02d", hrs, min, sec)
                   } else {
                       String.format(Locale.US, "%02d:%02d", min, sec)
+                  }
+              }
+
+              private fun formatDurationWithMillis(durationMs: Long): String {
+                  val totalSec = durationMs / 1000
+                  val sec = totalSec % 60
+                  val min = (totalSec / 60) % 60
+                  val hrs = totalSec / 3600
+                  val tenths = (durationMs % 1000) / 100
+                  return if (hrs > 0) {
+                      String.format(Locale.US, "%d:%02d:%02d.%d", hrs, min, sec, tenths)
+                  } else {
+                      String.format(Locale.US, "%02d:%02d.%d", min, sec, tenths)
                   }
               }
 
@@ -5565,6 +5792,7 @@ jobs:
                   LionPlayerManager.getCurrentItem()?.let { updateUIForItem(it) }
                   playerView.player = LionPlayerManager.player
                   updatePlayPauseButton(LionPlayerManager.player?.isPlaying == true)
+                  updateRepeatButtonUI()
                   updateScreenLock()
                   handler.post(updateProgressRunnable)
                   scheduleAutoHideLandscape()
