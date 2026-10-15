@@ -95,8 +95,8 @@ jobs:
                   applicationId "com.lionplayer.app"
                   minSdk 21
                   targetSdk 34
-                  versionCode 7
-                  versionName "1.6.0"
+                  versionCode 8
+                  versionName "1.7.0"
 
                   testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
               }
@@ -128,12 +128,15 @@ jobs:
               implementation 'com.google.android.material:material:1.11.0'
               implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
               implementation 'androidx.media:media:1.7.0'
+              implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
 
               def media3_version = "1.3.0"
               implementation "androidx.media3:media3-exoplayer:$media3_version"
               implementation "androidx.media3:media3-ui:$media3_version"
               implementation "androidx.media3:media3-common:$media3_version"
               implementation "androidx.media3:media3-session:$media3_version"
+              implementation "androidx.media3:media3-decoder-ffmpeg:$media3_version"
+              implementation "androidx.media3:media3-extractor:$media3_version"
           }
           EOF_APP_BUILD
 
@@ -141,6 +144,7 @@ jobs:
           cat << 'EOF_PROGUARD' > app/proguard-rules.pro
           -keep class androidx.media3.** { *; }
           -keep class com.lionplayer.app.model.** { *; }
+          -keep class com.lionplayer.app.player.** { *; }
           EOF_PROGUARD
 
           # 6. AndroidManifest.xml
@@ -844,6 +848,30 @@ jobs:
                 android:pathData="M7,7h10v3l4,-4 -4,-4v3H5v6h2V7zm10,10H7v-3l-4,4 4,4v-3h12v-6h-2v4z"/>
           </vector>
           EOF_D43
+
+          cat << 'EOF_D44' > app/src/main/res/drawable/ic_subtitles.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:pathData="M20,4H4c-1.1,0 -2,0.9 -2,2v12c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2V6c0,-1.1 -0.9,-2 -2,-2zm0,14H4V6h16v12zM6,10h2v2H6zm0,4h8v2H6zm10,0h2v2h-2zm-6,-4h8v2h-8z"/>
+          </vector>
+          EOF_D44
+
+          cat << 'EOF_D45' > app/src/main/res/drawable/ic_download.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:pathData="M19.35,10.04C18.67,6.59 15.64,4 12,4 9.11,4 6.6,5.64 5.35,8.04 2.34,8.36 0,10.91 0,14c0,3.31 2.69,6 6,6h13c2.76,0 5,-2.24 5,-5 0,-2.64 -2.05,-4.78 -4.65,-4.96zM17,13l-5,5 -5,-5h3V9h4v4h3z"/>
+          </vector>
+          EOF_D45
 
           # 13. Menus
           cat << 'EOF_M1' > app/src/main/res/menu/top_main_menu.xml
@@ -1562,6 +1590,461 @@ jobs:
           </LinearLayout>
           EOF_L5
 
+          cat << 'EOF_L_SUB_SETTINGS' > app/src/main/res/layout/bottom_sheet_subtitle_settings.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/bg_bottom_sheet">
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical"
+                  android:padding="20dp">
+
+                  <View
+                      android:layout_width="48dp"
+                      android:layout_height="4dp"
+                      android:layout_gravity="center_horizontal"
+                      android:layout_marginBottom="14dp"
+                      android:background="@drawable/bg_sheet_handle" />
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="إعدادات وتزامن الترجمة"
+                      android:textColor="@color/primary"
+                      android:textSize="16sp"
+                      android:textStyle="bold" />
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="16dp"
+                      android:text="تزامن الترجمة مع الصوت (Subtitle Delay):"
+                      android:textColor="@color/text_primary"
+                      android:textSize="13sp"
+                      android:textStyle="bold" />
+
+                  <TextView
+                      android:id="@+id/tvSubtitleOffset"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_gravity="center_horizontal"
+                      android:layout_marginTop="8dp"
+                      android:text="0 مللي ثانية (ms)"
+                      android:textColor="@color/primary"
+                      android:textSize="18sp"
+                      android:textStyle="bold" />
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="10dp"
+                      android:gravity="center"
+                      android:orientation="horizontal">
+
+                      <Button
+                          android:id="@+id/btnOffsetMinus500"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:backgroundTint="#333333"
+                          android:text="-0.5s"
+                          android:textColor="#FFFFFF"
+                          android:textSize="11sp" />
+
+                      <Button
+                          android:id="@+id/btnOffsetMinus100"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:backgroundTint="#333333"
+                          android:text="-0.1s"
+                          android:textColor="#FFFFFF"
+                          android:textSize="11sp" />
+
+                      <Button
+                          android:id="@+id/btnOffsetReset"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:backgroundTint="@color/primary"
+                          android:text="إعادة ضبط"
+                          android:textColor="#FFFFFF"
+                          android:textSize="11sp" />
+
+                      <Button
+                          android:id="@+id/btnOffsetPlus100"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:backgroundTint="#333333"
+                          android:text="+0.1s"
+                          android:textColor="#FFFFFF"
+                          android:textSize="11sp" />
+
+                      <Button
+                          android:id="@+id/btnOffsetPlus500"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:backgroundTint="#333333"
+                          android:text="+0.5s"
+                          android:textColor="#FFFFFF"
+                          android:textSize="11sp" />
+                  </LinearLayout>
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="18dp"
+                      android:text="حجم خط الترجمة:"
+                      android:textColor="@color/text_primary"
+                      android:textSize="13sp"
+                      android:textStyle="bold" />
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="8dp"
+                      android:orientation="horizontal">
+
+                      <TextView
+                          android:id="@+id/btnSizeSmall"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="صغير"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+
+                      <TextView
+                          android:id="@+id/btnSizeNormal"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="عادي"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+
+                      <TextView
+                          android:id="@+id/btnSizeLarge"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="كبير"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+
+                      <TextView
+                          android:id="@+id/btnSizeHuge"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="ضخم"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+                  </LinearLayout>
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="18dp"
+                      android:text="لون خط الترجمة:"
+                      android:textColor="@color/text_primary"
+                      android:textSize="13sp"
+                      android:textStyle="bold" />
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="8dp"
+                      android:orientation="horizontal">
+
+                      <TextView
+                          android:id="@+id/btnColorWhite"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="أبيض"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+
+                      <TextView
+                          android:id="@+id/btnColorYellow"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="أصفر"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+
+                      <TextView
+                          android:id="@+id/btnColorCyan"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="سماوي"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+
+                      <TextView
+                          android:id="@+id/btnColorGreen"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="أخضر"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+                  </LinearLayout>
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="18dp"
+                      android:text="خلفية نص الترجمة:"
+                      android:textColor="@color/text_primary"
+                      android:textSize="13sp"
+                      android:textStyle="bold" />
+
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="8dp"
+                      android:orientation="horizontal">
+
+                      <TextView
+                          android:id="@+id/btnBgTransparent"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="شفافة"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+
+                      <TextView
+                          android:id="@+id/btnBgSemi"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:layout_marginEnd="4dp"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="رمادية شفافة"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+
+                      <TextView
+                          android:id="@+id/btnBgBlack"
+                          android:layout_width="0dp"
+                          android:layout_height="38dp"
+                          android:layout_weight="1"
+                          android:background="@drawable/bg_chip_selector"
+                          android:gravity="center"
+                          android:text="سوداء كاملة"
+                          android:textColor="@color/color_chip_text"
+                          android:textSize="12sp" />
+                  </LinearLayout>
+
+                  <Switch
+                      android:id="@+id/switchRespectAss"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="18dp"
+                      android:text="احترام تنسيقات وألوان ملفات ASS/SSA الأصلية"
+                      android:textColor="@color/text_primary"
+                      android:checked="true" />
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="16dp"
+                      android:text="معاينة مظهر الترجمة:"
+                      android:textColor="@color/text_secondary"
+                      android:textSize="12sp" />
+
+                  <FrameLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="72dp"
+                      android:layout_marginTop="6dp"
+                      android:background="#1E1E1E">
+
+                      <TextView
+                          android:id="@+id/tvSubtitlePreview"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_gravity="center"
+                          android:paddingStart="8dp"
+                          android:paddingEnd="8dp"
+                          android:paddingTop="4dp"
+                          android:paddingBottom="4dp"
+                          android:text="Lion Player 🦁 معاينة الترجمة الفورية"
+                          android:textColor="#FFFFFF"
+                          android:textSize="18sp"
+                          android:textStyle="bold" />
+                  </FrameLayout>
+
+              </LinearLayout>
+          </ScrollView>
+          EOF_L_SUB_SETTINGS
+
+          cat << 'EOF_L_OPENSUB' > app/src/main/res/layout/dialog_opensubtitles_search.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:padding="20dp">
+
+              <EditText
+                  android:id="@+id/etSearchQuery"
+                  android:layout_width="match_parent"
+                  android:layout_height="48dp"
+                  android:hint="اسم الفيلم أو الحلقة..."
+                  android:paddingStart="12dp"
+                  android:paddingEnd="12dp"
+                  android:background="@drawable/bg_settings_card"
+                  android:textColor="@color/text_primary"
+                  android:textSize="14sp" />
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="10dp"
+                  android:orientation="horizontal">
+
+                  <Spinner
+                      android:id="@+id/spinnerLanguage"
+                      android:layout_width="0dp"
+                      android:layout_height="42dp"
+                      android:layout_weight="1"
+                      android:layout_marginEnd="6dp"
+                      android:background="@drawable/bg_settings_card" />
+
+                  <Button
+                      android:id="@+id/btnSearchByName"
+                      android:layout_width="wrap_content"
+                      android:layout_height="42dp"
+                      android:backgroundTint="@color/primary"
+                      android:text="بحث بالاسم"
+                      android:textColor="#FFFFFF"
+                      android:textSize="12sp" />
+
+                  <Button
+                      android:id="@+id/btnSearchByHash"
+                      android:layout_width="wrap_content"
+                      android:layout_height="42dp"
+                      android:layout_marginStart="6dp"
+                      android:backgroundTint="#424242"
+                      android:text="بحث بالهاش"
+                      android:textColor="#FFFFFF"
+                      android:textSize="12sp" />
+              </LinearLayout>
+
+              <ProgressBar
+                  android:id="@+id/pbLoading"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginTop="16dp"
+                  android:visibility="gone" />
+
+              <TextView
+                  android:id="@+id/tvEmptyResults"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="16dp"
+                  android:gravity="center"
+                  android:text="ابحث للبدء في جلب الترجمات"
+                  android:textColor="@color/text_secondary"
+                  android:textSize="13sp" />
+
+              <androidx.recyclerview.widget.RecyclerView
+                  android:id="@+id/rvSubtitleResults"
+                  android:layout_width="match_parent"
+                  android:layout_height="220dp"
+                  android:layout_marginTop="10dp"
+                  android:visibility="gone" />
+
+          </LinearLayout>
+          EOF_L_OPENSUB
+
+          cat << 'EOF_L_SUB_ITEM' > app/src/main/res/layout/item_subtitle_result.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="?attr/selectableItemBackground"
+              android:gravity="center_vertical"
+              android:orientation="horizontal"
+              android:padding="10dp">
+
+              <LinearLayout
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:orientation="vertical">
+
+                  <TextView
+                      android:id="@+id/tvSubResultName"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:ellipsize="end"
+                      android:maxLines="1"
+                      android:textColor="@color/text_primary"
+                      android:textSize="13sp"
+                      android:textStyle="bold" />
+
+                  <TextView
+                      android:id="@+id/tvSubResultDetails"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="3dp"
+                      android:textColor="@color/primary"
+                      android:textSize="11sp" />
+              </LinearLayout>
+
+              <ImageView
+                  android:layout_width="28dp"
+                  android:layout_height="28dp"
+                  android:src="@drawable/ic_download"
+                  app:tint="@color/primary" />
+
+          </LinearLayout>
+          EOF_L_SUB_ITEM
+
           cat << 'EOF_L6' > app/src/main/res/layout/activity_player.xml
           <?xml version="1.0" encoding="utf-8"?>
           <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -1688,103 +2171,135 @@ jobs:
                           android:contentDescription="الإعدادات" />
                   </LinearLayout>
 
-                  <!-- الشريط العلوي الثاني: يحتوي بقية الأزرار العلوية + زر التكرار بدون أي حدود -->
-                  <LinearLayout
-                      android:id="@+id/topBarSecondary"
+                  <!-- الشريط العلوي الثاني: قابل للتمرير الأفقي ويحتوي أزرار الصوت، الترجمة، التكرار وغيرهم -->
+                  <HorizontalScrollView
+                      android:id="@+id/scrollSecondaryControls"
                       android:layout_width="match_parent"
                       android:layout_height="38dp"
-                      android:gravity="center_vertical|end"
-                      android:orientation="horizontal">
+                      android:fillViewport="true"
+                      android:scrollbars="none">
 
-                      <!-- زر تكرار الفيديو أو الصوت -->
-                      <ImageButton
-                          android:id="@+id/btnRepeat"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_repeat"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="تكرار المقطع" />
+                      <LinearLayout
+                          android:id="@+id/topBarSecondary"
+                          android:layout_width="wrap_content"
+                          android:layout_height="match_parent"
+                          android:gravity="center_vertical|end"
+                          android:orientation="horizontal">
 
-                      <ImageButton
-                          android:id="@+id/btnFavorite"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_favorite_border"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="تفضيل" />
+                          <!-- زر اختيار المسار الصوتي (Dual Audio) -->
+                          <ImageButton
+                              android:id="@+id/btnAudioTrack"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_audiotrack"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="المسار الصوتي" />
 
-                      <ImageButton
-                          android:id="@+id/btnEqualizer"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_equalizer"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="معادل الصوت" />
+                          <!-- زر اختيار الترجمة وإدارتها -->
+                          <ImageButton
+                              android:id="@+id/btnSubtitle"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_subtitles"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="الترجمة" />
 
-                      <ImageButton
-                          android:id="@+id/btnRotate"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_screen_rotation"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="تدوير الشاشة" />
+                          <!-- زر تكرار الفيديو أو الصوت -->
+                          <ImageButton
+                              android:id="@+id/btnRepeat"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_repeat"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="تكرار المقطع" />
 
-                      <ImageButton
-                          android:id="@+id/btnPip"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_pip"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="الشاشة العائمة" />
+                          <ImageButton
+                              android:id="@+id/btnFavorite"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_favorite_border"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="تفضيل" />
 
-                      <ImageButton
-                          android:id="@+id/btnLock"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_lock"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="قفل الشاشة" />
+                          <ImageButton
+                              android:id="@+id/btnEqualizer"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_equalizer"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="معادل الصوت" />
 
-                      <ImageButton
-                          android:id="@+id/btnToggleNav"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_fullscreen"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="شاشة كاملة" />
+                          <ImageButton
+                              android:id="@+id/btnRotate"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_screen_rotation"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="تدوير الشاشة" />
 
-                      <ImageButton
-                          android:id="@+id/btnLyricsToggle"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_lyrics"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="كلمات الأغنية" />
-                  </LinearLayout>
+                          <ImageButton
+                              android:id="@+id/btnPip"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_pip"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="الشاشة العائمة" />
+
+                          <ImageButton
+                              android:id="@+id/btnLock"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_lock"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="قفل الشاشة" />
+
+                          <ImageButton
+                              android:id="@+id/btnToggleNav"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_fullscreen"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="شاشة كاملة" />
+
+                          <ImageButton
+                              android:id="@+id/btnLyricsToggle"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_lyrics"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="كلمات الأغنية" />
+                      </LinearLayout>
+                  </HorizontalScrollView>
               </LinearLayout>
 
               <ImageButton
@@ -2131,7 +2646,7 @@ jobs:
           }
           EOF_C1
 
-          # 16. MediaItem.kt
+          # 16. MediaItem.kt & SubtitleItem.kt
           cat << 'EOF_C2' > app/src/main/java/com/lionplayer/app/model/MediaItem.kt
           package com.lionplayer.app.model
 
@@ -2157,6 +2672,22 @@ jobs:
               var newCount: Int = 0
           ) : Serializable
           EOF_C2
+
+          cat << 'EOF_C2_SUB' > app/src/main/java/com/lionplayer/app/model/SubtitleItem.kt
+          package com.lionplayer.app.model
+
+          import java.io.Serializable
+
+          data class SubtitleItem(
+              val fileName: String,
+              val languageName: String,
+              val languageCode: String,
+              val format: String,
+              val downloadUrl: String,
+              val rating: String = "0.0",
+              val downloadsCount: String = "0"
+          ) : Serializable
+          EOF_C2_SUB
 
           # 17. ThumbnailLoader.kt
           cat << 'EOF_C3' > app/src/main/java/com/lionplayer/app/adapter/ThumbnailLoader.kt
@@ -2316,7 +2847,318 @@ jobs:
           }
           EOF_C3
 
-          # 18. LionPlayerManager.kt (إضافة دعم HW و HW+ و SW، التكرار، والانتقال الدقيق جداً)
+          # 18. SubtitleSyncHelper.kt
+          cat << 'EOF_SUB_SYNC' > app/src/main/java/com/lionplayer/app/player/SubtitleSyncHelper.kt
+          package com.lionplayer.app.player
+
+          import java.io.BufferedReader
+          import java.io.File
+          import java.io.FileReader
+          import java.io.FileWriter
+          import java.util.Locale
+          import java.util.regex.Pattern
+
+          object SubtitleSyncHelper {
+
+              private val SRT_TIME_PATTERN = Pattern.compile("(\\d{2}):(\\d{2}):(\\d{2})[,.](\\d{3})\\s*-->\\s*(\\d{2}):(\\d{2}):(\\d{2})[,.](\\d{3})")
+
+              fun shiftSubtitleTimestamps(sourceFile: File, destFile: File, offsetMs: Long) {
+                  val ext = sourceFile.extension.lowercase()
+                  when (ext) {
+                      "srt" -> shiftSrt(sourceFile, destFile, offsetMs)
+                      "vtt" -> shiftVtt(sourceFile, destFile, offsetMs)
+                      "ass", "ssa" -> shiftAss(sourceFile, destFile, offsetMs)
+                      else -> shiftSrt(sourceFile, destFile, offsetMs)
+                  }
+              }
+
+              private fun shiftSrt(src: File, dst: File, offsetMs: Long) {
+                  BufferedReader(FileReader(src)).use { reader ->
+                      FileWriter(dst).use { writer ->
+                          var line: String?
+                          while (reader.readLine().also { line = it } != null) {
+                              val l = line!!
+                              val matcher = SRT_TIME_PATTERN.matcher(l)
+                              if (matcher.find()) {
+                                  val startMs = parseSrtTime(matcher.group(1)!!.toLong(), matcher.group(2)!!.toLong(), matcher.group(3)!!.toLong(), matcher.group(4)!!.toLong())
+                                  val endMs = parseSrtTime(matcher.group(5)!!.toLong(), matcher.group(6)!!.toLong(), matcher.group(7)!!.toLong(), matcher.group(8)!!.toLong())
+                                  val newStart = (startMs + offsetMs).coerceAtLeast(0L)
+                                  val newEnd = (endMs + offsetMs).coerceAtLeast(0L)
+                                  val newLine = "${formatSrtTime(newStart)} --> ${formatSrtTime(newEnd)}"
+                                  writer.write(newLine)
+                                  writer.write("\n")
+                              } else {
+                                  writer.write(l)
+                                  writer.write("\n")
+                              }
+                          }
+                      }
+                  }
+              }
+
+              private fun parseSrtTime(h: Long, m: Long, s: Long, ms: Long): Long {
+                  return (h * 3600 + m * 60 + s) * 1000 + ms
+              }
+
+              private fun formatSrtTime(ms: Long): String {
+                  val totalSec = ms / 1000
+                  val s = totalSec % 60
+                  val m = (totalSec / 60) % 60
+                  val h = totalSec / 3600
+                  val remMs = ms % 1000
+                  return String.format(Locale.US, "%02d:%02d:%02d,%03d", h, m, s, remMs)
+              }
+
+              private fun shiftVtt(src: File, dst: File, offsetMs: Long) {
+                  BufferedReader(FileReader(src)).use { reader ->
+                      FileWriter(dst).use { writer ->
+                          var line: String?
+                          while (reader.readLine().also { line = it } != null) {
+                              val l = line!!
+                              val matcher = SRT_TIME_PATTERN.matcher(l)
+                              if (matcher.find()) {
+                                  val startMs = parseSrtTime(matcher.group(1)!!.toLong(), matcher.group(2)!!.toLong(), matcher.group(3)!!.toLong(), matcher.group(4)!!.toLong())
+                                  val endMs = parseSrtTime(matcher.group(5)!!.toLong(), matcher.group(6)!!.toLong(), matcher.group(7)!!.toLong(), matcher.group(8)!!.toLong())
+                                  val newStart = (startMs + offsetMs).coerceAtLeast(0L)
+                                  val newEnd = (endMs + offsetMs).coerceAtLeast(0L)
+                                  val newLine = "${formatVttTime(newStart)} --> ${formatVttTime(newEnd)}"
+                                  writer.write(newLine)
+                                  writer.write("\n")
+                              } else {
+                                  writer.write(l)
+                                  writer.write("\n")
+                              }
+                          }
+                      }
+                  }
+              }
+
+              private fun formatVttTime(ms: Long): String {
+                  val totalSec = ms / 1000
+                  val s = totalSec % 60
+                  val m = (totalSec / 60) % 60
+                  val h = totalSec / 3600
+                  val remMs = ms % 1000
+                  return String.format(Locale.US, "%02d:%02d:%02d.%03d", h, m, s, remMs)
+              }
+
+              private fun shiftAss(src: File, dst: File, offsetMs: Long) {
+                  BufferedReader(FileReader(src)).use { reader ->
+                      FileWriter(dst).use { writer ->
+                          var line: String?
+                          while (reader.readLine().also { line = it } != null) {
+                              val l = line!!
+                              if (l.startsWith("Dialogue:", ignoreCase = true)) {
+                                  val parts = l.split(",", limit = 10).toMutableList()
+                                  if (parts.size >= 10) {
+                                      val startMs = parseAssTime(parts[1].trim())
+                                      val endMs = parseAssTime(parts[2].trim())
+                                      val newStart = (startMs + offsetMs).coerceAtLeast(0L)
+                                      val newEnd = (endMs + offsetMs).coerceAtLeast(0L)
+                                      parts[1] = formatAssTime(newStart)
+                                      parts[2] = formatAssTime(newEnd)
+                                      writer.write(parts.joinToString(","))
+                                      writer.write("\n")
+                                      continue
+                                  }
+                              }
+                              writer.write(l)
+                              writer.write("\n")
+                          }
+                      }
+                  }
+              }
+
+              private fun parseAssTime(str: String): Long {
+                  return try {
+                      val pieces = str.split(":")
+                      val h = pieces[0].toLong()
+                      val m = pieces[1].toLong()
+                      val secPieces = pieces[2].split(".")
+                      val s = secPieces[0].toLong()
+                      val cs = if (secPieces.size > 1) secPieces[1].toLong() else 0L
+                      (h * 3600 + m * 60 + s) * 1000 + cs * 10
+                  } catch (e: Exception) {
+                      0L
+                  }
+              }
+
+              private fun formatAssTime(ms: Long): String {
+                  val totalSec = ms / 1000
+                  val s = totalSec % 60
+                  val m = (totalSec / 60) % 60
+                  val h = totalSec / 3600
+                  val cs = (ms % 1000) / 10
+                  return String.format(Locale.US, "%d:%02d:%02d.%02d", h, m, s, cs)
+              }
+          }
+          EOF_SUB_SYNC
+
+          # 19. OpenSubtitlesHelper.kt
+          cat << 'EOF_OPENSUB_HELPER' > app/src/main/java/com/lionplayer/app/player/OpenSubtitlesHelper.kt
+          package com.lionplayer.app.player
+
+          import com.lionplayer.app.model.SubtitleItem
+          import org.json.JSONArray
+          import java.io.*
+          import java.net.HttpURLConnection
+          import java.net.URL
+          import java.net.URLEncoder
+          import java.nio.ByteBuffer
+          import java.nio.ByteOrder
+          import java.util.concurrent.Executors
+          import java.util.zip.GZIPInputStream
+
+          object OpenSubtitlesHelper {
+
+              private val executor = Executors.newFixedThreadPool(2)
+
+              fun computeMovieHash(file: File): String {
+                  return try {
+                      val size = file.length()
+                      val chunkSize = 65536L // 64 KB
+                      if (size < chunkSize) return ""
+
+                      var checksum = size
+                      FileInputStream(file).use { fis ->
+                          val channel = fis.channel
+                          val buffer = ByteBuffer.allocate(chunkSize.toInt()).order(ByteOrder.LITTLE_ENDIAN)
+
+                          channel.read(buffer)
+                          buffer.flip()
+                          while (buffer.hasRemaining()) {
+                              checksum += buffer.long
+                          }
+
+                          buffer.clear()
+                          val lastPos = (size - chunkSize).coerceAtLeast(0L)
+                          channel.position(lastPos)
+                          channel.read(buffer)
+                          buffer.flip()
+                          while (buffer.hasRemaining()) {
+                              checksum += buffer.long
+                          }
+                      }
+                      String.format("%016x", checksum)
+                  } catch (e: Exception) {
+                      ""
+                  }
+              }
+
+              fun cleanMovieTitle(rawName: String): String {
+                  var name = rawName.substringBeforeLast('.')
+                  name = name.replace(Regex("""(?i)\b(1080p|720p|480p|2160p|4k|bluray|blu-ray|web-dl|webrip|brrip|hdrip|dvdrip|x264|x265|hevc|h264|aac|ac3|dts|yify|rarbg|eztv|lionplayer)\b"""), " ")
+                  name = name.replace(Regex("""[.\-_+\[\]()]"""), " ")
+                  name = name.replace(Regex("""\s+"""), " ").trim()
+                  return name
+              }
+
+              fun searchSubtitles(
+                  query: String,
+                  lang: String = "ara",
+                  hash: String? = null,
+                  onSuccess: (List<SubtitleItem>) -> Unit,
+                  onError: (String) -> Unit
+              ) {
+                  executor.execute {
+                      try {
+                          val urlString = if (!hash.isNullOrEmpty()) {
+                              "https://rest.opensubtitles.org/search/moviehash-$hash/sublanguageid-$lang"
+                          } else {
+                              val encoded = URLEncoder.encode(query, "UTF-8")
+                              "https://rest.opensubtitles.org/search/query-$encoded/sublanguageid-$lang"
+                          }
+
+                          val url = URL(urlString)
+                          val conn = url.openConnection() as HttpURLConnection
+                          conn.requestMethod = "GET"
+                          conn.setRequestProperty("User-Agent", "LionPlayer v1.6.0")
+                          conn.connectTimeout = 10000
+                          conn.readTimeout = 10000
+
+                          if (conn.responseCode == 200) {
+                              val response = conn.inputStream.bufferedReader().use { it.readText() }
+                              val jsonArray = JSONArray(response)
+                              val list = mutableListOf<SubtitleItem>()
+
+                              for (i in 0 until jsonArray.length()) {
+                                  val obj = jsonArray.getJSONObject(i)
+                                  val fileName = obj.optString("SubFileName", "ترجمة")
+                                  val langName = obj.optString("LanguageName", "العربية")
+                                  val langCode = obj.optString("SubLanguageID", lang)
+                                  val format = obj.optString("SubFormat", "srt")
+                                  val rating = obj.optString("SubRating", "0.0")
+                                  val downloads = obj.optString("SubDownloadsCnt", "0")
+                                  val downloadUrl = obj.optString("SubDownloadLink", "").ifEmpty {
+                                      obj.optString("ZipDownloadLink", "")
+                                  }
+
+                                  if (downloadUrl.isNotEmpty()) {
+                                      list.add(
+                                          SubtitleItem(
+                                              fileName = fileName,
+                                              languageName = langName,
+                                              languageCode = langCode,
+                                              format = format,
+                                              downloadUrl = downloadUrl,
+                                              rating = rating,
+                                              downloadsCount = downloads
+                                          )
+                                      )
+                                  }
+                              }
+                              onSuccess(list)
+                          } else {
+                              onError("خطأ من السيرفر: ${conn.responseCode}")
+                          }
+                      } catch (e: Exception) {
+                          onError("تعذر الاتصال بـ OpenSubtitles: ${e.message}")
+                      }
+                  }
+              }
+
+              fun downloadSubtitle(
+                  downloadUrl: String,
+                  destinationFile: File,
+                  onComplete: (Boolean) -> Unit
+              ) {
+                  executor.execute {
+                      try {
+                          val url = URL(downloadUrl)
+                          val conn = url.openConnection() as HttpURLConnection
+                          conn.requestMethod = "GET"
+                          conn.setRequestProperty("User-Agent", "LionPlayer v1.6.0")
+                          conn.connectTimeout = 15000
+                          conn.readTimeout = 15000
+
+                          val inStream = BufferedInputStream(conn.inputStream)
+                          inStream.mark(2)
+                          val header = ByteArray(2)
+                          val read = inStream.read(header)
+                          inStream.reset()
+
+                          val isGzip = (read == 2 && header[0] == 0x1f.toByte() && header[1] == 0x8b.toByte()) || downloadUrl.endsWith(".gz")
+
+                          val finalInputStream: InputStream = if (isGzip) {
+                              GZIPInputStream(inStream)
+                          } else {
+                              inStream
+                          }
+
+                          FileOutputStream(destinationFile).use { outStream ->
+                              finalInputStream.copyTo(outStream)
+                          }
+                          onComplete(true)
+                      } catch (e: Exception) {
+                          e.printStackTrace()
+                          onComplete(false)
+                      }
+                  }
+              }
+          }
+          EOF_OPENSUB_HELPER
+
+          # 20. LionPlayerManager.kt
           cat << 'EOF_C4' > app/src/main/java/com/lionplayer/app/player/LionPlayerManager.kt
           package com.lionplayer.app.player
 
@@ -2339,6 +3181,7 @@ jobs:
           import androidx.media3.common.AudioAttributes
           import androidx.media3.common.C
           import androidx.media3.common.MediaItem
+          import androidx.media3.common.MimeTypes
           import androidx.media3.common.PlaybackParameters
           import androidx.media3.common.Player
           import androidx.media3.exoplayer.DefaultRenderersFactory
@@ -2372,6 +3215,10 @@ jobs:
               var currentDecoderMode: String = "HW"
               var isRepeatMode: Boolean = false
 
+              var currentExternalSubtitleUri: Uri? = null
+              var currentExternalSubtitleMime: String? = null
+              var currentSubtitleDelayMs: Long = 0L
+
               var onTrackChanged: ((LionMediaItem) -> Unit)? = null
               var onPlaybackStateChanged: ((Boolean) -> Unit)? = null
 
@@ -2398,13 +3245,24 @@ jobs:
                   } catch (e: Exception) {}
               }
 
+              fun detectSubtitleMimeType(pathOrUri: String): String {
+                  val lower = pathOrUri.lowercase()
+                  return when {
+                      lower.endsWith(".srt") -> MimeTypes.APPLICATION_SUBRIP
+                      lower.endsWith(".vtt") -> MimeTypes.TEXT_VTT
+                      lower.endsWith(".ass") || lower.endsWith(".ssa") -> MimeTypes.TEXT_SSA
+                      lower.endsWith(".ttml") || lower.endsWith(".xml") -> MimeTypes.APPLICATION_TTML
+                      else -> MimeTypes.APPLICATION_SUBRIP
+                  }
+              }
+
               fun createRenderersFactory(context: Context, mode: String): RenderersFactory {
                   val factory = DefaultRenderersFactory(context.applicationContext)
-                  factory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
                   factory.setEnableDecoderFallback(true)
 
                   when (mode) {
                       "SW" -> {
+                          factory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
                           factory.setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
                               val allDecoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
                               val swDecoders = allDecoders.filter {
@@ -2415,6 +3273,7 @@ jobs:
                       }
                       "HW+" -> {
                           factory.forceEnableMediaCodecAsynchronousQueueing()
+                          factory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
                           factory.setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
                               val allDecoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
                               val hwDecoders = allDecoders.filter {
@@ -2423,7 +3282,8 @@ jobs:
                               if (hwDecoders.isNotEmpty()) hwDecoders else allDecoders
                           }
                       }
-                      else -> { // "HW"
+                      else -> {
+                          factory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
                           factory.setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
                               val allDecoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
                               val hwDecoders = allDecoders.filter { !it.softwareOnly }
@@ -2432,6 +3292,21 @@ jobs:
                       }
                   }
                   return factory
+              }
+
+              fun buildMediaItem(item: LionMediaItem, externalSubUri: Uri? = currentExternalSubtitleUri, subMime: String? = currentExternalSubtitleMime): MediaItem {
+                  val builder = MediaItem.Builder().setUri(Uri.parse(item.uri))
+                  if (externalSubUri != null) {
+                      val mime = subMime ?: detectSubtitleMimeType(externalSubUri.toString())
+                      val subConfig = MediaItem.SubtitleConfiguration.Builder(externalSubUri)
+                          .setMimeType(mime)
+                          .setLanguage("ar")
+                          .setLabel("ترجمة خارجية")
+                          .setSelectionFlags(C.SELECTION_FLAG_DEFAULT or C.SELECTION_FLAG_FORCED)
+                          .build()
+                      builder.setSubtitleConfigurations(listOf(subConfig))
+                  }
+                  return builder.build()
               }
 
               fun getOrCreatePlayer(context: Context, mode: String = currentDecoderMode): ExoPlayer {
@@ -2514,6 +3389,8 @@ jobs:
                   val currentPos = p?.currentPosition ?: 0L
                   val wasPlaying = p?.isPlaying == true
                   val speed = p?.playbackParameters?.speed ?: 1.0f
+                  val trackParams = p?.trackSelectionParameters
+                  val repeat = p?.repeatMode ?: Player.REPEAT_MODE_OFF
 
                   tickerHandler.removeCallbacks(progressTickerRunnable)
                   mediaSession?.release()
@@ -2523,9 +3400,14 @@ jobs:
 
                   val newPlayer = getOrCreatePlayer(context, mode)
                   newPlayer.playbackParameters = PlaybackParameters(speed)
+                  newPlayer.repeatMode = repeat
+                  if (trackParams != null) {
+                      newPlayer.trackSelectionParameters = trackParams
+                  }
+
                   val curItem = playlist.getOrNull(currentIndex)
                   if (curItem != null) {
-                      val mediaItem = MediaItem.fromUri(Uri.parse(curItem.uri))
+                      val mediaItem = buildMediaItem(curItem)
                       newPlayer.setMediaItem(mediaItem)
                       newPlayer.prepare()
                       newPlayer.seekTo(currentPos)
@@ -2558,6 +3440,9 @@ jobs:
 
                   playlist = list
                   currentIndex = index
+                  currentExternalSubtitleUri = null
+                  currentExternalSubtitleMime = null
+                  currentSubtitleDelayMs = 0L
                   playCurrentItem(appContext)
               }
 
@@ -2573,7 +3458,7 @@ jobs:
                       allowBackgroundPlayback = true
                   }
 
-                  val mediaItem = MediaItem.fromUri(Uri.parse(item.uri))
+                  val mediaItem = buildMediaItem(item)
                   p.setMediaItem(mediaItem)
                   p.prepare()
                   p.play()
@@ -2586,6 +3471,9 @@ jobs:
               fun playNext(context: Context) {
                   if (currentIndex < playlist.size - 1) {
                       currentIndex++
+                      currentExternalSubtitleUri = null
+                      currentExternalSubtitleMime = null
+                      currentSubtitleDelayMs = 0L
                       playCurrentItem(context)
                   } else {
                       Toast.makeText(context.applicationContext, "هذا هو العنصر الأخير في القائمة", Toast.LENGTH_SHORT).show()
@@ -2595,6 +3483,9 @@ jobs:
               fun playPrevious(context: Context) {
                   if (currentIndex > 0) {
                       currentIndex--
+                      currentExternalSubtitleUri = null
+                      currentExternalSubtitleMime = null
+                      currentSubtitleDelayMs = 0L
                       playCurrentItem(context)
                   } else {
                       Toast.makeText(context.applicationContext, "هذا هو العنصر الأول في القائمة", Toast.LENGTH_SHORT).show()
@@ -2742,7 +3633,7 @@ jobs:
           }
           EOF_C4
 
-          # 19. NotificationReceiver.kt
+          # 21. NotificationReceiver.kt
           cat << 'EOF_C5' > app/src/main/java/com/lionplayer/app/receiver/NotificationReceiver.kt
           package com.lionplayer.app.receiver
 
@@ -2771,7 +3662,7 @@ jobs:
           }
           EOF_C5
 
-          # 20. MediaAdapter.kt
+          # 22. MediaAdapter.kt & SubtitleResultsAdapter.kt
           cat << 'EOF_C6' > app/src/main/java/com/lionplayer/app/adapter/MediaAdapter.kt
           package com.lionplayer.app.adapter
 
@@ -2940,7 +3831,52 @@ jobs:
           }
           EOF_C6
 
-          # 21. SplashActivity.kt
+          cat << 'EOF_C6_SUB_ADAPTER' > app/src/main/java/com/lionplayer/app/adapter/SubtitleResultsAdapter.kt
+          package com.lionplayer.app.adapter
+
+          import android.view.LayoutInflater
+          import android.view.View
+          import android.view.ViewGroup
+          import android.widget.TextView
+          import androidx.recyclerview.widget.RecyclerView
+          import com.lionplayer.app.R
+          import com.lionplayer.app.model.SubtitleItem
+
+          class SubtitleResultsAdapter(
+              private var items: List<SubtitleItem>,
+              private val onItemClick: (SubtitleItem) -> Unit
+          ) : RecyclerView.Adapter<SubtitleResultsAdapter.SubViewHolder>() {
+
+              fun updateData(newItems: List<SubtitleItem>) {
+                  items = newItems
+                  notifyDataSetChanged()
+              }
+
+              override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubViewHolder {
+                  val v = LayoutInflater.from(parent.context).inflate(R.layout.item_subtitle_result, parent, false)
+                  return SubViewHolder(v)
+              }
+
+              override fun onBindViewHolder(holder: SubViewHolder, position: Int) {
+                  holder.bind(items[position])
+              }
+
+              override fun getItemCount(): Int = items.size
+
+              inner class SubViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+                  private val tvName: TextView = itemView.findViewById(R.id.tvSubResultName)
+                  private val tvDetails: TextView = itemView.findViewById(R.id.tvSubResultDetails)
+
+                  fun bind(item: SubtitleItem) {
+                      tvName.text = item.fileName
+                      tvDetails.text = "${item.languageName} • ${item.format.uppercase()} • تنزيل: ${item.downloadsCount} • تقييم: ${item.rating} ★"
+                      itemView.setOnClickListener { onItemClick(item) }
+                  }
+              }
+          }
+          EOF_C6_SUB_ADAPTER
+
+          # 23. SplashActivity.kt
           cat << 'EOF_C7' > app/src/main/java/com/lionplayer/app/ui/SplashActivity.kt
           package com.lionplayer.app.ui
 
@@ -3016,7 +3952,7 @@ jobs:
           }
           EOF_C7
 
-          # 22. PlayerSettingsBottomSheet.kt
+          # 24. PlayerSettingsBottomSheet.kt & SubtitleSettingsBottomSheet.kt
           cat << 'EOF_C8' > app/src/main/java/com/lionplayer/app/ui/PlayerSettingsBottomSheet.kt
           package com.lionplayer.app.ui
 
@@ -3223,7 +4159,167 @@ jobs:
           }
           EOF_C8
 
-          # 23. MainActivity.kt
+          cat << 'EOF_C8_SUB_SHEET' > app/src/main/java/com/lionplayer/app/ui/SubtitleSettingsBottomSheet.kt
+          package com.lionplayer.app.ui
+
+          import android.app.Activity
+          import android.content.Context
+          import android.graphics.Color
+          import android.util.TypedValue
+          import android.view.LayoutInflater
+          import android.widget.Button
+          import android.widget.Switch
+          import android.widget.TextView
+          import androidx.media3.ui.CaptionStyleCompat
+          import androidx.media3.ui.SubtitleView
+          import com.google.android.material.bottomsheet.BottomSheetDialog
+          import com.lionplayer.app.R
+          import java.util.Locale
+
+          object SubtitleSettingsBottomSheet {
+
+              fun show(
+                  activity: Activity,
+                  subtitleView: SubtitleView?,
+                  currentOffsetMs: Long,
+                  onOffsetChanged: (Long) -> Unit
+              ) {
+                  val prefs = activity.getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
+                  val dialog = BottomSheetDialog(activity, R.style.BottomSheetDialogTheme)
+                  val view = LayoutInflater.from(activity).inflate(R.layout.bottom_sheet_subtitle_settings, null)
+                  dialog.setContentView(view)
+
+                  var offset = currentOffsetMs
+
+                  val tvOffset = view.findViewById<TextView>(R.id.tvSubtitleOffset)
+                  val btnMinus500 = view.findViewById<Button>(R.id.btnOffsetMinus500)
+                  val btnMinus100 = view.findViewById<Button>(R.id.btnOffsetMinus100)
+                  val btnReset = view.findViewById<Button>(R.id.btnOffsetReset)
+                  val btnPlus100 = view.findViewById<Button>(R.id.btnOffsetPlus100)
+                  val btnPlus500 = view.findViewById<Button>(R.id.btnOffsetPlus500)
+
+                  fun updateOffsetUI() {
+                      val sign = if (offset > 0) "+" else ""
+                      tvOffset.text = String.format(Locale.US, "%s%d مللي ثانية (ms)", sign, offset)
+                  }
+                  updateOffsetUI()
+
+                  fun applyNewOffset(newOffset: Long) {
+                      offset = newOffset
+                      updateOffsetUI()
+                      onOffsetChanged(offset)
+                  }
+
+                  btnMinus500.setOnClickListener { applyNewOffset(offset - 500) }
+                  btnMinus100.setOnClickListener { applyNewOffset(offset - 100) }
+                  btnReset.setOnClickListener { applyNewOffset(0) }
+                  btnPlus100.setOnClickListener { applyNewOffset(offset + 100) }
+                  btnPlus500.setOnClickListener { applyNewOffset(offset + 500) }
+
+                  var currentFontSize = prefs.getFloat("sub_font_size", 18f)
+                  val btnSizeSmall = view.findViewById<TextView>(R.id.btnSizeSmall)
+                  val btnSizeNormal = view.findViewById<TextView>(R.id.btnSizeNormal)
+                  val btnSizeLarge = view.findViewById<TextView>(R.id.btnSizeLarge)
+                  val btnSizeHuge = view.findViewById<TextView>(R.id.btnSizeHuge)
+
+                  var currentFontColor = prefs.getInt("sub_font_color", Color.WHITE)
+                  val btnColorWhite = view.findViewById<TextView>(R.id.btnColorWhite)
+                  val btnColorYellow = view.findViewById<TextView>(R.id.btnColorYellow)
+                  val btnColorCyan = view.findViewById<TextView>(R.id.btnColorCyan)
+                  val btnColorGreen = view.findViewById<TextView>(R.id.btnColorGreen)
+
+                  var currentBgColor = prefs.getInt("sub_bg_color", Color.TRANSPARENT)
+                  val btnBgTransparent = view.findViewById<TextView>(R.id.btnBgTransparent)
+                  val btnBgSemi = view.findViewById<TextView>(R.id.btnBgSemi)
+                  val btnBgBlack = view.findViewById<TextView>(R.id.btnBgBlack)
+
+                  val switchRespectAss = view.findViewById<Switch>(R.id.switchRespectAss)
+                  switchRespectAss.isChecked = prefs.getBoolean("sub_respect_ass", true)
+
+                  val tvPreview = view.findViewById<TextView>(R.id.tvSubtitlePreview)
+
+                  fun updatePreviewAndApply() {
+                      tvPreview.textSize = currentFontSize
+                      tvPreview.setTextColor(currentFontColor)
+                      tvPreview.setBackgroundColor(currentBgColor)
+
+                      prefs.edit()
+                          .putFloat("sub_font_size", currentFontSize)
+                          .putInt("sub_font_color", currentFontColor)
+                          .putInt("sub_bg_color", currentBgColor)
+                          .putBoolean("sub_respect_ass", switchRespectAss.isChecked)
+                          .apply()
+
+                      if (subtitleView != null) {
+                          applySubtitleStyles(activity, subtitleView)
+                      }
+                  }
+
+                  fun updateChipsSelection() {
+                      btnSizeSmall.isSelected = (currentFontSize == 14f)
+                      btnSizeNormal.isSelected = (currentFontSize == 18f)
+                      btnSizeLarge.isSelected = (currentFontSize == 22f)
+                      btnSizeHuge.isSelected = (currentFontSize == 28f)
+
+                      btnColorWhite.isSelected = (currentFontColor == Color.WHITE)
+                      btnColorYellow.isSelected = (currentFontColor == Color.parseColor("#FFEB3B"))
+                      btnColorCyan.isSelected = (currentFontColor == Color.parseColor("#00E5FF"))
+                      btnColorGreen.isSelected = (currentFontColor == Color.parseColor("#69F0AE"))
+
+                      btnBgTransparent.isSelected = (currentBgColor == Color.TRANSPARENT)
+                      btnBgSemi.isSelected = (currentBgColor == Color.parseColor("#80000000"))
+                      btnBgBlack.isSelected = (currentBgColor == Color.parseColor("#FF000000"))
+                  }
+
+                  updateChipsSelection()
+                  updatePreviewAndApply()
+
+                  btnSizeSmall.setOnClickListener { currentFontSize = 14f; updateChipsSelection(); updatePreviewAndApply() }
+                  btnSizeNormal.setOnClickListener { currentFontSize = 18f; updateChipsSelection(); updatePreviewAndApply() }
+                  btnSizeLarge.setOnClickListener { currentFontSize = 22f; updateChipsSelection(); updatePreviewAndApply() }
+                  btnSizeHuge.setOnClickListener { currentFontSize = 28f; updateChipsSelection(); updatePreviewAndApply() }
+
+                  btnColorWhite.setOnClickListener { currentFontColor = Color.WHITE; updateChipsSelection(); updatePreviewAndApply() }
+                  btnColorYellow.setOnClickListener { currentFontColor = Color.parseColor("#FFEB3B"); updateChipsSelection(); updatePreviewAndApply() }
+                  btnColorCyan.setOnClickListener { currentFontColor = Color.parseColor("#00E5FF"); updateChipsSelection(); updatePreviewAndApply() }
+                  btnColorGreen.setOnClickListener { currentFontColor = Color.parseColor("#69F0AE"); updateChipsSelection(); updatePreviewAndApply() }
+
+                  btnBgTransparent.setOnClickListener { currentBgColor = Color.TRANSPARENT; updateChipsSelection(); updatePreviewAndApply() }
+                  btnBgSemi.setOnClickListener { currentBgColor = Color.parseColor("#80000000"); updateChipsSelection(); updatePreviewAndApply() }
+                  btnBgBlack.setOnClickListener { currentBgColor = Color.parseColor("#FF000000"); updateChipsSelection(); updatePreviewAndApply() }
+
+                  switchRespectAss.setOnCheckedChangeListener { _, _ -> updatePreviewAndApply() }
+
+                  dialog.show()
+              }
+
+              fun applySubtitleStyles(context: Context, subtitleView: SubtitleView?) {
+                  if (subtitleView == null) return
+                  val prefs = context.getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
+
+                  val fontSize = prefs.getFloat("sub_font_size", 18f)
+                  val fontColor = prefs.getInt("sub_font_color", Color.WHITE)
+                  val bgColor = prefs.getInt("sub_bg_color", Color.TRANSPARENT)
+                  val respectAss = prefs.getBoolean("sub_respect_ass", true)
+
+                  subtitleView.setApplyEmbeddedStyles(respectAss)
+                  subtitleView.setApplyEmbeddedFontSizes(respectAss)
+                  subtitleView.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize)
+
+                  val captionStyle = CaptionStyleCompat(
+                      fontColor,
+                      bgColor,
+                      Color.TRANSPARENT,
+                      CaptionStyleCompat.EDGE_TYPE_OUTLINE,
+                      Color.BLACK,
+                      null
+                  )
+                  subtitleView.setStyle(captionStyle)
+              }
+          }
+          EOF_C8_SUB_SHEET
+
+          # 25. MainActivity.kt
           cat << 'EOF_C9' > app/src/main/java/com/lionplayer/app/ui/MainActivity.kt
           package com.lionplayer.app.ui
 
@@ -4407,11 +5503,11 @@ jobs:
               }
           }
           EOF_C9
-
-          # 24. PlayerActivity.kt (جميع التحسينات للشريطين بدون حدود، التكرار، الترميزات HW/HW+/SW، التكبير بالقرص في الشاشة العائمة، والسحب فائق السلاسة لأجزاء الثانية)
+          # 25. PlayerActivity.kt
           cat << 'EOF_C10' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
           package com.lionplayer.app.ui
 
+          import android.app.Activity
           import android.app.PictureInPictureParams
           import android.content.Context
           import android.content.Intent
@@ -4434,16 +5530,32 @@ jobs:
           import android.os.SystemClock
           import android.view.*
           import android.widget.*
+          import androidx.activity.result.contract.ActivityResultContracts
           import androidx.appcompat.app.AlertDialog
           import androidx.appcompat.app.AppCompatActivity
+          import androidx.lifecycle.lifecycleScope
           import androidx.media3.common.C
           import androidx.media3.common.PlaybackParameters
+          import androidx.media3.common.TrackSelectionOverride
+          import androidx.media3.common.Tracks
           import androidx.media3.ui.AspectRatioFrameLayout
+          import androidx.media3.ui.CaptionStyleCompat
           import androidx.media3.ui.PlayerView
+          import androidx.media3.ui.SubtitleView
+          import androidx.recyclerview.widget.LinearLayoutManager
+          import androidx.recyclerview.widget.RecyclerView
           import com.lionplayer.app.R
+          import com.lionplayer.app.adapter.SubtitleResultsAdapter
           import com.lionplayer.app.model.MediaItem as LionMediaItem
+          import com.lionplayer.app.model.SubtitleItem
           import com.lionplayer.app.player.LionPlayerManager
+          import com.lionplayer.app.player.OpenSubtitlesHelper
+          import com.lionplayer.app.player.SubtitleSyncHelper
+          import kotlinx.coroutines.Dispatchers
+          import kotlinx.coroutines.launch
+          import kotlinx.coroutines.withContext
           import java.io.File
+          import java.io.FileOutputStream
           import java.util.ArrayList
           import java.util.Locale
 
@@ -4456,6 +5568,8 @@ jobs:
               private lateinit var tvVideoTitle: TextView
               private lateinit var btnBack: ImageButton
               private lateinit var btnDecoder: TextView
+              private lateinit var btnAudioTrack: ImageButton
+              private lateinit var btnSubtitle: ImageButton
               private lateinit var btnMore: ImageButton
 
               private lateinit var btnRepeat: ImageButton
@@ -4545,7 +5659,7 @@ jobs:
                   val currentItem = LionPlayerManager.getCurrentItem()
                   val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
                   if (currentItem?.isVideo == true && isLandscape) {
-                      handler.postDelayed(autoHideLandscapeRunnable, 2000L)
+                      handler.postDelayed(autoHideLandscapeRunnable, 2500L)
                   }
               }
 
@@ -4602,6 +5716,17 @@ jobs:
               private var targetSeekPosition = 0L
               private var lastSeekDispatchTime = 0L
 
+              // File picker launcher for external subtitles
+              private val subtitlePickerLauncher = registerForActivityResult(
+                  ActivityResultContracts.StartActivityForResult()
+              ) { result ->
+                  if (result.resultCode == Activity.RESULT_OK) {
+                      result.data?.data?.let { uri ->
+                          importSubtitleFromUri(uri)
+                      }
+                  }
+              }
+
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
                   prefs = getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
@@ -4616,6 +5741,8 @@ jobs:
 
                   val p = LionPlayerManager.getOrCreatePlayer(this)
                   playerView.player = p
+
+                  applySubtitleStylePreferences()
 
                   handleIntent(intent)
               }
@@ -4818,6 +5945,8 @@ jobs:
                   tvVideoTitle = findViewById(R.id.tvVideoTitle)
                   btnBack = findViewById(R.id.btnBack)
                   btnDecoder = findViewById(R.id.btnDecoder)
+                  btnAudioTrack = findViewById(R.id.btnAudioTrack)
+                  btnSubtitle = findViewById(R.id.btnSubtitle)
                   btnMore = findViewById(R.id.btnMore)
 
                   btnRepeat = findViewById(R.id.btnRepeat)
@@ -5100,6 +6229,8 @@ jobs:
                   btnDecoder.visibility = View.VISIBLE
 
                   val videoControlsVis = if (item.isVideo) View.VISIBLE else View.GONE
+                  btnAudioTrack.visibility = View.VISIBLE
+                  btnSubtitle.visibility = videoControlsVis
                   btnRotate.visibility = videoControlsVis
                   btnPip.visibility = videoControlsVis
                   btnResize.visibility = videoControlsVis
@@ -5172,8 +6303,33 @@ jobs:
                   updateScreenLock()
               }
 
+              fun applySubtitleStylePreferences() {
+                  val subView = playerView.subtitleView ?: return
+                  val fontSizeSp = prefs.getFloat("sub_font_size", 18f)
+                  val fontColor = prefs.getInt("sub_font_color", Color.WHITE)
+                  val bgColor = prefs.getInt("sub_bg_color", Color.TRANSPARENT)
+
+                  subView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * (fontSizeSp / 18f))
+                  subView.setApplyEmbeddedStyles(true)
+                  subView.setApplyEmbeddedFontSizes(true)
+
+                  val captionStyle = CaptionStyleCompat(
+                      fontColor,
+                      bgColor,
+                      Color.TRANSPARENT,
+                      CaptionStyleCompat.EDGE_TYPE_OUTLINE,
+                      Color.BLACK,
+                      null
+                  )
+                  subView.setStyle(captionStyle)
+              }
+
               private fun setupListeners() {
                   btnBack.setOnClickListener { handleBackAction() }
+
+                  btnAudioTrack.setOnClickListener { showAudioTrackSelectionDialog() }
+
+                  btnSubtitle.setOnClickListener { showSubtitleMenuDialog() }
 
                   btnMore.setOnClickListener {
                       PlayerSettingsBottomSheet.show(
@@ -5200,6 +6356,7 @@ jobs:
                       playerView.player = newPlayer
                       btnDecoder.text = nextMode
                       updateDecoderBadge(nextMode)
+                      applySubtitleStylePreferences()
                       Toast.makeText(this, "تم التبديل إلى ترميز: $nextMode", Toast.LENGTH_SHORT).show()
                   }
 
@@ -5354,6 +6511,279 @@ jobs:
                           LionPlayerManager.updateNotification(this@PlayerActivity)
                       }
                   })
+              }
+
+              // ==========================================
+              // 1. Audio Track Selection Dialog
+              // ==========================================
+              private fun showAudioTrackSelectionDialog() {
+                  val p = LionPlayerManager.player ?: return
+                  val tracks = p.currentTracks
+
+                  val audioTrackList = mutableListOf<Pair<Tracks.Group, Int>>()
+                  val displayNames = mutableListOf<String>()
+                  var selectedIndex = -1
+
+                  for (group in tracks.groups) {
+                      if (group.type == C.TRACK_TYPE_AUDIO) {
+                          for (i in 0 until group.length) {
+                              val format = group.getTrackFormat(i)
+                              val isSelected = group.isTrackSelected(i)
+                              if (isSelected) {
+                                  selectedIndex = audioTrackList.size
+                              }
+                              audioTrackList.add(Pair(group, i))
+
+                              val lang = format.language?.uppercase() ?: "غير محدد"
+                              val label = format.label ?: ""
+                              val sampleRate = if (format.sampleRate > 0) "${format.sampleRate / 1000}kHz" else ""
+                              val channels = when (format.channelCount) {
+                                  1 -> "Mono"
+                                  2 -> "Stereo"
+                                  6 -> "5.1"
+                                  8 -> "7.1"
+                                  else -> if (format.channelCount > 0) "${format.channelCount}ch" else ""
+                              }
+                              val mime = format.sampleMimeType?.substringAfter('/')?.uppercase() ?: ""
+                              val info = listOf(label, lang, mime, channels, sampleRate).filter { it.isNotEmpty() }.joinToString(" • ")
+                              displayNames.add("المسار ${audioTrackList.size}: $info")
+                          }
+                      }
+                  }
+
+                  if (audioTrackList.isEmpty()) {
+                      Toast.makeText(this, "لا توجد مسارات صوتية متعددة في هذا الملف", Toast.LENGTH_SHORT).show()
+                      return
+                  }
+
+                  AlertDialog.Builder(this)
+                      .setTitle("اختيار المسار الصوتي (Dual Audio)")
+                      .setSingleChoiceItems(displayNames.toTypedArray(), selectedIndex) { dialog, which ->
+                          val (targetGroup, trackIndex) = audioTrackList[which]
+                          val override = TrackSelectionOverride(targetGroup.mediaTrackGroup, listOf(trackIndex))
+                          p.trackSelectionParameters = p.trackSelectionParameters
+                              .buildUpon()
+                              .setOverrideForType(override)
+                              .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, false)
+                              .build()
+                          Toast.makeText(this, "تم اختيار: ${displayNames[which]}", Toast.LENGTH_SHORT).show()
+                          dialog.dismiss()
+                      }
+                      .setNegativeButton("إلغاء", null)
+                      .show()
+              }
+
+              // ==========================================
+              // 2. Subtitle Menu & Selection Dialogs
+              // ==========================================
+              private fun showSubtitleMenuDialog() {
+                  val options = arrayOf(
+                      "اختيار مسار ترجمة مدمج",
+                      "إيقاف / تعطيل الترجمة",
+                      "اختيار ملف ترجمة من الهاتف (SRT/ASS/VTT)",
+                      "البحث في OpenSubtitles وتنزيلها تلقائياً",
+                      "إعدادات الترجمة المتقدمة (تزامن / خط / خلفية)"
+                  )
+
+                  AlertDialog.Builder(this)
+                      .setTitle("قائمة الترجمة")
+                      .setItems(options) { _, which ->
+                          when (which) {
+                              0 -> showEmbeddedSubtitlesDialog()
+                              1 -> disableSubtitles()
+                              2 -> launchSubtitlePicker()
+                              3 -> showOpenSubtitlesSearchDialog()
+                              4 -> SubtitleSettingsBottomSheet.show(this, playerView)
+                          }
+                      }
+                      .setNegativeButton("إلغاء", null)
+                      .show()
+              }
+
+              private fun showEmbeddedSubtitlesDialog() {
+                  val p = LionPlayerManager.player ?: return
+                  val tracks = p.currentTracks
+
+                  val subTrackList = mutableListOf<Pair<Tracks.Group, Int>>()
+                  val displayNames = mutableListOf<String>()
+                  var selectedIndex = -1
+
+                  for (group in tracks.groups) {
+                      if (group.type == C.TRACK_TYPE_TEXT) {
+                          for (i in 0 until group.length) {
+                              val format = group.getTrackFormat(i)
+                              val isSelected = group.isTrackSelected(i)
+                              if (isSelected) {
+                                  selectedIndex = subTrackList.size
+                              }
+                              subTrackList.add(Pair(group, i))
+
+                              val lang = format.language?.uppercase() ?: "غير محدد"
+                              val label = format.label ?: ""
+                              val mime = format.sampleMimeType?.substringAfter('/')?.uppercase() ?: ""
+                              val info = listOf(label, lang, mime).filter { it.isNotEmpty() }.joinToString(" • ")
+                              displayNames.add("ترجمة ${subTrackList.size}: $info")
+                          }
+                      }
+                  }
+
+                  if (subTrackList.isEmpty()) {
+                      Toast.makeText(this, "لا توجد مسارات ترجمة مدمجة في هذا المقطع", Toast.LENGTH_SHORT).show()
+                      return
+                  }
+
+                  AlertDialog.Builder(this)
+                      .setTitle("مسارات الترجمة المدمجة")
+                      .setSingleChoiceItems(displayNames.toTypedArray(), selectedIndex) { dialog, which ->
+                          val (targetGroup, trackIndex) = subTrackList[which]
+                          val override = TrackSelectionOverride(targetGroup.mediaTrackGroup, listOf(trackIndex))
+                          p.trackSelectionParameters = p.trackSelectionParameters
+                              .buildUpon()
+                              .setOverrideForType(override)
+                              .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+                              .build()
+                          applySubtitleStylePreferences()
+                          Toast.makeText(this, "تم تفعيل الترجمة: ${displayNames[which]}", Toast.LENGTH_SHORT).show()
+                          dialog.dismiss()
+                      }
+                      .setNegativeButton("إلغاء", null)
+                      .show()
+              }
+
+              private fun disableSubtitles() {
+                  val p = LionPlayerManager.player ?: return
+                  p.trackSelectionParameters = p.trackSelectionParameters
+                      .buildUpon()
+                      .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+                      .build()
+                  Toast.makeText(this, "تم تعطيل الترجمة", Toast.LENGTH_SHORT).show()
+              }
+
+              private fun launchSubtitlePicker() {
+                  val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                      addCategory(Intent.CATEGORY_OPENABLE)
+                      type = "*/*"
+                      putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                          "text/*",
+                          "application/x-subrip",
+                          "text/vtt",
+                          "text/x-ssa",
+                          "application/octet-stream"
+                      ))
+                  }
+                  subtitlePickerLauncher.launch(intent)
+              }
+
+              private fun importSubtitleFromUri(uri: Uri) {
+                  try {
+                      val inputStream = contentResolver.openInputStream(uri) ?: return
+                      val fileName = SubtitleSyncHelper.getFileName(this, uri) ?: "imported_sub.srt"
+                      val cacheFile = File(cacheDir, fileName)
+
+                      FileOutputStream(cacheFile).use { out ->
+                          inputStream.copyTo(out)
+                      }
+
+                      val mimeType = SubtitleSyncHelper.detectMimeType(fileName)
+                      LionPlayerManager.attachSubtitle(this, cacheFile.absolutePath, mimeType)
+                      applySubtitleStylePreferences()
+                      Toast.makeText(this, "تم إدراج ملف الترجمة: $fileName بنجاح", Toast.LENGTH_LONG).show()
+                  } catch (e: Exception) {
+                      Toast.makeText(this, "فشل استيراد ملف الترجمة: ${e.message}", Toast.LENGTH_SHORT).show()
+                  }
+              }
+
+              // ==========================================
+              // 3. OpenSubtitles Integration
+              // ==========================================
+              private fun showOpenSubtitlesSearchDialog() {
+                  val currentItem = LionPlayerManager.getCurrentItem()
+                  val defaultTitle = currentItem?.title?.substringBeforeLast('.') ?: ""
+
+                  val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_opensubtitles_search, null)
+                  val etQuery = dialogView.findViewById<EditText>(R.id.etSubSearchQuery)
+                  val btnSearchName = dialogView.findViewById<Button>(R.id.btnSearchByName)
+                  val btnSearchHash = dialogView.findViewById<Button>(R.id.btnSearchByHash)
+                  val rvResults = dialogView.findViewById<RecyclerView>(R.id.rvSubResults)
+                  val pbLoading = dialogView.findViewById<ProgressBar>(R.id.pbSubLoading)
+                  val tvNoResults = dialogView.findViewById<TextView>(R.id.tvNoSubResults)
+
+                  etQuery.setText(defaultTitle)
+                  rvResults.layoutManager = LinearLayoutManager(this)
+
+                  val dialog = AlertDialog.Builder(this)
+                      .setTitle("البحث في OpenSubtitles")
+                      .setView(dialogView)
+                      .setNegativeButton("إغلاق", null)
+                      .create()
+
+                  fun performSearch(isHashSearch: Boolean) {
+                      pbLoading.visibility = View.VISIBLE
+                      rvResults.visibility = View.GONE
+                      tvNoResults.visibility = View.GONE
+
+                      lifecycleScope.launch {
+                          val results = withContext(Dispatchers.IO) {
+                              if (isHashSearch && currentItem?.path?.isNotEmpty() == true) {
+                                  val file = File(currentItem.path)
+                                  val hash = OpenSubtitlesHelper.computeMovieHash(file)
+                                  if (hash != null) {
+                                      OpenSubtitlesHelper.searchByHash(hash, file.length(), "ara,eng")
+                                  } else {
+                                      emptyList()
+                                  }
+                              } else {
+                                  val query = etQuery.text.toString().trim()
+                                  if (query.isNotEmpty()) {
+                                      OpenSubtitlesHelper.searchByName(query, "ara,eng")
+                                  } else {
+                                      emptyList()
+                                  }
+                              }
+                          }
+
+                          pbLoading.visibility = View.GONE
+                          if (results.isEmpty()) {
+                              tvNoResults.visibility = View.VISIBLE
+                              rvResults.visibility = View.GONE
+                          } else {
+                              tvNoResults.visibility = View.GONE
+                              rvResults.visibility = View.VISIBLE
+                              rvResults.adapter = SubtitleResultsAdapter(results) { chosenItem ->
+                                  downloadAndApplySubtitle(chosenItem)
+                                  dialog.dismiss()
+                              }
+                          }
+                      }
+                  }
+
+                  btnSearchName.setOnClickListener { performSearch(false) }
+                  btnSearchHash.setOnClickListener {
+                      if (currentItem?.path.isNullOrEmpty()) {
+                          Toast.makeText(this, "البحث بالـ Hash يتطلب ملفاً محلياً", Toast.LENGTH_SHORT).show()
+                      } else {
+                          performSearch(true)
+                      }
+                  }
+
+                  dialog.show()
+              }
+
+              private fun downloadAndApplySubtitle(item: SubtitleItem) {
+                  Toast.makeText(this, "جاري تنزيل الترجمة: ${item.subFileName}...", Toast.LENGTH_SHORT).show()
+                  lifecycleScope.launch {
+                      val downloadedFile = withContext(Dispatchers.IO) {
+                          OpenSubtitlesHelper.downloadSubtitle(this@PlayerActivity, item)
+                      }
+                      if (downloadedFile != null && downloadedFile.exists()) {
+                          val mimeType = SubtitleSyncHelper.detectMimeType(downloadedFile.name)
+                          LionPlayerManager.attachSubtitle(this@PlayerActivity, downloadedFile.absolutePath, mimeType)
+                          applySubtitleStylePreferences()
+                          Toast.makeText(this@PlayerActivity, "تم تطبيق الترجمة بنجاح: ${downloadedFile.name}", Toast.LENGTH_LONG).show()
+                      } else {
+                          Toast.makeText(this@PlayerActivity, "تعذر تنزيل ملف الترجمة", Toast.LENGTH_SHORT).show()
+                      }
+                  }
               }
 
               private fun showAudioSettingsDialog() {
@@ -5658,7 +7088,6 @@ jobs:
                                               updateBrightnessByPercent((deltaY / (screenHeight * 0.6f)) * 100f)
                                           }
                                       } else if (isDraggingHorizontal) {
-                                          // انتقال لحظي فائق السلاسة والسرعة بدقة أجزاء الثانية
                                           val deltaX = gestureStartX - event.x
                                           val maxDur = LionPlayerManager.player?.duration?.coerceAtLeast(0L) ?: 0L
                                           if (maxDur > 0) {
@@ -5791,6 +7220,7 @@ jobs:
                   }
                   LionPlayerManager.getCurrentItem()?.let { updateUIForItem(it) }
                   playerView.player = LionPlayerManager.player
+                  applySubtitleStylePreferences()
                   updatePlayPauseButton(LionPlayerManager.player?.isPlaying == true)
                   updateRepeatButtonUI()
                   updateScreenLock()
