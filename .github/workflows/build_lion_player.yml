@@ -117,8 +117,8 @@ jobs:
                   applicationId "com.lionplayer.app"
                   minSdk 21
                   targetSdk 34
-                  versionCode 9
-                  versionName "1.8.0"
+                  versionCode 10
+                  versionName "1.9.0"
 
                   testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
               }
@@ -799,7 +799,7 @@ jobs:
           cat << 'EOF_D36' > app/src/main/res/drawable/bg_hud.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android"
               android:shape="rectangle">
-              <solid android:color="#B3000000" />
+              <solid android:color="#CC000000" />
               <corners android:radius="16dp" />
           </shape>
           EOF_D36
@@ -908,6 +908,43 @@ jobs:
                 android:pathData="M19,9h-4V3H9v6H5l7,7 7,-7zM5,18v2h14v-2H5z"/>
           </vector>
           EOF_D45
+
+          # Killer Features Drawables
+          cat << 'EOF_D46' > app/src/main/res/drawable/ic_timer.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:pathData="M15,1H9v2h6V1zm-4,13h2V8h-2v6zm8.03,-6.61l1.42,-1.42c-0.43,-0.51 -0.9,-0.99 -1.41,-1.41l-1.42,1.42C16.07,4.74 14.12,4 12,4c-4.97,0 -9,4.03 -9,9s4.02,9 9,9 9,-4.03 9,-9c0,-2.12 -0.74,-4.07 -1.97,-5.61zM12,20c-3.87,0 -7,-3.13 -7,-7s3.13,-7 7,-7 7,3.13 7,7 -3.13,7 -7,7z"/>
+          </vector>
+          EOF_D46
+
+          cat << 'EOF_D47' > app/src/main/res/drawable/ic_ab_repeat.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:pathData="M7,7h10v3l4,-4 -4,-4v3H5v6h2V7zm10,10H7v-3l-4,4 4,4v-3h12v-6h-2v4z"/>
+          </vector>
+          EOF_D47
+
+          cat << 'EOF_D48' > app/src/main/res/drawable/ic_child_friendly.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:pathData="M19,3H5c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2zm-7,3c1.66,0 3,1.34 3,3s-1.34,3 -3,3 -3,-1.34 -3,-3 1.34,-3 3,-3zm6,12H6v-1.4c0,-2 4,-3.1 6,-3.1s6,1.1 6,3.1V18z"/>
+          </vector>
+          EOF_D48
 
           # 13. Menus
           cat << 'EOF_M1' > app/src/main/res/menu/top_main_menu.xml
@@ -1690,6 +1727,160 @@ jobs:
                   </ScrollView>
               </LinearLayout>
 
+              <!-- Double Tap Rewind Animation Overlay (-10s) -->
+              <LinearLayout
+                  android:id="@+id/hudDoubleTapLeft"
+                  android:layout_width="120dp"
+                  android:layout_height="120dp"
+                  android:layout_marginStart="40dp"
+                  android:background="@drawable/bg_hud"
+                  android:gravity="center"
+                  android:orientation="vertical"
+                  android:visibility="gone"
+                  app:layout_constraintBottom_toBottomOf="parent"
+                  app:layout_constraintStart_toStartOf="parent"
+                  app:layout_constraintTop_toTopOf="parent">
+
+                  <ImageView
+                      android:layout_width="48dp"
+                      android:layout_height="48dp"
+                      android:src="@drawable/ic_replay_10"
+                      app:tint="#FF9800" />
+
+                  <TextView
+                      android:id="@+id/tvDoubleTapLeftText"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="6dp"
+                      android:text="-10 ثوانٍ"
+                      android:textColor="#FFFFFF"
+                      android:textSize="13sp"
+                      android:textStyle="bold" />
+              </LinearLayout>
+
+              <!-- Double Tap Forward Animation Overlay (+10s) -->
+              <LinearLayout
+                  android:id="@+id/hudDoubleTapRight"
+                  android:layout_width="120dp"
+                  android:layout_height="120dp"
+                  android:layout_marginEnd="40dp"
+                  android:background="@drawable/bg_hud"
+                  android:gravity="center"
+                  android:orientation="vertical"
+                  android:visibility="gone"
+                  app:layout_constraintBottom_toBottomOf="parent"
+                  app:layout_constraintEnd_toEndOf="parent"
+                  app:layout_constraintTop_toTopOf="parent">
+
+                  <ImageView
+                      android:layout_width="48dp"
+                      android:layout_height="48dp"
+                      android:src="@drawable/ic_forward_10"
+                      app:tint="#FF9800" />
+
+                  <TextView
+                      android:id="@+id/tvDoubleTapRightText"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="6dp"
+                      android:text="+10 ثوانٍ"
+                      android:textColor="#FFFFFF"
+                      android:textSize="13sp"
+                      android:textStyle="bold" />
+              </LinearLayout>
+
+              <!-- Smart Kids Lock Pattern & Feedback HUD -->
+              <LinearLayout
+                  android:id="@+id/hudKidsLockHint"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:background="@drawable/bg_hud"
+                  android:gravity="center"
+                  android:orientation="vertical"
+                  android:paddingStart="24dp"
+                  android:paddingEnd="24dp"
+                  android:paddingTop="16dp"
+                  android:paddingBottom="16dp"
+                  android:visibility="gone"
+                  app:layout_constraintBottom_toBottomOf="parent"
+                  app:layout_constraintEnd_toEndOf="parent"
+                  app:layout_constraintStart_toStartOf="parent"
+                  app:layout_constraintTop_toTopOf="parent">
+
+                  <ImageView
+                      android:layout_width="38dp"
+                      android:layout_height="38dp"
+                      android:src="@drawable/ic_child_friendly"
+                      app:tint="#FF9800" />
+
+                  <TextView
+                      android:id="@+id/tvKidsLockTitle"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="6dp"
+                      android:text="قفل الأطفال الذكي مفعل 🔒"
+                      android:textColor="#FF9800"
+                      android:textSize="14sp"
+                      android:textStyle="bold" />
+
+                  <TextView
+                      android:id="@+id/tvKidsLockPattern"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="4dp"
+                      android:gravity="center"
+                      android:text="انقر على زوايا الشاشة الأربع بالترتيب:\n(أعلى يسار ➔ أعلى يمين ➔ أسفل يمين ➔ أسفل يسار)"
+                      android:textColor="#FFFFFF"
+                      android:textSize="12sp" />
+
+                  <TextView
+                      android:id="@+id/tvKidsLockProgress"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="8dp"
+                      android:text="○  ○  ○  ○"
+                      android:textColor="#FF9800"
+                      android:textSize="16sp"
+                      android:letterSpacing="0.2"
+                      android:textStyle="bold" />
+              </LinearLayout>
+
+              <!-- Timeline Thumbnail Scrubbing Floating Card -->
+              <FrameLayout
+                  android:id="@+id/layoutThumbnailPreview"
+                  android:layout_width="144dp"
+                  android:layout_height="96dp"
+                  android:layout_marginBottom="8dp"
+                  android:background="@drawable/bg_hud"
+                  android:padding="3dp"
+                  android:visibility="gone"
+                  app:layout_constraintBottom_toTopOf="@id/bottomControls"
+                  app:layout_constraintStart_toStartOf="parent">
+
+                  <ImageView
+                      android:id="@+id/ivThumbnailPreview"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:scaleType="centerCrop"
+                      android:background="@drawable/bg_thumb_round"
+                      android:clipToOutline="true" />
+
+                  <TextView
+                      android:id="@+id/tvThumbnailTime"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_gravity="bottom|center_horizontal"
+                      android:layout_marginBottom="4dp"
+                      android:background="@drawable/bg_duration_badge"
+                      android:paddingStart="6dp"
+                      android:paddingEnd="6dp"
+                      android:paddingTop="2dp"
+                      android:paddingBottom="2dp"
+                      android:textColor="#FFFFFF"
+                      android:textSize="11sp"
+                      android:textStyle="bold" />
+              </FrameLayout>
+
               <!-- عناصر التحكم العلوية -->
               <LinearLayout
                   android:id="@+id/topControls"
@@ -1777,101 +1968,142 @@ jobs:
                           android:contentDescription="الإعدادات" />
                   </LinearLayout>
 
-                  <LinearLayout
-                      android:id="@+id/topBarSecondary"
+                  <HorizontalScrollView
+                      android:id="@+id/scrollSecondaryControls"
                       android:layout_width="match_parent"
                       android:layout_height="38dp"
-                      android:gravity="center_vertical|end"
-                      android:orientation="horizontal">
+                      android:scrollbars="none"
+                      android:fillViewport="true">
 
-                      <ImageButton
-                          android:id="@+id/btnRepeat"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_repeat"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="تكرار المقطع" />
+                      <LinearLayout
+                          android:id="@+id/topBarSecondary"
+                          android:layout_width="wrap_content"
+                          android:layout_height="match_parent"
+                          android:gravity="center_vertical|end"
+                          android:orientation="horizontal">
 
-                      <ImageButton
-                          android:id="@+id/btnFavorite"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_favorite_border"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="تفضيل" />
+                          <ImageButton
+                              android:id="@+id/btnAbRepeat"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_ab_repeat"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="تكرار مقطع A-B" />
 
-                      <ImageButton
-                          android:id="@+id/btnEqualizer"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_equalizer"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="معادل الصوت" />
+                          <ImageButton
+                              android:id="@+id/btnSleepTimer"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_timer"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="مؤقت النوم" />
 
-                      <ImageButton
-                          android:id="@+id/btnRotate"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_screen_rotation"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="تدوير الشاشة" />
+                          <ImageButton
+                              android:id="@+id/btnKidsLock"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_child_friendly"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="قفل الأطفال الذكي" />
 
-                      <ImageButton
-                          android:id="@+id/btnPip"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_pip"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="الشاشة العائمة" />
+                          <ImageButton
+                              android:id="@+id/btnRepeat"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_repeat"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="تكرار المقطع" />
 
-                      <ImageButton
-                          android:id="@+id/btnLock"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_lock"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="قفل الشاشة" />
+                          <ImageButton
+                              android:id="@+id/btnFavorite"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_favorite_border"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="تفضيل" />
 
-                      <ImageButton
-                          android:id="@+id/btnToggleNav"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_fullscreen"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="شاشة كاملة" />
+                          <ImageButton
+                              android:id="@+id/btnEqualizer"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_equalizer"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="معادل الصوت" />
 
-                      <ImageButton
-                          android:id="@+id/btnLyricsToggle"
-                          android:layout_width="36dp"
-                          android:layout_height="36dp"
-                          android:layout_marginStart="2dp"
-                          android:layout_marginEnd="2dp"
-                          android:background="?attr/selectableItemBackgroundBorderless"
-                          android:src="@drawable/ic_lyrics"
-                          app:tint="#FFFFFF"
-                          android:contentDescription="كلمات الأغنية" />
-                  </LinearLayout>
+                          <ImageButton
+                              android:id="@+id/btnRotate"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_screen_rotation"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="تدوير الشاشة" />
+
+                          <ImageButton
+                              android:id="@+id/btnPip"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_pip"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="الشاشة العائمة" />
+
+                          <ImageButton
+                              android:id="@+id/btnLock"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_lock"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="قفل الشاشة" />
+
+                          <ImageButton
+                              android:id="@+id/btnToggleNav"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_fullscreen"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="شاشة كاملة" />
+
+                          <ImageButton
+                              android:id="@+id/btnLyricsToggle"
+                              android:layout_width="36dp"
+                              android:layout_height="36dp"
+                              android:layout_marginStart="2dp"
+                              android:layout_marginEnd="2dp"
+                              android:background="?attr/selectableItemBackgroundBorderless"
+                              android:src="@drawable/ic_lyrics"
+                              app:tint="#FFFFFF"
+                              android:contentDescription="كلمات الأغنية" />
+                      </LinearLayout>
+                  </HorizontalScrollView>
               </LinearLayout>
 
               <ImageButton
@@ -1972,7 +2204,7 @@ jobs:
                           android:layout_height="12dp"
                           android:layout_gravity="center"
                           android:layoutDirection="ltr"
-                          android:max="100"
+                          android:max="200"
                           android:progress="50"
                           android:progressDrawable="@drawable/progress_hud"
                           android:rotation="270" />
@@ -2509,7 +2741,6 @@ jobs:
                   android:contentDescription="تنزيل الترجمة" />
           </LinearLayout>
           EOF_L9
-
           # 15. LionPlayerApp.kt
           cat << 'EOF_C1' > app/src/main/java/com/lionplayer/app/LionPlayerApp.kt
           package com.lionplayer.app
@@ -5601,10 +5832,10 @@ jobs:
           }
           EOF_C9
 
-          # 29. PlayerActivity.kt (ViewBinding + High-Resolution Controls)
+          # 29. PlayerActivity.kt
           cat << 'EOF_C10' > app/src/main/java/com/lionplayer/app/ui/PlayerActivity.kt
           package com.lionplayer.app.ui
-
+          
           import android.app.Activity
           import android.app.PictureInPictureParams
           import android.content.Context
@@ -5626,6 +5857,8 @@ jobs:
           import android.os.Handler
           import android.os.Looper
           import android.os.SystemClock
+          import android.os.VibrationEffect
+          import android.os.Vibrator
           import android.view.*
           import android.widget.*
           import androidx.appcompat.app.AlertDialog
@@ -5636,6 +5869,8 @@ jobs:
           import androidx.media3.ui.CaptionStyleCompat
           import androidx.recyclerview.widget.LinearLayoutManager
           import androidx.recyclerview.widget.RecyclerView
+          import coil.load
+          import coil.request.videoFrameMillis
           import com.lionplayer.app.R
           import com.lionplayer.app.databinding.ActivityPlayerBinding
           import com.lionplayer.app.databinding.DialogOpensubtitlesSearchBinding
@@ -5647,28 +5882,41 @@ jobs:
           import java.io.File
           import java.util.ArrayList
           import java.util.Locale
-
+          
           class PlayerActivity : AppCompatActivity() {
-
+          
               private val SUBTITLE_PICK_REQ = 2001
               private lateinit var binding: ActivityPlayerBinding
-
+          
               private var isLocked = false
+              private var isKidsLocked = false
+              private var kidsLockStep = 0
               private var controlsVisible = true
               private var rotationState = 0
               private var isSystemNavHidden = true
-
+          
+              // Feature 2: A-B Repeat
+              private var abPointA: Long = -1L
+              private var abPointB: Long = -1L
+              private var isAbRepeatActive: Boolean = false
+          
+              // Feature 5: Sleep Timer
+              private var isSleepTimerActive = false
+              private var sleepTimerEndTimeMs = 0L
+              private var sleepTimerInitialVolumePercent = 100f
+          
+              // Feature 3: Audio effects & 200% volume boost
               private var audioManager: AudioManager? = null
               private var maxSystemVolume: Int = 15
               private var currentTotalVolumePercent = 100f
-
               private var equalizer: Equalizer? = null
               private var bassBoost: BassBoost? = null
               private var presetReverb: PresetReverb? = null
               private var loudnessEnhancer: LoudnessEnhancer? = null
-
+          
               private lateinit var prefs: SharedPreferences
-
+          
+              // Feature 4: Touch gestures & Pinch-to-zoom
               private lateinit var scaleGestureDetector: ScaleGestureDetector
               private var videoScale = 1.0f
               private var videoTranslationX = 0f
@@ -5677,36 +5925,69 @@ jobs:
               private var lastTouchX = 0f
               private var lastTouchY = 0f
               private val hideZoomHudRunnable = Runnable { binding.hudZoom.visibility = View.GONE }
-
+          
+              // Double tap ripple / HUD animation
+              private var doubleTapForwardCount = 0
+              private var doubleTapRewindCount = 0
+              private val hideDoubleTapRightRunnable = Runnable {
+                  binding.hudDoubleTapRight.animate()
+                      .alpha(0f)
+                      .scaleX(0.8f)
+                      .scaleY(0.8f)
+                      .setDuration(250)
+                      .withEndAction {
+                          binding.hudDoubleTapRight.visibility = View.GONE
+                          doubleTapForwardCount = 0
+                      }
+                      .start()
+              }
+              private val hideDoubleTapLeftRunnable = Runnable {
+                  binding.hudDoubleTapLeft.animate()
+                      .alpha(0f)
+                      .scaleX(0.8f)
+                      .scaleY(0.8f)
+                      .setDuration(250)
+                      .withEndAction {
+                          binding.hudDoubleTapLeft.visibility = View.GONE
+                          doubleTapRewindCount = 0
+                      }
+                      .start()
+              }
+          
+              private val hideKidsLockHudRunnable = Runnable {
+                  binding.hudKidsLockHint.visibility = View.GONE
+              }
+          
               private var resizeModeIndex = -1
               private val resizeModes = arrayOf(
                   AspectRatioFrameLayout.RESIZE_MODE_FIT to "ملاءمة للشاشة (Fit)",
                   AspectRatioFrameLayout.RESIZE_MODE_ZOOM to "ملء الشاشة (Crop)",
                   AspectRatioFrameLayout.RESIZE_MODE_FILL to "تمديد (Stretch)"
               )
-
+          
               private val autoHideLandscapeRunnable = Runnable {
                   val currentItem = LionPlayerManager.getCurrentItem()
                   val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                  if (currentItem?.isVideo == true && isLandscape) {
+                  if (currentItem?.isVideo == true && isLandscape && !isKidsLocked) {
                       hideAllControls()
                       hideSystemBars()
                   }
               }
-
+          
               private fun scheduleAutoHideLandscape() {
                   handler.removeCallbacks(autoHideLandscapeRunnable)
                   val currentItem = LionPlayerManager.getCurrentItem()
                   val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                  if (currentItem?.isVideo == true && isLandscape) {
-                      handler.postDelayed(autoHideLandscapeRunnable, 2000L)
+                  if (currentItem?.isVideo == true && isLandscape && !isKidsLocked) {
+                      handler.postDelayed(autoHideLandscapeRunnable, 2500L)
                   }
               }
-
+          
+              // Feature 4: Long press 2x Fast Forward with haptic feedback
               private var isLongPressSpeeding = false
               private var originalSpeedBeforeLongPress = 1.0f
               private val longPressRunnable = Runnable {
-                  if (!isDraggingVertical && !isDraggingHorizontal && !isPinching && videoScale <= 1.05f) {
+                  if (!isDraggingVertical && !isDraggingHorizontal && !isPinching && videoScale <= 1.05f && !isKidsLocked && !isLocked) {
                       val p = LionPlayerManager.player
                       if (p?.isPlaying == true) {
                           isLongPressSpeeding = true
@@ -5714,19 +5995,17 @@ jobs:
                           val targetSpeed = prefs.getFloat("long_press_speed", 2.0f)
                           val speedLabel = prefs.getString("long_press_speed_str", "2x") ?: "${targetSpeed}x"
                           p.playbackParameters = PlaybackParameters(targetSpeed)
-
+          
                           binding.hudFastForward.visibility = View.VISIBLE
                           binding.tvFastForwardValue.text = "$speedLabel ⏩ تسريع"
-                          try {
-                              binding.playerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                          } catch (e: Exception) {}
+                          triggerHapticFeedback()
                       }
                   }
               }
-
+          
               private var lastCheckedResumeItemId: Long = -1L
-
-              private val handler = Looper.getMainLooper().let { Handler(it) }
+          
+              private val handler = Handler(Looper.getMainLooper())
               private val updateProgressRunnable = object : Runnable {
                   override fun run() {
                       LionPlayerManager.player?.let { p ->
@@ -5737,12 +6016,35 @@ jobs:
                               binding.playerSeekBar.progress = current.toInt()
                               binding.tvCurrentTime.text = formatDuration(current)
                               binding.tvTotalTime.text = formatDuration(total)
+          
+                              // Feature 2: A-B Repeat loop check
+                              if (isAbRepeatActive && abPointB > abPointA) {
+                                  if (current >= abPointB || current < abPointA - 500L) {
+                                      p.seekTo(abPointA)
+                                  }
+                              }
+          
+                              // Feature 5: Sleep Timer countdown & volume fade-out
+                              if (isSleepTimerActive) {
+                                  val remainingMs = sleepTimerEndTimeMs - SystemClock.elapsedRealtime()
+                                  if (remainingMs <= 0L) {
+                                      isSleepTimerActive = false
+                                      binding.btnSleepTimer.setColorFilter(Color.WHITE)
+                                      LionPlayerManager.stop(this@PlayerActivity)
+                                      Toast.makeText(this@PlayerActivity, "انتهى مؤقت النوم: تم إيقاف التشغيل 😴", Toast.LENGTH_LONG).show()
+                                      finish()
+                                      return
+                                  } else if (remainingMs <= 45000L) {
+                                      val ratio = (remainingMs.toFloat() / 45000f).coerceIn(0f, 1f)
+                                      applyVolumePercent(sleepTimerInitialVolumePercent * ratio)
+                                  }
+                              }
                           }
                       }
-                      handler.postDelayed(this, 1000)
+                      handler.postDelayed(this, 250)
                   }
               }
-
+          
               private var gestureStartX = 0f
               private var initialGestureY = 0f
               private var isDraggingVertical = false
@@ -5755,31 +6057,31 @@ jobs:
               private var initialSeekPosition = 0L
               private var targetSeekPosition = 0L
               private var lastSeekDispatchTime = 0L
-
+          
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
                   prefs = getSharedPreferences("lion_player_prefs", Context.MODE_PRIVATE)
-
+          
                   applySystemBarsVisibility()
                   binding = ActivityPlayerBinding.inflate(layoutInflater)
                   setContentView(binding.root)
-
+          
                   initViews()
                   initAudioManager()
                   setupListeners()
                   setupGestureDetection()
-
+          
                   val p = LionPlayerManager.getOrCreatePlayer(this)
                   binding.playerView.player = p
-
+          
                   handleIntent(intent)
               }
-
+          
               override fun onWindowFocusChanged(hasFocus: Boolean) {
                   super.onWindowFocusChanged(hasFocus)
                   if (hasFocus) applySystemBarsVisibility()
               }
-
+          
               override fun onConfigurationChanged(newConfig: Configuration) {
                   super.onConfigurationChanged(newConfig)
                   applySystemBarsVisibility()
@@ -5787,20 +6089,24 @@ jobs:
                       scheduleAutoHideLandscape()
                   }
               }
-
+          
               private fun applySystemBarsVisibility() {
                   if (isInFloatingWindow()) return
+                  if (isKidsLocked) {
+                      hideSystemBars()
+                      return
+                  }
                   val currentItem = LionPlayerManager.getCurrentItem()
                   val isVideo = currentItem?.isVideo ?: true
                   val orientation = resources.configuration.orientation
-
+          
                   if (isVideo && orientation == Configuration.ORIENTATION_LANDSCAPE) {
                       hideSystemBars()
                   } else {
                       showSystemNavBars()
                   }
               }
-
+          
               private fun hideSystemBars() {
                   isSystemNavHidden = true
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -5820,7 +6126,7 @@ jobs:
                       )
                   }
               }
-
+          
               private fun showSystemNavBars() {
                   isSystemNavHidden = false
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -5837,23 +6143,14 @@ jobs:
                   }
                   window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
               }
-
+          
               private fun isInFloatingWindow(): Boolean {
                   return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                       val pip = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) isInPictureInPictureMode else false
                       pip || isInMultiWindowMode
                   } else false
               }
-
-              private fun returnToAppFromFloating() {
-                  try {
-                      val intent = Intent(this, PlayerActivity::class.java).apply {
-                          flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                      }
-                      startActivity(intent)
-                  } catch (e: Exception) {}
-              }
-
+          
               fun hideAllControls() {
                   controlsVisible = false
                   binding.topControls.visibility = View.GONE
@@ -5865,9 +6162,11 @@ jobs:
                   binding.hudBrightness.visibility = View.GONE
                   binding.hudFastForward.visibility = View.GONE
                   binding.hudZoom.visibility = View.GONE
+                  binding.layoutThumbnailPreview.visibility = View.GONE
               }
-
+          
               fun showAllControls() {
+                  if (isKidsLocked) return
                   controlsVisible = true
                   binding.topControls.visibility = View.VISIBLE
                   binding.bottomControls.visibility = View.VISIBLE
@@ -5877,7 +6176,7 @@ jobs:
                   }
                   scheduleAutoHideLandscape()
               }
-
+          
               @Suppress("DEPRECATION")
               override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
                   super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
@@ -5889,20 +6188,20 @@ jobs:
                       applySystemBarsVisibility()
                   }
               }
-
+          
               override fun onUserLeaveHint() {
                   super.onUserLeaveHint()
                   val currentItem = LionPlayerManager.getCurrentItem()
-                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && currentItem?.isVideo == true && LionPlayerManager.player?.isPlaying == true) {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && currentItem?.isVideo == true && LionPlayerManager.player?.isPlaying == true && !isKidsLocked) {
                       enterPipMode()
                   }
               }
-
+          
               private fun enterPipMode() {
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                       hideAllControls()
                       val builder = PictureInPictureParams.Builder()
-
+          
                       val format = LionPlayerManager.player?.videoFormat
                       if (format != null && format.width > 0 && format.height > 0) {
                           val ratio = format.width.toFloat() / format.height.toFloat()
@@ -5910,16 +6209,16 @@ jobs:
                               builder.setAspectRatio(android.util.Rational(format.width, format.height))
                           }
                       }
-
+          
                       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                           builder.setSeamlessResizeEnabled(true)
                           builder.setAutoEnterEnabled(true)
                       }
-
+          
                       val rect = android.graphics.Rect()
                       binding.playerView.getGlobalVisibleRect(rect)
                       builder.setSourceRectHint(rect)
-
+          
                       try {
                           enterPictureInPictureMode(builder.build())
                       } catch (e: Exception) {
@@ -5929,18 +6228,18 @@ jobs:
                       Toast.makeText(this, "خاصية النافذة العائمة غير مدعومة", Toast.LENGTH_SHORT).show()
                   }
               }
-
+          
               override fun onNewIntent(intent: Intent?) {
                   super.onNewIntent(intent)
                   setIntent(intent)
                   intent?.let { handleIntent(it) }
               }
-
+          
               private fun handleIntent(intent: Intent) {
                   val incomingList = intent.getSerializableExtra("PLAYLIST") as? ArrayList<*>
                   val list = incomingList?.filterIsInstance<LionMediaItem>()?.let { ArrayList(it) }
                   val index = intent.getIntExtra("CURRENT_INDEX", -1)
-
+          
                   if (list != null && index >= 0) {
                       LionPlayerManager.playPlaylist(this, list, index)
                   } else {
@@ -5948,23 +6247,26 @@ jobs:
                   }
                   updatePlayPauseButton(LionPlayerManager.player?.isPlaying == true)
                   updateRepeatButtonUI()
+                  updateAbRepeatButtonUI()
                   updateScreenLock()
                   scheduleAutoHideLandscape()
               }
-
+          
               private fun initViews() {
                   binding.btnDecoder.text = LionPlayerManager.currentDecoderMode
                   updateDecoderBadge(LionPlayerManager.currentDecoderMode)
                   updateRepeatButtonUI()
+                  updateAbRepeatButtonUI()
               }
-
+          
               private fun initAudioManager() {
                   audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
                   maxSystemVolume = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
                   val currVol = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: (maxSystemVolume / 2)
                   currentTotalVolumePercent = (currVol.toFloat() / maxSystemVolume.toFloat()) * 100f
               }
-
+          
+              // Feature 3: Initialize Audio Effects (Equalizer, BassBoost, LoudnessEnhancer for 200% boost)
               private fun initAudioEffects() {
                   try {
                       val sessionId = LionPlayerManager.player?.audioSessionId ?: 0
@@ -5984,13 +6286,13 @@ jobs:
                       }
                   } catch (e: Exception) {}
               }
-
+          
               private fun applyVolumePercent(targetPercent: Float) {
-                  val volumeBoostEnabled = prefs.getBoolean("volume_boost_enabled", false)
+                  val volumeBoostEnabled = prefs.getBoolean("volume_boost_enabled", true)
                   val maxPercent = if (volumeBoostEnabled) 200f else 100f
                   val clampedPercent = targetPercent.coerceIn(0f, maxPercent)
                   currentTotalVolumePercent = clampedPercent
-
+          
                   audioManager?.let { am ->
                       if (clampedPercent <= 100f) {
                           val targetSysVol = kotlin.math.round((clampedPercent / 100f) * maxSystemVolume).toInt().coerceIn(0, maxSystemVolume)
@@ -6011,7 +6313,7 @@ jobs:
                           } catch (e: Exception) {}
                       }
                   }
-
+          
                   binding.hudVolume.visibility = View.VISIBLE
                   binding.volumeProgressBar.max = if (volumeBoostEnabled) 200 else 100
                   binding.volumeProgressBar.progress = clampedPercent.toInt()
@@ -6023,26 +6325,37 @@ jobs:
                       binding.tvVolumeValue.setTextColor(Color.WHITE)
                   }
               }
-
+          
               private fun updateBrightnessByPercent(deltaPercent: Float) {
                   val initialPercent = initialBrightness * 100f
                   val targetPercent = (initialPercent + deltaPercent).coerceIn(1f, 100f)
                   val lp = window.attributes
                   lp.screenBrightness = (targetPercent / 100f).coerceIn(0.01f, 1.0f)
                   window.attributes = lp
-
+          
                   binding.hudBrightness.visibility = View.VISIBLE
                   binding.brightnessProgressBar.progress = targetPercent.toInt()
                   binding.tvBrightnessValue.text = "${targetPercent.toInt()}%"
               }
-
+          
+              private fun triggerHapticFeedback() {
+                  try {
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                          val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+                          vibrator?.vibrate(VibrationEffect.createOneShot(45, VibrationEffect.DEFAULT_AMPLITUDE))
+                      } else {
+                          binding.playerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                      }
+                  } catch (e: Exception) {}
+              }
+          
               private fun applyVideoTransform() {
                   val targetView = binding.playerView.videoSurfaceView ?: binding.playerView
                   targetView.pivotX = targetView.width / 2f
                   targetView.pivotY = targetView.height / 2f
                   targetView.scaleX = videoScale
                   targetView.scaleY = videoScale
-
+          
                   if (!isInFloatingWindow() && videoScale <= 1.05f && videoScale >= 0.95f) {
                       videoScale = 1.0f
                       targetView.scaleX = 1.0f
@@ -6059,7 +6372,7 @@ jobs:
                       targetView.translationX = videoTranslationX
                       targetView.translationY = videoTranslationY
                   }
-
+          
                   if (!isInFloatingWindow()) {
                       if (videoScale > 1.0f) {
                           binding.hudZoom.visibility = View.VISIBLE
@@ -6069,11 +6382,11 @@ jobs:
                       }
                   }
               }
-
+          
               private fun checkResumePositionForTrack(item: LionMediaItem) {
                   if (!item.isVideo || item.id == lastCheckedResumeItemId) return
                   lastCheckedResumeItemId = item.id
-
+          
                   val savedPos = prefs.getLong("video_resume_pos_${item.id}", 0L)
                   if (savedPos > 3000L) {
                       val resumeMode = prefs.getInt("resume_playback_mode", 0)
@@ -6097,7 +6410,7 @@ jobs:
                       }
                   }
               }
-
+          
               private fun saveCurrentVideoPosition() {
                   val currentItem = LionPlayerManager.getCurrentItem()
                   if (currentItem?.isVideo == true) {
@@ -6111,7 +6424,7 @@ jobs:
                       }
                   }
               }
-
+          
               private fun updateScreenLock() {
                   val isVideo = LionPlayerManager.getCurrentItem()?.isVideo ?: true
                   if (isVideo) {
@@ -6122,7 +6435,7 @@ jobs:
                       binding.playerView.keepScreenOn = false
                   }
               }
-
+          
               private fun updateFavoriteIcon(isFav: Boolean) {
                   if (isFav) {
                       binding.btnFavorite.setImageResource(R.drawable.ic_favorite)
@@ -6132,11 +6445,33 @@ jobs:
                       binding.btnFavorite.setColorFilter(Color.WHITE)
                   }
               }
-
+          
               private fun updateRepeatButtonUI() {
                   binding.btnRepeat.setColorFilter(if (LionPlayerManager.isRepeatMode) Color.parseColor("#FF9800") else Color.WHITE)
               }
-
+          
+              // Feature 2: A-B Repeat UI update
+              private fun updateAbRepeatButtonUI() {
+                  when {
+                      isAbRepeatActive -> {
+                          binding.btnAbRepeat.setColorFilter(Color.parseColor("#FF9800"))
+                      }
+                      abPointA != -1L -> {
+                          binding.btnAbRepeat.setColorFilter(Color.parseColor("#FFD54F"))
+                      }
+                      else -> {
+                          binding.btnAbRepeat.setColorFilter(Color.WHITE)
+                      }
+                  }
+              }
+          
+              private fun clearAbRepeat() {
+                  abPointA = -1L
+                  abPointB = -1L
+                  isAbRepeatActive = false
+                  updateAbRepeatButtonUI()
+              }
+          
               private fun updateDecoderBadge(mode: String) {
                   val bg = binding.btnDecoder.background as? GradientDrawable
                   when (mode) {
@@ -6146,7 +6481,7 @@ jobs:
                       else -> bg?.setColor(Color.parseColor("#FF9800"))
                   }
               }
-
+          
               private fun updateUIForItem(item: LionMediaItem) {
                   binding.tvVideoTitle.text = item.title
                   val dur = item.duration.coerceAtLeast(0L)
@@ -6155,11 +6490,11 @@ jobs:
                   val curr = LionPlayerManager.player?.currentPosition ?: 0L
                   binding.playerSeekBar.progress = curr.toInt()
                   binding.tvCurrentTime.text = formatDuration(curr)
-
+          
                   val favSet = prefs.getStringSet("favorite_ids", setOf()) ?: setOf()
                   item.isFavorite = favSet.contains(item.id.toString())
                   updateFavoriteIcon(item.isFavorite)
-
+          
                   val videoControlsVis = if (item.isVideo) View.VISIBLE else View.GONE
                   binding.btnRotate.visibility = videoControlsVis
                   binding.btnPip.visibility = videoControlsVis
@@ -6167,12 +6502,14 @@ jobs:
                   binding.btnToggleNav.visibility = videoControlsVis
                   binding.btnSubtitles.visibility = videoControlsVis
                   binding.btnLyricsToggle.visibility = if (!item.isVideo) View.VISIBLE else View.GONE
-
+          
                   videoScale = 1.0f
                   videoTranslationX = 0f
                   videoTranslationY = 0f
                   applyVideoTransform()
-
+          
+                  clearAbRepeat()
+          
                   if (item.isVideo) {
                       applySystemBarsVisibility()
                       binding.layoutLyrics.visibility = View.GONE
@@ -6184,7 +6521,7 @@ jobs:
                   }
                   updateScreenLock()
               }
-
+          
               private fun checkAndLoadLyrics(item: LionMediaItem) {
                   val showLyricsPref = prefs.getBoolean("show_lyrics", true)
                   if (!showLyricsPref || item.isVideo) {
@@ -6199,7 +6536,7 @@ jobs:
                       binding.layoutLyrics.visibility = View.GONE
                   }
               }
-
+          
               private fun extractLyrics(item: LionMediaItem): String {
                   try {
                       if (item.path.isNotEmpty()) {
@@ -6220,17 +6557,17 @@ jobs:
                   } catch (e: Exception) {}
                   return ""
               }
-
+          
               private fun updatePlayPauseButton(isPlaying: Boolean) {
                   binding.btnPlayPause.setImageResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
                   updateScreenLock()
               }
-
+          
               private fun setupListeners() {
                   binding.btnBack.setOnClickListener { handleBackAction() }
                   binding.btnSubtitles.setOnClickListener { showSubtitleSettingsSheet() }
                   binding.btnAudioTracks.setOnClickListener { showAudioTracksDialog() }
-
+          
                   binding.btnMore.setOnClickListener {
                       PlayerSettingsBottomSheet.show(
                           activity = this,
@@ -6243,7 +6580,7 @@ jobs:
                           }
                       )
                   }
-
+          
                   binding.btnDecoder.setOnClickListener {
                       val nextMode = when (LionPlayerManager.currentDecoderMode) {
                           "HW" -> "HW+"
@@ -6256,13 +6593,55 @@ jobs:
                       updateDecoderBadge(nextMode)
                       Toast.makeText(this, "تم التبديل إلى ترميز: $nextMode", Toast.LENGTH_SHORT).show()
                   }
-
+          
+                  // Feature 2: A-B Repeat button logic
+                  binding.btnAbRepeat.setOnClickListener {
+                      val p = LionPlayerManager.player ?: return@setOnClickListener
+                      when {
+                          abPointA == -1L -> {
+                              abPointA = p.currentPosition
+                              updateAbRepeatButtonUI()
+                              Toast.makeText(this, "تم تحديد النقطة A: ${formatDuration(abPointA)}\nاضغط مجدداً لتحديد النقطة B", Toast.LENGTH_SHORT).show()
+                          }
+                          abPointB == -1L -> {
+                              val currentPos = p.currentPosition
+                              if (currentPos <= abPointA + 500L) {
+                                  Toast.makeText(this, "النقطة B يجب أن تكون بعد النقطة A بمقدار ثانية على الأقل", Toast.LENGTH_SHORT).show()
+                                  return@setOnClickListener
+                              }
+                              abPointB = currentPos
+                              isAbRepeatActive = true
+                              p.seekTo(abPointA)
+                              updateAbRepeatButtonUI()
+                              Toast.makeText(this, "تم تفعيل تكرار A-B: من ${formatDuration(abPointA)} إلى ${formatDuration(abPointB)} 🔁", Toast.LENGTH_LONG).show()
+                          }
+                          else -> {
+                              clearAbRepeat()
+                              Toast.makeText(this, "تم إلغاء تكرار A-B", Toast.LENGTH_SHORT).show()
+                          }
+                      }
+                  }
+          
+                  // Feature 5: Sleep Timer button dialog
+                  binding.btnSleepTimer.setOnClickListener { showSleepTimerDialog() }
+          
+                  // Feature 5: Kids Lock activation
+                  binding.btnKidsLock.setOnClickListener {
+                      isKidsLocked = true
+                      kidsLockStep = 0
+                      hideAllControls()
+                      hideSystemBars()
+                      showKidsLockHud(0)
+                      triggerHapticFeedback()
+                      Toast.makeText(this, "تم تفعيل قفل الأطفال الذكي 🔒", Toast.LENGTH_SHORT).show()
+                  }
+          
                   binding.btnRepeat.setOnClickListener {
                       val isRepeating = LionPlayerManager.toggleRepeat()
                       updateRepeatButtonUI()
                       Toast.makeText(this, if (isRepeating) "تم تفعيل تكرار المقطع 🔂" else "تم إيقاف التكرار", Toast.LENGTH_SHORT).show()
                   }
-
+          
                   binding.btnFavorite.setOnClickListener {
                       val currentItem = LionPlayerManager.getCurrentItem() ?: return@setOnClickListener
                       val favSet = prefs.getStringSet("favorite_ids", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
@@ -6279,7 +6658,7 @@ jobs:
                       prefs.edit().putStringSet("favorite_ids", favSet).apply()
                       updateFavoriteIcon(currentItem.isFavorite)
                   }
-
+          
                   binding.btnRotate.setOnClickListener {
                       rotationState = (rotationState + 1) % 3
                       when (rotationState) {
@@ -6289,11 +6668,11 @@ jobs:
                       }
                       applySystemBarsVisibility()
                   }
-
+          
                   binding.btnToggleNav.setOnClickListener {
                       if (isSystemNavHidden) showSystemNavBars() else hideSystemBars()
                   }
-
+          
                   binding.btnLyricsToggle.setOnClickListener {
                       val current = LionPlayerManager.getCurrentItem() ?: return@setOnClickListener
                       if (binding.layoutLyrics.visibility == View.VISIBLE) {
@@ -6305,50 +6684,39 @@ jobs:
                           }
                       }
                   }
-
+          
                   binding.btnPlayPause.setOnClickListener { LionPlayerManager.togglePlayPause(this) }
                   binding.btnNext.setOnClickListener { LionPlayerManager.playNext(this) }
                   binding.btnPrev.setOnClickListener { LionPlayerManager.playPrevious(this) }
-
-                  binding.btnRewind10.setOnClickListener {
-                      LionPlayerManager.player?.let { p ->
-                          p.seekTo((p.currentPosition - 10000).coerceAtLeast(0L))
-                          LionPlayerManager.updateNotification(this)
-                      }
-                  }
-
-                  binding.btnForward10.setOnClickListener {
-                      LionPlayerManager.player?.let { p ->
-                          p.seekTo((p.currentPosition + 10000).coerceAtMost(p.duration))
-                          LionPlayerManager.updateNotification(this)
-                      }
-                  }
-
+          
+                  binding.btnRewind10.setOnClickListener { triggerDoubleTapRewind() }
+                  binding.btnForward10.setOnClickListener { triggerDoubleTapForward() }
+          
                   binding.btnEqualizer.setOnClickListener { showAudioSettingsDialog() }
-
+          
                   binding.btnLock.setOnClickListener {
                       isLocked = true
                       hideAllControls()
                       binding.btnUnlock.visibility = View.VISIBLE
                       updateScreenLock()
                   }
-
+          
                   binding.btnUnlock.setOnClickListener {
                       isLocked = false
                       binding.btnUnlock.visibility = View.GONE
                       showAllControls()
                       updateScreenLock()
                   }
-
+          
                   binding.btnPip.setOnClickListener { enterPipMode() }
-
+          
                   binding.btnResize.setOnClickListener {
                       resizeModeIndex = (resizeModeIndex + 1) % resizeModes.size
                       val (mode, modeName) = resizeModes[resizeModeIndex]
                       binding.playerView.resizeMode = mode
                       Toast.makeText(this, "أبعاد الفيديو: $modeName", Toast.LENGTH_SHORT).show()
                   }
-
+          
                   binding.btnSpeed.setOnClickListener {
                       val speeds = arrayOf("0.5x", "0.75x", "1.0x", "1.25x", "1.5x", "2.0x")
                       AlertDialog.Builder(this)
@@ -6362,21 +6730,238 @@ jobs:
                           }
                           .show()
                   }
-
+          
+                  // Feature 1: Timeline Thumbnail Scrubbing Listener
                   binding.playerSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                       override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
                           if (fromUser) {
-                              LionPlayerManager.player?.seekTo(progress.toLong())
+                              val p = LionPlayerManager.player
+                              p?.seekTo(progress.toLong())
                               binding.tvCurrentTime.text = formatDuration(progress.toLong())
+          
+                              val currentItem = LionPlayerManager.getCurrentItem()
+                              if (currentItem?.isVideo == true) {
+                                  val seekBar = binding.playerSeekBar
+                                  val availableWidth = (seekBar.width - seekBar.paddingStart - seekBar.paddingEnd).coerceAtLeast(1)
+                                  val progressRatio = if (seekBar.max > 0) progress.toFloat() / seekBar.max else 0f
+                                  val thumbCenter = seekBar.left + seekBar.paddingStart + (availableWidth * progressRatio)
+          
+                                  val previewWidth = if (binding.layoutThumbnailPreview.width > 0) {
+                                      binding.layoutThumbnailPreview.width
+                                  } else {
+                                      (144 * resources.displayMetrics.density).toInt()
+                                  }
+                                  val minX = 16f
+                                  val maxX = (binding.playerContainer.width - previewWidth - 16).coerceAtLeast(16).toFloat()
+                                  binding.layoutThumbnailPreview.x = (thumbCenter - previewWidth / 2f).coerceIn(minX, maxX)
+                                  binding.tvThumbnailTime.text = formatDuration(progress.toLong())
+          
+                                  binding.ivThumbnailPreview.load(Uri.parse(currentItem.uri)) {
+                                      videoFrameMillis(progress.toLong())
+                                      size(288, 192)
+                                      placeholder(R.drawable.bg_thumb_round)
+                                      error(R.drawable.bg_thumb_round)
+                                  }
+                              }
                           }
                       }
-                      override fun onStartTrackingTouch(sb: SeekBar?) {}
+          
+                      override fun onStartTrackingTouch(sb: SeekBar?) {
+                          val currentItem = LionPlayerManager.getCurrentItem()
+                          if (currentItem?.isVideo == true) {
+                              binding.layoutThumbnailPreview.visibility = View.VISIBLE
+                              binding.layoutThumbnailPreview.alpha = 0f
+                              binding.layoutThumbnailPreview.animate().alpha(1f).setDuration(150).start()
+                          }
+                      }
+          
                       override fun onStopTrackingTouch(sb: SeekBar?) {
                           LionPlayerManager.updateNotification(this@PlayerActivity)
+                          binding.layoutThumbnailPreview.animate()
+                              .alpha(0f)
+                              .setDuration(200)
+                              .withEndAction { binding.layoutThumbnailPreview.visibility = View.GONE }
+                              .start()
                       }
                   })
               }
-
+          
+              // Feature 5: Sleep Timer Setup & Options Dialog
+              private fun showSleepTimerDialog() {
+                  val options = if (isSleepTimerActive) {
+                      arrayOf("15 دقيقة", "30 دقيقة", "45 دقيقة", "60 دقيقة", "إيقاف مؤقت النوم")
+                  } else {
+                      arrayOf("15 دقيقة", "30 دقيقة", "45 دقيقة", "60 دقيقة")
+                  }
+          
+                  val title = if (isSleepTimerActive) {
+                      val remainingMins = ((sleepTimerEndTimeMs - SystemClock.elapsedRealtime()) / 60000L).coerceAtLeast(1)
+                      "مؤقت النوم (متبقي $remainingMins دقيقة)"
+                  } else {
+                      "ضبط مؤقت النوم"
+                  }
+          
+                  AlertDialog.Builder(this)
+                      .setTitle(title)
+                      .setItems(options) { _, which ->
+                          if (isSleepTimerActive && which == 4) {
+                              cancelSleepTimer()
+                              Toast.makeText(this, "تم إلغاء مؤقت النوم", Toast.LENGTH_SHORT).show()
+                          } else {
+                              val minutes = when (which) {
+                                  0 -> 15
+                                  1 -> 30
+                                  2 -> 45
+                                  3 -> 60
+                                  else -> 15
+                              }
+                              startSleepTimer(minutes)
+                          }
+                      }
+                      .setNegativeButton("إلغاء", null)
+                      .show()
+              }
+          
+              private fun startSleepTimer(minutes: Int) {
+                  isSleepTimerActive = true
+                  sleepTimerInitialVolumePercent = currentTotalVolumePercent
+                  val durationMs = minutes * 60 * 1000L
+                  sleepTimerEndTimeMs = SystemClock.elapsedRealtime() + durationMs
+                  binding.btnSleepTimer.setColorFilter(Color.parseColor("#FF9800"))
+                  Toast.makeText(this, "تم تفعيل مؤقت النوم: $minutes دقيقة ⏳", Toast.LENGTH_SHORT).show()
+              }
+          
+              private fun cancelSleepTimer() {
+                  isSleepTimerActive = false
+                  binding.btnSleepTimer.setColorFilter(Color.WHITE)
+                  applyVolumePercent(sleepTimerInitialVolumePercent)
+              }
+          
+              // Feature 5: Kids Lock 4-corner pattern handling
+              private fun showKidsLockHud(step: Int) {
+                  handler.removeCallbacks(hideKidsLockHudRunnable)
+                  binding.hudKidsLockHint.visibility = View.VISIBLE
+                  binding.hudKidsLockHint.alpha = 1f
+                  val progressText = when (step) {
+                      1 -> "●  ○  ○  ○"
+                      2 -> "●  ●  ○  ○"
+                      3 -> "●  ●  ●  ○"
+                      else -> "○  ○  ○  ○"
+                  }
+                  binding.tvKidsLockProgress.text = progressText
+                  handler.postDelayed(hideKidsLockHudRunnable, 3000)
+              }
+          
+              private fun handleKidsLockCornerTouch(x: Float, y: Float) {
+                  val w = binding.playerView.width.toFloat().coerceAtLeast(1f)
+                  val h = binding.playerView.height.toFloat().coerceAtLeast(1f)
+          
+                  val inCorner1 = x < w * 0.28f && y < h * 0.28f  // Top-Left
+                  val inCorner2 = x > w * 0.72f && y < h * 0.28f  // Top-Right
+                  val inCorner3 = x > w * 0.72f && y > h * 0.72f  // Bottom-Right
+                  val inCorner4 = x < w * 0.28f && y > h * 0.72f  // Bottom-Left
+          
+                  when (kidsLockStep) {
+                      0 -> {
+                          if (inCorner1) {
+                              kidsLockStep = 1
+                              triggerHapticFeedback()
+                              showKidsLockHud(1)
+                          } else {
+                              showKidsLockHud(0)
+                          }
+                      }
+                      1 -> {
+                          if (inCorner2) {
+                              kidsLockStep = 2
+                              triggerHapticFeedback()
+                              showKidsLockHud(2)
+                          } else if (!inCorner1) {
+                              kidsLockStep = 0
+                              showKidsLockHud(0)
+                          }
+                      }
+                      2 -> {
+                          if (inCorner3) {
+                              kidsLockStep = 3
+                              triggerHapticFeedback()
+                              showKidsLockHud(3)
+                          } else {
+                              kidsLockStep = 0
+                              showKidsLockHud(0)
+                          }
+                      }
+                      3 -> {
+                          if (inCorner4) {
+                              // Successfully completed the 4-corner unlock pattern!
+                              isKidsLocked = false
+                              kidsLockStep = 0
+                              binding.hudKidsLockHint.visibility = View.GONE
+                              triggerHapticFeedback()
+                              showAllControls()
+                              applySystemBarsVisibility()
+                              Toast.makeText(this, "تم إلغاء قفل الأطفال بنجاح! 🔓", Toast.LENGTH_SHORT).show()
+                          } else {
+                              kidsLockStep = 0
+                              showKidsLockHud(0)
+                          }
+                      }
+                  }
+              }
+          
+              // Feature 4: Double Tap Ripple / HUD Skip Actions
+              private fun triggerDoubleTapForward() {
+                  val p = LionPlayerManager.player ?: return
+                  handler.removeCallbacks(hideDoubleTapRightRunnable)
+                  doubleTapForwardCount++
+                  val totalSec = doubleTapForwardCount * 10
+                  p.seekTo((p.currentPosition + 10000L).coerceAtMost(p.duration))
+                  LionPlayerManager.updateNotification(this)
+          
+                  binding.tvDoubleTapRightText.text = "+$totalSec ثوانٍ"
+                  binding.hudDoubleTapRight.visibility = View.VISIBLE
+                  binding.hudDoubleTapRight.alpha = 0f
+                  binding.hudDoubleTapRight.scaleX = 0.7f
+                  binding.hudDoubleTapRight.scaleY = 0.7f
+                  binding.hudDoubleTapRight.animate()
+                      .alpha(1f)
+                      .scaleX(1.08f)
+                      .scaleY(1.08f)
+                      .setDuration(160)
+                      .withEndAction {
+                          binding.hudDoubleTapRight.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
+                      }
+                      .start()
+          
+                  handler.postDelayed(hideDoubleTapRightRunnable, 750)
+              }
+          
+              private fun triggerDoubleTapRewind() {
+                  val p = LionPlayerManager.player ?: return
+                  handler.removeCallbacks(hideDoubleTapLeftRunnable)
+                  doubleTapRewindCount++
+                  val totalSec = doubleTapRewindCount * 10
+                  p.seekTo((p.currentPosition - 10000L).coerceAtLeast(0L))
+                  LionPlayerManager.updateNotification(this)
+          
+                  binding.tvDoubleTapLeftText.text = "-$totalSec ثوانٍ"
+                  binding.hudDoubleTapLeft.visibility = View.VISIBLE
+                  binding.hudDoubleTapLeft.alpha = 0f
+                  binding.hudDoubleTapLeft.scaleX = 0.7f
+                  binding.hudDoubleTapLeft.scaleY = 0.7f
+                  binding.hudDoubleTapLeft.animate()
+                      .alpha(1f)
+                      .scaleX(1.08f)
+                      .scaleY(1.08f)
+                      .setDuration(160)
+                      .withEndAction {
+                          binding.hudDoubleTapLeft.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
+                      }
+                      .start()
+          
+                  handler.postDelayed(hideDoubleTapLeftRunnable, 750)
+              }
+          
               private fun showSubtitleSettingsSheet() {
                   SubtitleSettingsBottomSheet.show(
                       activity = this,
@@ -6395,20 +6980,20 @@ jobs:
                       }
                   )
               }
-
+          
               private fun showSubtitleTracksDialog() {
                   val player = LionPlayerManager.player ?: return
                   val tracks = player.currentTracks
                   val subtitleGroups = tracks.groups.filter { it.type == C.TRACK_TYPE_TEXT }
-
+          
                   val trackLabels = mutableListOf<String>()
                   val groupAndIndices = mutableListOf<Pair<androidx.media3.common.TrackGroup, Int>>()
                   trackLabels.add("تعطيل الترجمة (إيقاف)")
                   groupAndIndices.add(Pair(androidx.media3.common.TrackGroup(), -1))
-
+          
                   var selectedIdx = 0
                   var counter = 1
-
+          
                   for (group in subtitleGroups) {
                       for (i in 0 until group.length) {
                           val format = group.getTrackFormat(i)
@@ -6420,7 +7005,7 @@ jobs:
                           counter++
                       }
                   }
-
+          
                   AlertDialog.Builder(this)
                       .setTitle("مسارات الترجمة المتاحة")
                       .setSingleChoiceItems(trackLabels.toTypedArray(), selectedIdx) { dialog, which ->
@@ -6435,17 +7020,17 @@ jobs:
                       .setNegativeButton("إلغاء", null)
                       .show()
               }
-
+          
               private fun showAudioTracksDialog() {
                   val player = LionPlayerManager.player ?: return
                   val tracks = player.currentTracks
                   val audioGroups = tracks.groups.filter { it.type == C.TRACK_TYPE_AUDIO }
-
+          
                   val trackLabels = mutableListOf<String>()
                   val groupAndIndices = mutableListOf<Pair<androidx.media3.common.TrackGroup, Int>>()
                   var selectedIdx = 0
                   var counter = 1
-
+          
                   for (group in audioGroups) {
                       for (i in 0 until group.length) {
                           val format = group.getTrackFormat(i)
@@ -6458,12 +7043,12 @@ jobs:
                           counter++
                       }
                   }
-
+          
                   if (trackLabels.isEmpty()) {
                       Toast.makeText(this, "لا توجد مسارات صوتية بديلة", Toast.LENGTH_SHORT).show()
                       return
                   }
-
+          
                   AlertDialog.Builder(this)
                       .setTitle("اختيار المسار الصوتي")
                       .setSingleChoiceItems(trackLabels.toTypedArray(), selectedIdx) { dialog, which ->
@@ -6474,20 +7059,20 @@ jobs:
                       .setNegativeButton("إلغاء", null)
                       .show()
               }
-
+          
               private fun showOpenSubtitlesSearchDialog() {
                   val searchBinding = DialogOpensubtitlesSearchBinding.inflate(layoutInflater)
                   searchBinding.rvSubtitlesResults.layoutManager = LinearLayoutManager(this)
-
+          
                   val curItem = LionPlayerManager.getCurrentItem()
                   searchBinding.etSearchQuery.setText(curItem?.title?.substringBeforeLast('.') ?: "")
-
+          
                   val dialog = AlertDialog.Builder(this)
                       .setTitle("البحث في OpenSubtitles")
                       .setView(searchBinding.root)
                       .setNegativeButton("إلغاء", null)
                       .create()
-
+          
                   val resultsList = mutableListOf<SubtitleResult>()
                   val adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                       override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -6500,7 +7085,7 @@ jobs:
                           val itemBinding = ItemOpensubtitleResultBinding.bind(holder.itemView)
                           itemBinding.tvSubFileName.text = item.fileName
                           itemBinding.tvSubLanguage.text = "اللغة: ${item.language.uppercase(Locale.ROOT)}"
-
+          
                           val clickListener = View.OnClickListener {
                               Toast.makeText(this@PlayerActivity, "جاري تنزيل الترجمة...", Toast.LENGTH_SHORT).show()
                               OpenSubtitlesManager.downloadSubtitle(
@@ -6523,7 +7108,7 @@ jobs:
                       }
                   }
                   searchBinding.rvSubtitlesResults.adapter = adapter
-
+          
                   fun executeSearch() {
                       val q = searchBinding.etSearchQuery.text.toString().trim()
                       searchBinding.pbLoadingSubtitles.visibility = View.VISIBLE
@@ -6547,12 +7132,12 @@ jobs:
                           }
                       )
                   }
-
+          
                   searchBinding.btnStartSearch.setOnClickListener { executeSearch() }
                   dialog.show()
                   executeSearch()
               }
-
+          
               override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
                   super.onActivityResult(requestCode, resultCode, data)
                   if (requestCode == SUBTITLE_PICK_REQ && resultCode == Activity.RESULT_OK) {
@@ -6562,28 +7147,29 @@ jobs:
                       }
                   }
               }
-
+          
+              // Feature 3: Advanced Audio Settings Dialog (Equalizer, Multi-Band Sliders, BassBoost, LoudnessEnhancer)
               private fun showAudioSettingsDialog() {
                   initAudioEffects()
                   val eq = equalizer
-                  val rev = presetReverb
                   if (eq == null) {
                       Toast.makeText(this, "معادل الصوت غير مدعوم أو لم يبدأ التشغيل بعد", Toast.LENGTH_SHORT).show()
                       return
                   }
-
+          
                   val builder = AlertDialog.Builder(this)
-                  builder.setTitle("إعدادات الصوت والمؤثرات")
-
+                  builder.setTitle("معادل الصوت المتقدم ومضاعفة الصوت")
+          
                   val scroll = ScrollView(this)
                   val layout = LinearLayout(this).apply {
                       orientation = LinearLayout.VERTICAL
                       setPadding(32, 24, 32, 24)
                   }
-
+          
+                  // 1. 200% Volume Boost Switch
                   val switchBoost = Switch(this).apply {
-                      text = "مضاعفة الصوت حتى 200% (تعزيز نقي)"
-                      isChecked = prefs.getBoolean("volume_boost_enabled", false)
+                      text = "مضاعفة الصوت حتى 200% (تعزيز نقي ومتقدم)"
+                      isChecked = prefs.getBoolean("volume_boost_enabled", true)
                       setTextColor(Color.WHITE)
                       setOnCheckedChangeListener { _, isChecked ->
                           prefs.edit().putBoolean("volume_boost_enabled", isChecked).apply()
@@ -6591,9 +7177,40 @@ jobs:
                       }
                   }
                   layout.addView(switchBoost)
-
+          
+                  // 2. BassBoost Slider
+                  val tvBass = TextView(this).apply {
+                      val strength = bassBoost?.roundedStrength ?: 0
+                      text = "تضخيم الباس (Bass Boost): ${(strength / 10)}%"
+                      setTextColor(Color.parseColor("#FF9800"))
+                      textSize = 13f
+                      paint.isFakeBoldText = true
+                      setPadding(0, 16, 0, 4)
+                  }
+                  layout.addView(tvBass)
+          
+                  val sbBass = SeekBar(this).apply {
+                      max = 1000
+                      progress = (bassBoost?.roundedStrength ?: 0).toInt()
+                      setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                          override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                              if (fromUser) {
+                                  try {
+                                      bassBoost?.enabled = progress > 0
+                                      bassBoost?.setStrength(progress.toShort())
+                                      tvBass.text = "تضخيم الباس (Bass Boost): ${(progress / 10)}%"
+                                  } catch (e: Exception) {}
+                              }
+                          }
+                          override fun onStartTrackingTouch(sb: SeekBar?) {}
+                          override fun onStopTrackingTouch(sb: SeekBar?) {}
+                      })
+                  }
+                  layout.addView(sbBass)
+          
+                  // 3. Equalizer Enable Switch
                   val switchEnable = Switch(this).apply {
-                      text = "تفعيل المعادل الصوتي"
+                      text = "تفعيل المعادل الصوتي (Equalizer)"
                       isChecked = eq.enabled
                       setTextColor(Color.WHITE)
                       setPadding(0, 16, 0, 0)
@@ -6603,17 +7220,20 @@ jobs:
                       }
                   }
                   layout.addView(switchEnable)
-
+          
+                  // 4. Equalizer Presets
                   val numPresets = eq.numberOfPresets.toInt()
                   if (numPresets > 0) {
                       val presetNames = (0 until numPresets).map { eq.getPresetName(it.toShort()) }
                       val tvPresets = TextView(this).apply {
                           text = "الأنماط الجاهزة:"
                           setTextColor(Color.parseColor("#FF9800"))
+                          textSize = 13f
+                          paint.isFakeBoldText = true
                           setPadding(0, 16, 0, 8)
                       }
                       layout.addView(tvPresets)
-
+          
                       val spinner = Spinner(this)
                       val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, presetNames)
                       spinner.adapter = adapter
@@ -6626,13 +7246,69 @@ jobs:
                       }
                       layout.addView(spinner)
                   }
-
+          
+                  // 5. Graphic Equalizer Frequency Bands
+                  val numBands = eq.numberOfBands.toInt()
+                  val range = eq.bandLevelRange
+                  val minLevel = range[0].toInt()
+                  val maxLevel = range[1].toInt()
+                  val totalRange = (maxLevel - minLevel).coerceAtLeast(1)
+          
+                  val tvBandsTitle = TextView(this).apply {
+                      text = "النطاقات الترددية (${numBands} نطاقات):"
+                      setTextColor(Color.parseColor("#FF9800"))
+                      textSize = 13f
+                      paint.isFakeBoldText = true
+                      setPadding(0, 16, 0, 8)
+                  }
+                  layout.addView(tvBandsTitle)
+          
+                  for (band in 0 until numBands) {
+                      val centerFreq = eq.getCenterFreq(band.toShort())
+                      val freqText = if (centerFreq >= 1000000) {
+                          "${centerFreq / 1000000.0} kHz"
+                      } else {
+                          "${centerFreq / 1000} Hz"
+                      }
+          
+                      val currentLevel = eq.getBandLevel(band.toShort()).toInt()
+                      val tvBandLabel = TextView(this).apply {
+                          val db = currentLevel / 100
+                          text = "$freqText  (${if (db > 0) "+$db" else "$db"} dB)"
+                          setTextColor(Color.WHITE)
+                          textSize = 12f
+                          setPadding(0, 8, 0, 2)
+                      }
+                      layout.addView(tvBandLabel)
+          
+                      val sbBand = SeekBar(this).apply {
+                          max = totalRange
+                          progress = currentLevel - minLevel
+                          setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                              override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                                  if (fromUser) {
+                                      val level = (progress + minLevel).toShort()
+                                      try {
+                                          eq.setBandLevel(band.toShort(), level)
+                                          val db = level / 100
+                                          tvBandLabel.text = "$freqText  (${if (db > 0) "+$db" else "$db"} dB)"
+                                      } catch (e: Exception) {}
+                                  }
+                              }
+                              override fun onStartTrackingTouch(sb: SeekBar?) {}
+                              override fun onStopTrackingTouch(sb: SeekBar?) {}
+                          })
+                      }
+                      layout.addView(sbBand)
+                  }
+          
                   scroll.addView(layout)
                   builder.setView(scroll)
                   builder.setPositiveButton("تم", null)
                   builder.show()
               }
-
+          
+              // Feature 4: Advanced & Comprehensive Gesture Detection
               private fun setupGestureDetection() {
                   scaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
                       override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
@@ -6640,17 +7316,17 @@ jobs:
                           handler.removeCallbacks(longPressRunnable)
                           return true
                       }
-
+          
                       override fun onScale(detector: ScaleGestureDetector): Boolean {
                           val factor = detector.scaleFactor
                           val currentItem = LionPlayerManager.getCurrentItem()
-                          if (currentItem?.isVideo == true) {
+                          if (currentItem?.isVideo == true && !isKidsLocked) {
                               videoScale = (videoScale * factor).coerceIn(1.0f, 5.0f)
                               applyVideoTransform()
                           }
                           return true
                       }
-
+          
                       override fun onScaleEnd(detector: ScaleGestureDetector) {
                           if (videoScale <= 1.05f) {
                               videoScale = 1.0f
@@ -6661,39 +7337,45 @@ jobs:
                           handler.postDelayed(hideZoomHudRunnable, 1500)
                       }
                   })
-
+          
                   val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
                       override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                          if (!isLocked && !isLongPressSpeeding) {
+                          if (!isLocked && !isKidsLocked && !isLongPressSpeeding) {
                               if (controlsVisible) hideAllControls() else showAllControls()
                               applySystemBarsVisibility()
                           }
                           return true
                       }
-
+          
                       override fun onDoubleTap(e: MotionEvent): Boolean {
-                          if (isLocked) return true
-                          val p = LionPlayerManager.player ?: return true
+                          if (isLocked || isKidsLocked) return true
                           val screenWidth = resources.displayMetrics.widthPixels
                           if (e.x > screenWidth / 2) {
-                              p.seekTo((p.currentPosition - 10000).coerceAtLeast(0L))
+                              triggerDoubleTapForward()
                           } else {
-                              p.seekTo((p.currentPosition + 10000).coerceAtMost(p.duration))
+                              triggerDoubleTapRewind()
                           }
                           return true
                       }
                   })
-
+          
                   binding.playerView.setOnTouchListener { _, event ->
+                      if (isKidsLocked) {
+                          if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                              handleKidsLockCornerTouch(event.x, event.y)
+                          }
+                          return@setOnTouchListener true
+                      }
+          
                       scaleGestureDetector.onTouchEvent(event)
                       gestureDetector.onTouchEvent(event)
                       if (isLocked) return@setOnTouchListener true
-
+          
                       val screenWidth = resources.displayMetrics.widthPixels
                       val screenHeight = resources.displayMetrics.heightPixels
                       val currentItem = LionPlayerManager.getCurrentItem()
                       val isVideo = currentItem?.isVideo == true
-
+          
                       when (event.actionMasked) {
                           MotionEvent.ACTION_DOWN -> {
                               gestureStartX = event.x
@@ -6704,13 +7386,13 @@ jobs:
                               isDraggingHorizontal = false
                               gestureMode = 0
                               initialSeekPosition = LionPlayerManager.player?.currentPosition ?: 0L
-
+          
                               audioManager?.let { am -> initialVolume = am.getStreamVolume(AudioManager.STREAM_MUSIC) }
                               val lp = window.attributes
                               initialBrightness = if (lp.screenBrightness >= 0f) lp.screenBrightness else 0.5f
-
+          
                               if (event.pointerCount == 1 && videoScale <= 1.05f && LionPlayerManager.player?.isPlaying == true) {
-                                  handler.postDelayed(longPressRunnable, 400)
+                                  handler.postDelayed(longPressRunnable, 350)
                               }
                           }
                           MotionEvent.ACTION_POINTER_DOWN -> {
@@ -6724,11 +7406,11 @@ jobs:
                           MotionEvent.ACTION_MOVE -> {
                               val dx = event.x - gestureStartX
                               val dy = event.y - initialGestureY
-
+          
                               if (kotlin.math.abs(dx) > 20 || kotlin.math.abs(dy) > 20) {
                                   handler.removeCallbacks(longPressRunnable)
                               }
-
+          
                               if (event.pointerCount >= 2 && videoScale > 1.05f && isVideo) {
                                   videoTranslationX += (event.x - lastTouchX)
                                   videoTranslationY += (event.y - lastTouchY)
@@ -6747,12 +7429,12 @@ jobs:
                                               isDraggingHorizontal = true
                                           }
                                       }
-
+          
                                       if (isDraggingVertical) {
                                           val deltaY = initialGestureY - event.y
-                                          val maxPerc = if (prefs.getBoolean("volume_boost_enabled", false)) 200f else 100f
+                                          val maxPerc = if (prefs.getBoolean("volume_boost_enabled", true)) 200f else 100f
                                           val deltaPercent = (deltaY / (screenHeight * 0.6f)) * maxPerc
-
+          
                                           if (gestureMode == GESTURE_VOLUME) {
                                               val initPerc = (initialVolume.toFloat() / maxSystemVolume.toFloat()) * 100f
                                               applyVolumePercent(initPerc + deltaPercent)
@@ -6767,7 +7449,7 @@ jobs:
                                               targetSeekPosition = (initialSeekPosition + seekOffsetMs).coerceIn(0L, maxDur)
                                               binding.playerSeekBar.progress = targetSeekPosition.toInt()
                                               binding.tvCurrentTime.text = formatDuration(targetSeekPosition)
-
+          
                                               val now = SystemClock.uptimeMillis()
                                               if (now - lastSeekDispatchTime >= 16L) {
                                                   lastSeekDispatchTime = now
@@ -6804,7 +7486,7 @@ jobs:
                       true
                   }
               }
-
+          
               private fun formatDuration(durationMs: Long): String {
                   val totalSec = durationMs / 1000
                   val sec = totalSec % 60
@@ -6816,8 +7498,13 @@ jobs:
                       String.format(Locale.US, "%02d:%02d", min, sec)
                   }
               }
-
+          
               private fun handleBackAction() {
+                  if (isKidsLocked) {
+                      Toast.makeText(this, "قفل الأطفال مفعل! انقر على الزوايا الأربع لإلغائه", Toast.LENGTH_SHORT).show()
+                      showKidsLockHud(kidsLockStep)
+                      return
+                  }
                   if (isLocked) {
                       Toast.makeText(this, "الشاشة مقفلة! اضغط على زر القفل أولاً", Toast.LENGTH_SHORT).show()
                       return
@@ -6845,11 +7532,11 @@ jobs:
                       finish()
                   }
               }
-
+          
               override fun onBackPressed() {
                   handleBackAction()
               }
-
+          
               override fun onStart() {
                   super.onStart()
                   LionPlayerManager.onTrackChanged = { item ->
@@ -6868,23 +7555,24 @@ jobs:
                   binding.playerView.player = LionPlayerManager.player
                   updatePlayPauseButton(LionPlayerManager.player?.isPlaying == true)
                   updateRepeatButtonUI()
+                  updateAbRepeatButtonUI()
                   updateScreenLock()
                   handler.post(updateProgressRunnable)
                   scheduleAutoHideLandscape()
               }
-
+          
               override fun onResume() {
                   super.onResume()
                   applySystemBarsVisibility()
                   updateScreenLock()
                   scheduleAutoHideLandscape()
               }
-
+          
               override fun onPause() {
                   super.onPause()
                   saveCurrentVideoPosition()
               }
-
+          
               override fun onStop() {
                   super.onStop()
                   saveCurrentVideoPosition()
@@ -6892,7 +7580,7 @@ jobs:
                   LionPlayerManager.onPlaybackStateChanged = null
                   updateScreenLock()
               }
-
+          
               override fun onDestroy() {
                   super.onDestroy()
                   saveCurrentVideoPosition()
@@ -6900,6 +7588,9 @@ jobs:
                   handler.removeCallbacks(longPressRunnable)
                   handler.removeCallbacks(hideZoomHudRunnable)
                   handler.removeCallbacks(autoHideLandscapeRunnable)
+                  handler.removeCallbacks(hideDoubleTapRightRunnable)
+                  handler.removeCallbacks(hideDoubleTapLeftRunnable)
+                  handler.removeCallbacks(hideKidsLockHudRunnable)
                   binding.playerView.player = null
                   try {
                       loudnessEnhancer?.enabled = false
